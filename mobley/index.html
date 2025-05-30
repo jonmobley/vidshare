@@ -468,25 +468,7 @@
             });
         }
 
-        // Handle short URL routing (for future use)
-        function handleShortUrl() {
-            const path = window.location.pathname;
-            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{7})/);
-            
-            if (shortCodeMatch) {
-                const shortCode = shortCodeMatch[1];
-                const galleries = JSON.parse(localStorage.getItem('vidshare_galleries') || '{}');
-                
-                if (galleries[shortCode]) {
-                    // Redirect to full gallery URL
-                    const folderUrl = encodeURIComponent(galleries[shortCode].folderUrl);
-                    window.location.href = `/gallery?folder=${folderUrl}`;
-                } else {
-                    // Short code not found
-                    alert('Gallery not found. Please check the URL.');
-                }
-            }
-        }
+
 
         // Auto-fill for testing (remove in production)
         function addTestData() {
@@ -500,7 +482,6 @@
 
         // Check for short URL on page load
         document.addEventListener('DOMContentLoaded', () => {
-            handleShortUrl();
             console.log('🎬 VidShare Admin Panel Loaded!');
             console.log('📁 Ready to generate video galleries from Dropbox folders');
             
