@@ -320,10 +320,17 @@
 
         function extractFolderName(url) {
             try {
+                console.log('📁 Extracting folder name from URL:', url);
+                
                 // Extract folder name from Dropbox URL
                 const match = url.match(/\/fo\/([^\/\?]+)/);
-                return match ? match[1].substring(0, 8) + '...' : 'Gallery';
-            } catch {
+                const result = match ? match[1].substring(0, 8) + '...' : 'Gallery';
+                
+                console.log('📝 Extracted folder name:', result);
+                return result;
+                
+            } catch (error) {
+                console.error('❌ Error extracting folder name:', error);
                 return 'Gallery';
             }
         }
