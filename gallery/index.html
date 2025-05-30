@@ -32,11 +32,13 @@
             position: relative;
             width: 100%;
             background: white;
+            aspect-ratio: 16 / 9;
+            max-height: 70vh;
         }
 
         .main-video {
             width: 100%;
-            height: 60vh;
+            height: 100%;
             object-fit: contain;
             background: white;
         }
@@ -57,6 +59,55 @@
 
         .main-player:hover .video-info-overlay {
             opacity: 1;
+        }
+
+        .main-player-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .main-player:hover .main-player-actions {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .main-action-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .main-action-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-download-btn::before {
+            content: '⬇';
+        }
+
+        .main-share-btn::before {
+            content: '🔗';
         }
 
         .current-video-title {
@@ -364,8 +415,21 @@
 
         /* Mobile Optimizations */
         @media (max-width: 768px) {
-            .main-video {
-                height: 50vh;
+            .main-player {
+                aspect-ratio: 16 / 9;
+                max-height: 50vh;
+            }
+
+            .main-player-actions {
+                top: 15px;
+                right: 15px;
+                gap: 8px;
+            }
+
+            .main-action-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
 
             .navigation-toolbar {
@@ -397,6 +461,16 @@
         }
 
         @media (max-width: 480px) {
+            .main-player {
+                max-height: 40vh;
+            }
+
+            .main-action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+
             .thumbnails-section {
                 padding: 15px;
             }
@@ -421,8 +495,8 @@
 
         /* Desktop Layout Adjustments */
         @media (min-width: 1024px) {
-            .main-video {
-                height: 70vh;
+            .main-player {
+                max-height: 80vh;
             }
 
             .thumbnails-grid {
@@ -441,9 +515,6 @@
         <!-- Demo Notice -->
         <div class="demo-notice">
             <strong>🎬 VidShare Demo Gallery</strong> - Showcasing dynamic folder sync with sample videos
-            <button onclick="refreshGallery()" style="margin-left: 15px; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
-                🔄 Refresh Gallery
-            </button>
         </div>
 
         <!-- Main Video Player -->
@@ -459,6 +530,10 @@
                     <span id="currentSize">-- MB</span>
                     <span id="currentDate">--</span>
                 </div>
+            </div>
+            <div class="main-player-actions" id="mainPlayerActions">
+                <button class="main-action-btn main-download-btn" id="mainDownloadBtn" title="Download video"></button>
+                <button class="main-action-btn main-share-btn" id="mainShareBtn" title="Share video"></button>
             </div>
         </div>
 
@@ -796,6 +871,9 @@
             currentSize.textContent = video.size;
             currentDate.textContent = video.dateDisplay;
 
+            // Setup main player action buttons
+            setupMainPlayerActions(video);
+
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.classList.remove('active');
             });
@@ -806,6 +884,50 @@
             }
 
             setupWatchTracking(mainVideo, videoId);
+        }
+
+        function setupMainPlayerActions(video) {
+            const downloadBtn = document.getElementById('mainDownloadBtn');
+            const shareBtn = document.getElementById('mainShareBtn');
+            
+            // Remove existing listeners
+            downloadBtn.replaceWith(downloadBtn.cloneNode(true));
+            shareBtn.replaceWith(shareBtn.cloneNode(true));
+            
+            // Get fresh references
+            const newDownloadBtn = document.getElementById('mainDownloadBtn');
+            const newShareBtn = document.getElementById('mainShareBtn');
+            
+            // Add download functionality
+            newDownloadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadVideo(video.url, video.title);
+            });
+            
+            // Add share functionality
+            newShareBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                shareVideo(video);
+            });
+        }
+
+        function shareVideo(video) {
+            // Copy video URL to clipboard and show share options
+            const videoUrl = video.url;
+            
+            navigator.clipboard.writeText(videoUrl).then(() => {
+                showToast(`Video link copied! Share: ${video.title}`);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = videoUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showToast(`Video link copied! Share: ${video.title}`);
+            });
         }
 
         function setupWatchTracking(videoElement, videoId) {
@@ -951,25 +1073,6 @@
                     }
                 }, 300);
             }, 3000);
-        }
-
-        // Refresh gallery to demonstrate dynamic sync
-        async function refreshGallery() {
-            console.log('🔄 Refreshing gallery...');
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const folderUrl = urlParams.get('folder');
-            
-            // Clear current state
-            allVideos = [];
-            filteredVideos = [];
-            availableFolders = [];
-            currentVideoId = null;
-            
-            // Re-scan folder
-            await loadFolderContents(folderUrl);
-            
-            console.log('✅ Gallery refreshed');
         }
 
         // Initialize the application
