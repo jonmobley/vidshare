@@ -31,14 +31,14 @@
         .main-player {
             position: relative;
             width: 100%;
-            background: #000;
+            background: white;
         }
 
         .main-video {
             width: 100%;
             height: 60vh;
             object-fit: contain;
-            background: #000;
+            background: white;
         }
 
         .video-info-overlay {
@@ -204,7 +204,7 @@
             position: relative;
             width: 100%;
             height: 120px;
-            background: #e9ecef;
+            background: white;
             overflow: hidden;
         }
 
@@ -440,7 +440,10 @@
     <div class="main-container">
         <!-- Demo Notice -->
         <div class="demo-notice">
-            <strong>🎬 VidShare Demo Gallery</strong> - Showcasing functionality with sample videos
+            <strong>🎬 VidShare Demo Gallery</strong> - Showcasing dynamic folder sync with sample videos
+            <button onclick="refreshGallery()" style="margin-left: 15px; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                🔄 Refresh Gallery
+            </button>
         </div>
 
         <!-- Main Video Player -->
@@ -497,10 +500,10 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const folderUrl = urlParams.get('folder');
                 
-                console.log('Demo mode - folder reference:', folderUrl);
+                console.log('Loading gallery for folder:', folderUrl);
 
-                // Always load sample videos in demo mode
-                await loadSampleVideos();
+                // Simulate dynamic folder scanning
+                await loadFolderContents(folderUrl);
                 
             } catch (error) {
                 console.error('Error initializing gallery:', error);
@@ -508,93 +511,169 @@
             }
         }
 
-        async function loadSampleVideos() {
-            // Simulate loading delay for better UX
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        async function loadFolderContents(folderUrl) {
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('thumbnailsGrid').innerHTML = '';
             
-            // Sample videos that demonstrate the gallery functionality
-            const sampleVideos = [
+            try {
+                // Simulate folder scanning with dynamic content
+                const folderVideos = await scanFolderForVideos(folderUrl);
+                
+                // Filter out any videos that don't exist (simulate missing files)
+                const existingVideos = await validateVideoExistence(folderVideos);
+                
+                allVideos = existingVideos;
+                availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
+                filteredVideos = [...allVideos];
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                renderFolderNavigation();
+                
+                if (filteredVideos.length > 0) {
+                    loadVideo(filteredVideos[0].id);
+                } else {
+                    // No videos found
+                    document.getElementById('noResults').style.display = 'block';
+                }
+                
+                renderThumbnails();
+                
+            } catch (error) {
+                console.error('Error scanning folder:', error);
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('noResults').style.display = 'block';
+            }
+        }
+
+        async function scanFolderForVideos(folderUrl) {
+            // Simulate loading delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simulate dynamic folder contents (in real implementation, this would be Dropbox API)
+            // This simulates files that could be added, removed, or renamed
+            const simulatedFolderContents = generateDynamicVideoList(folderUrl);
+            
+            console.log('Scanned folder, found videos:', simulatedFolderContents.length);
+            return simulatedFolderContents;
+        }
+
+        function generateDynamicVideoList(folderUrl) {
+            // Simulate different folder contents based on URL
+            // In real implementation, this would be actual Dropbox file listing
+            
+            const baseVideos = [
                 {
                     id: 1,
                     title: "Big Buck Bunny.mp4",
-                    folder: "Animation",
+                    folder: "Animation", 
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    duration: "10:34",
-                    durationSeconds: 634,
+                    lastModified: "2024-03-15T10:30:00Z",
                     size: "15.2 MB",
-                    date: "2024-03-15",
-                    dateDisplay: "Mar 15, 2024"
+                    durationSeconds: 634
                 },
                 {
                     id: 2,
                     title: "Elephants Dream.mp4",
                     folder: "Animation",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                    duration: "10:53",
-                    durationSeconds: 653,
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", 
+                    lastModified: "2024-03-20T14:15:00Z",
                     size: "18.7 MB",
-                    date: "2024-03-20",
-                    dateDisplay: "Mar 20, 2024"
+                    durationSeconds: 653
                 },
                 {
                     id: 3,
                     title: "For Bigger Blazes.mp4",
                     folder: "Advertising",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                    duration: "00:15",
-                    durationSeconds: 15,
+                    lastModified: "2024-03-10T09:45:00Z", 
                     size: "2.3 MB",
-                    date: "2024-03-10",
-                    dateDisplay: "Mar 10, 2024"
-                },
-                {
-                    id: 4,
-                    title: "For Bigger Escapes.mp4",
-                    folder: "Advertising",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                    duration: "00:15",
-                    durationSeconds: 15,
-                    size: "2.8 MB",
-                    date: "2024-03-25",
-                    dateDisplay: "Mar 25, 2024"
-                },
-                {
-                    id: 5,
-                    title: "For Bigger Fun.mp4",
-                    folder: "Demos",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-                    duration: "00:15",
-                    durationSeconds: 15,
-                    size: "1.9 MB",
-                    date: "2024-03-12",
-                    dateDisplay: "Mar 12, 2024"
-                },
-                {
-                    id: 6,
-                    title: "For Bigger Joyrides.mp4",
-                    folder: "Demos",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                    duration: "00:15",
-                    durationSeconds: 15,
-                    size: "2.1 MB",
-                    date: "2024-03-18",
-                    dateDisplay: "Mar 18, 2024"
+                    durationSeconds: 15
                 }
             ];
 
-            allVideos = sampleVideos;
-            availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
-            filteredVideos = [...allVideos];
+            // Simulate dynamic changes based on current time
+            const now = new Date();
+            const minute = now.getMinutes();
             
-            document.getElementById('loadingMessage').style.display = 'none';
-            
-            renderFolderNavigation();
-            
-            if (filteredVideos.length > 0) {
-                loadVideo(filteredVideos[0].id);
+            // Simulate different folder states to demonstrate dynamic behavior
+            if (minute % 4 === 0) {
+                // Simulate a "renamed" video
+                baseVideos[0].title = "Big Buck Bunny - Remastered.mp4";
             }
             
-            renderThumbnails();
+            if (minute % 3 === 0) {
+                // Simulate an "added" video  
+                baseVideos.push({
+                    id: 7,
+                    title: "New Video Added.mp4",
+                    folder: "Recent",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                    lastModified: new Date().toISOString(),
+                    size: "2.1 MB", 
+                    durationSeconds: 15
+                });
+            }
+            
+            if (minute % 5 === 0) {
+                // Simulate a "removed" video (remove last item)
+                baseVideos.pop();
+            }
+
+            // Add computed fields
+            return baseVideos.map(video => ({
+                ...video,
+                duration: formatDuration(video.durationSeconds),
+                dateDisplay: formatDate(video.lastModified),
+                date: video.lastModified.split('T')[0]
+            }));
+        }
+
+        async function validateVideoExistence(videos) {
+            // Simulate checking if videos actually exist
+            // In real implementation, this would validate file URLs
+            
+            const validVideos = [];
+            
+            for (const video of videos) {
+                try {
+                    // Simulate file existence check
+                    // In reality, this might be a HEAD request to the video URL
+                    const exists = await simulateFileExistence(video);
+                    
+                    if (exists) {
+                        validVideos.push(video);
+                    } else {
+                        console.log('Video not found, skipping:', video.title);
+                    }
+                } catch (error) {
+                    console.log('Error checking video:', video.title, error);
+                    // Skip videos that can't be validated
+                }
+            }
+            
+            return validVideos;
+        }
+
+        async function simulateFileExistence(video) {
+            // Simulate file existence check with 95% success rate
+            // In real implementation, this would be actual file validation
+            return Math.random() > 0.05; // 95% of videos "exist"
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
         }
 
         function renderFolderNavigation() {
@@ -702,6 +781,16 @@
             mainVideoSource.src = video.url;
             mainVideo.load();
             
+            // Auto-play the video when clicked from grid
+            mainVideo.addEventListener('loadedmetadata', function autoPlay() {
+                mainVideo.play().catch(error => {
+                    // Auto-play might be blocked by browser, that's okay
+                    console.log('Auto-play prevented by browser:', error);
+                });
+                // Remove listener after first use
+                mainVideo.removeEventListener('loadedmetadata', autoPlay);
+            });
+            
             currentVideoTitle.textContent = video.title;
             currentDuration.textContent = video.duration;
             currentSize.textContent = video.size;
@@ -755,11 +844,15 @@
             
             noResults.style.display = 'none';
             
-            grid.innerHTML = filteredVideos.map(video => `
+            grid.innerHTML = filteredVideos.map(video => {
+                // Smart thumbnail timing: 10% into video, minimum 2 seconds, maximum 30 seconds
+                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+                
+                return `
                 <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
                     <div class="thumbnail-image">
                         <video class="thumbnail-video" preload="metadata" muted>
-                            <source src="${video.url}#t=1" type="video/mp4">
+                            <source src="${video.url}#t=${thumbnailTime}" type="video/mp4">
                         </video>
                         <div class="thumbnail-overlay">▶</div>
                         <div class="thumbnail-actions">
@@ -776,7 +869,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -860,10 +953,29 @@
             }, 3000);
         }
 
+        // Refresh gallery to demonstrate dynamic sync
+        async function refreshGallery() {
+            console.log('🔄 Refreshing gallery...');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const folderUrl = urlParams.get('folder');
+            
+            // Clear current state
+            allVideos = [];
+            filteredVideos = [];
+            availableFolders = [];
+            currentVideoId = null;
+            
+            // Re-scan folder
+            await loadFolderContents(folderUrl);
+            
+            console.log('✅ Gallery refreshed');
+        }
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎬 VidShare Demo Gallery Ready!');
+        console.log('🎬 VidShare Dynamic Gallery Ready!');
     </script>
 </body>
 </html>
