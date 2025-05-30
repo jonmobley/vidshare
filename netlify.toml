@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/mobley"
+  status = 302
+
+[[redirects]]
+  from = "/mobley"
+  to = "/mobley/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/gallery/*"
+  to = "/gallery/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
