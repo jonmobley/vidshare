@@ -600,6 +600,18 @@
         function renderFolderNavigation() {
             const folderPills = document.getElementById('folderPills');
             const folderPillsContainer = document.getElementById('folderPillsContainer');
+            const navigationToolbar = document.querySelector('.navigation-toolbar');
+            
+            // If no subfolders or only one folder, hide navigation entirely
+            if (availableFolders.length <= 1) {
+                navigationToolbar.style.display = 'none';
+                currentFolder = 'all'; // Show all videos
+                applyFilters();
+                return;
+            }
+            
+            // Show navigation with multiple folders
+            navigationToolbar.style.display = 'block';
             
             const pillsHTML = [
                 '<div class="folder-pill active" data-folder="all">All Videos</div>',
@@ -641,10 +653,17 @@
         function selectFolder(folder) {
             currentFolder = folder;
             
-            document.querySelectorAll('.folder-pill').forEach(pill => {
-                pill.classList.remove('active');
-            });
-            document.querySelector(`[data-folder="${folder}"]`).classList.add('active');
+            // Only update pills if navigation is visible
+            const navigationToolbar = document.querySelector('.navigation-toolbar');
+            if (navigationToolbar.style.display !== 'none') {
+                document.querySelectorAll('.folder-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                });
+                const targetPill = document.querySelector(`[data-folder="${folder}"]`);
+                if (targetPill) {
+                    targetPill.classList.add('active');
+                }
+            }
             
             applyFilters();
         }
