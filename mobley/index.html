@@ -208,6 +208,37 @@
             color: #856404;
         }
 
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #1976d2;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .instructions code {
+            background: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
         @media (max-width: 768px) {
             .admin-container {
                 margin: 20px auto;
@@ -232,13 +263,23 @@
                 <p class="admin-subtitle">Create a video gallery from a Dropbox folder</p>
             </div>
 
+            <div class="instructions">
+                <h3>📋 How to get your Dropbox folder URL:</h3>
+                <ol>
+                    <li>Go to <strong>dropbox.com</strong> and open your video folder</li>
+                    <li>Click the <strong>"Share"</strong> button</li>
+                    <li>Click <strong>"Copy link"</strong></li>
+                    <li>Paste the link below (should look like: <code>https://www.dropbox.com/scl/fo/...</code>)</li>
+                </ol>
+            </div>
+
             <form id="galleryForm">
                 <div class="form-group">
                     <input 
                         type="url" 
                         id="folderUrl" 
                         class="form-input"
-                        placeholder="Copy/Paste Dropbox Folder Share Link"
+                        placeholder="https://www.dropbox.com/scl/fo/your-folder-link..."
                         required>
                 </div>
 
@@ -252,7 +293,7 @@
             </div>
 
             <div class="demo-link">
-                <a href="/gallery/example" target="_blank">View Example Gallery</a>
+                <a href="/gallery/demo" target="_blank">View Example Gallery</a>
             </div>
         </div>
     </div>
@@ -269,14 +310,20 @@
             
             if (!folderUrl) return;
             
+            // Basic validation
+            if (!folderUrl.includes('dropbox.com')) {
+                showResult('error', `
+                    <h3>❌ Invalid URL</h3>
+                    <p>Please enter a valid Dropbox folder URL (should contain "dropbox.com")</p>
+                `);
+                return;
+            }
+            
             generateBtn.disabled = true;
             generateBtn.textContent = 'Creating...';
             
             try {
-                // Simulate processing time for better UX
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Generate short URL
+                // Generate gallery URL
                 const galleryUrl = generateGalleryUrl(folderUrl);
                 
                 showResult('success', `
@@ -289,12 +336,16 @@
                     <button onclick="window.open('${galleryUrl}', '_blank')" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                         Open Gallery
                     </button>
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 14px; color: #666;">
+                        <strong>💡 Tip:</strong> Share this URL with others to let them view your videos!
+                    </div>
                 `);
                 
             } catch (error) {
                 showResult('error', `
                     <h3>❌ Error</h3>
-                    <p>Something went wrong generating the gallery. Please try again.</p>
+                    <p>Something went wrong generating the gallery: ${error.message}</p>
+                    <p>Please check your folder URL and try again.</p>
                 `);
             }
             
@@ -302,11 +353,39 @@
             generateBtn.textContent = 'Create Gallery';
         });
 
+        function generateGalleryUrl(folderUrl) {
+            try {
+                // Validate the URL format
+                if (!folderUrl.includes('dropbox.com')) {
+                    throw new Error('Invalid Dropbox URL format');
+                }
+                
+                // Store the mapping for reference
+                const galleryId = generateShortCode();
+                galleryStore[galleryId] = {
+                    folderUrl: folderUrl,
+                    created: new Date().toISOString(),
+                    name: extractFolderName(folderUrl)
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
+                
+                // Return the gallery URL
+                const baseUrl = window.location.origin;
+                return `${baseUrl}/gallery?folder=${encodeURIComponent(folderUrl)}`;
+                
+            } catch (error) {
+                console.error('Error generating gallery URL:', error);
+                throw error;
+            }
+        }
+
         function generateShortCode() {
-            // Generate 4-character code
+            // Generate 6-character code for better uniqueness
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 6; i++) {
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             
@@ -322,12 +401,27 @@
             try {
                 console.log('📁 Extracting folder name from URL:', url);
                 
-                // Extract folder name from Dropbox URL
-                const match = url.match(/\/fo\/([^\/\?]+)/);
-                const result = match ? match[1].substring(0, 8) + '...' : 'Gallery';
+                // Try to extract meaningful name from URL
+                // Look for folder identifier in Dropbox URLs
+                let folderName = 'Gallery';
                 
-                console.log('📝 Extracted folder name:', result);
-                return result;
+                // Try different URL patterns
+                const patterns = [
+                    /\/scl\/fo\/([^\/\?]+)/, // New Dropbox format
+                    /\/sh\/([^\/\?]+)/,      // Old shared format
+                    /folders\/([^\/\?]+)/    // Direct folder format
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) {
+                        folderName = match[1].substring(0, 12) + '...';
+                        break;
+                    }
+                }
+                
+                console.log('📝 Extracted folder name:', folderName);
+                return folderName;
                 
             } catch (error) {
                 console.error('❌ Error extracting folder name:', error);
@@ -372,10 +466,10 @@
             });
         }
 
-        // Handle short URL routing
+        // Handle short URL routing (for future use)
         function handleShortUrl() {
             const path = window.location.pathname;
-            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{4})/);
+            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{6})/);
             
             if (shortCodeMatch) {
                 const shortCode = shortCodeMatch[1];
@@ -392,11 +486,27 @@
             }
         }
 
+        // Auto-fill for testing (remove in production)
+        function addTestData() {
+            const input = document.getElementById('folderUrl');
+            if (!input.value) {
+                input.value = 'https://www.dropbox.com/scl/fo/example-folder/sample';
+                input.style.color = '#999';
+                input.style.fontStyle = 'italic';
+            }
+        }
+
         // Check for short URL on page load
         document.addEventListener('DOMContentLoaded', () => {
             handleShortUrl();
             console.log('🎬 VidShare Admin Panel Loaded!');
-            console.log('🚀 MVP Mode: Demonstrating gallery functionality with sample videos');
+            console.log('📁 Ready to generate video galleries from Dropbox folders');
+            
+            // Show current stored galleries in console (for debugging)
+            const storedGalleries = Object.keys(galleryStore).length;
+            if (storedGalleries > 0) {
+                console.log(`💾 Found ${storedGalleries} previously created galleries`);
+            }
         });
     </script>
 </body>
