@@ -3,4 +3,3 @@
 /gallery/example     /gallery/index.html   200
 /g/:shortcode        /gallery/index.html   200
 /gallery/*           /gallery/index.html   200
-/g/:code             /gallery/index.html   200
