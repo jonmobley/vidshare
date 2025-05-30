@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Gallery</title>
+    <title>VidShare Gallery</title>
     <style>
         * {
             margin: 0;
@@ -70,6 +70,20 @@
             gap: 20px;
             font-size: 0.9rem;
             opacity: 0.9;
+        }
+
+        /* Demo Notice */
+        .demo-notice {
+            background: #e3f2fd;
+            border-bottom: 1px solid #90caf9;
+            padding: 15px 20px;
+            text-align: center;
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+
+        .demo-notice strong {
+            color: #0d47a1;
         }
 
         /* Compact Navigation Toolbar */
@@ -348,32 +362,6 @@
             font-size: 1.1rem;
         }
 
-        .error-message {
-            text-align: center;
-            padding: 60px 20px;
-            color: #dc3545;
-            font-size: 1.1rem;
-        }
-
-        .error-message h3 {
-            margin-bottom: 15px;
-        }
-
-        .retry-btn {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .retry-btn:hover {
-            background: #5a6fd8;
-        }
-
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             .main-video {
@@ -450,6 +438,11 @@
 </head>
 <body>
     <div class="main-container">
+        <!-- Demo Notice -->
+        <div class="demo-notice">
+            <strong>🎬 VidShare Demo Gallery</strong> - Showcasing functionality with sample videos
+        </div>
+
         <!-- Main Video Player -->
         <div class="main-player">
             <video class="main-video" id="mainVideo" controls preload="metadata">
@@ -478,27 +471,18 @@
         <!-- Thumbnails Section -->
         <div class="thumbnails-section">
             <div id="loadingMessage" class="loading">
-                Loading videos from Dropbox...
-            </div>
-
-            <div id="errorMessage" class="error-message" style="display: none;">
-                <h3>Unable to load videos</h3>
-                <p>Please check that the folder URL is correct and publicly accessible.</p>
-                <button class="retry-btn" onclick="location.reload()">Try Again</button>
+                Loading demo videos...
             </div>
 
             <div class="thumbnails-grid" id="thumbnailsGrid"></div>
 
             <div class="no-results" id="noResults" style="display: none;">
-                No videos found in this folder.
+                No videos found in this demo.
             </div>
         </div>
     </div>
 
     <script>
-        // Configuration
-        const DROPBOX_TOKEN = 'ME2oTFxLM3RB_Sobg3ar8hRWCU1nDC6cJszACE4BKCgB6bruEAE7x9mpARnZt-F65dvdwFKcDrM2CJ1QNg0VhXtZXIV9zjXRu5VhNy0CtroMvPdHDWr1Uifj5r6Y-pDOLTC3CJqPNvPFtL5Y9RcL0qWKfJKBkqthJv0HreBrcpS6qDlkRd7DSs-EDEq4271UWyPaqFeeX6Z6PWnM0lor1vtehPJu6WWIhMZ2sX9p29C7_9ZQ1m5lF3JjqE-PbNU2GJC0k2fKtrclanhWxryy-v8-b--D_L4RpkzLoHcmkcofHmi9PC9IVxanFtHrYNTq';
-        
         let allVideos = [];
         let filteredVideos = [];
         let currentVideoId = null;
@@ -509,62 +493,24 @@
         // Initialize the app
         async function init() {
             try {
-                // Get folder URL from query parameters
+                // Get folder URL from query parameters (for reference only)
                 const urlParams = new URLSearchParams(window.location.search);
                 const folderUrl = urlParams.get('folder');
                 
-                if (!folderUrl) {
-                    showError('No folder specified. Please use the admin panel to generate a gallery.');
-                    return;
-                }
+                console.log('Demo mode - folder reference:', folderUrl);
 
-                // Load videos from the specified folder
-                await loadGalleryFromUrl(decodeURIComponent(folderUrl));
-                
-            } catch (error) {
-                console.error('Error initializing gallery:', error);
-                showError('Failed to load gallery. Please try again.');
-            }
-        }
-
-        async function loadGalleryFromUrl(folderUrl) {
-            document.getElementById('loadingMessage').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('thumbnailsGrid').innerHTML = '';
-            
-            try {
-                // Test folder access first
-                const folderResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${DROPBOX_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        url: folderUrl
-                    })
-                });
-
-                if (!folderResponse.ok) {
-                    throw new Error('Cannot access folder');
-                }
-
-                const folderData = await folderResponse.json();
-                console.log('Folder data:', folderData);
-                
-                // For MVP, use sample videos that demonstrate the functionality
-                // In production, you'd replace this with real Dropbox file listing
+                // Always load sample videos in demo mode
                 await loadSampleVideos();
                 
             } catch (error) {
-                console.error('Error loading gallery:', error);
-                showError('Unable to access the Dropbox folder. Please check the URL and permissions.');
+                console.error('Error initializing gallery:', error);
+                await loadSampleVideos(); // Fallback to sample videos
             }
         }
 
         async function loadSampleVideos() {
-            // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Simulate loading delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Sample videos that demonstrate the gallery functionality
             const sampleVideos = [
@@ -649,13 +595,6 @@
             }
             
             renderThumbnails();
-            setupEventListeners();
-        }
-
-        function showError(message) {
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'block';
-            document.getElementById('errorMessage').querySelector('p').textContent = message;
         }
 
         function renderFolderNavigation() {
@@ -902,14 +841,10 @@
             }, 3000);
         }
 
-        function setupEventListeners() {
-            // Additional event listeners can be added here
-        }
-
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎬 Dropbox Video Gallery Ready!');
+        console.log('🎬 VidShare Demo Gallery Ready!');
     </script>
 </body>
 </html>
