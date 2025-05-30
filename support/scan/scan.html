@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropbox Folder Scanner</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .scan-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        
+        .scan-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .scan-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .video-list {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .video-item {
+            background: #f8f9fa;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .folder-group {
+            background: #e3f2fd;
+            padding: 12px;
+            margin: 15px 0 5px 0;
+            border-radius: 6px;
+            border-left: 4px solid #2196f3;
+            font-weight: 600;
+        }
+        
+        .stats-summary {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .quick-test {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .quick-test button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .instructions h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+        
+        .instructions code {
+            background: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔍 Dropbox Folder Scanner</h1>
+            <p class="subtitle">Scan any Dropbox folder for video files - perfect for testing VidShare compatibility</p>
+        </div>
+
+        <div class="instructions">
+            <h4>📋 How to get a Dropbox folder URL:</h4>
+            <ol>
+                <li>Go to <strong>dropbox.com</strong> and navigate to your video folder</li>
+                <li>Click the <strong>"Share"</strong> button</li>
+                <li>Click <strong>"Copy link"</strong></li>
+                <li>Paste the link below (should look like: <code>https://www.dropbox.com/scl/fo/...</code>)</li>
+            </ol>
+        </div>
+
+        <form id="scanForm">
+            <div class="form-group">
+                <label class="form-label" for="folderUrl">Dropbox Folder URL:</label>
+                <input 
+                    type="url" 
+                    id="folderUrl" 
+                    class="form-input"
+                    placeholder="https://www.dropbox.com/scl/fo/your-folder-link..."
+                    required>
+            </div>
+
+            <button type="submit" class="scan-btn" id="scanBtn">
+                🔍 Scan Folder for Videos
+            </button>
+        </form>
+
+        <div class="quick-test">
+            <p><strong>Quick Test:</strong></p>
+            <button onclick="loadTestFolder()">Load Your Test Folder</button>
+            <button onclick="clearForm()">Clear Form</button>
+        </div>
+
+        <div id="scanResult" class="result"></div>
+
+        <div id="videoList" class="video-list">
+            <h3>🎬 Videos Found:</h3>
+            <div id="videoStats" class="stats-summary"></div>
+            <div id="videos"></div>
+        </div>
+    </div>
+
+    <script>
+        // ADD YOUR DROPBOX TOKEN HERE
+        const DROPBOX_TOKEN = 'sl.u.AFy4s08XCdzmFz_LyPvSH6wDM84mOHGwORo8CtJnJR5yxbySa3iwLThPR1zXiNd5ZV5yTbMbdoY8fI62W9mL7ItNclEC1MT8TCM35htgq9PZIN_4TGjBVv90MaAHxCfFRp9KVDMmklgFAXSJjW1DdMzYiw-Q9uGysKQaW_rj0XXcNj-4E53X18UVo8mRBZ2kJskCw0XBgRJvrwKck6CECGL7K8dcythqnYwN9UKUNIQqN22jZIS_9M7dRhd08iBDFm2JQzfHHe94MkjOg-JDL2aGljaTE9cFbRvbUe7f_6xMdt_oSDcSByyPWLm0ZsWtfVYKE5gqYiD1vL4BXclARyGQpbVxdftgxLtlLrg6ex52D77_M2BwSnl1KsZrGONNoN2AER13k2kvcKrerf3TY7nhsEPsZDUFpSHK-KeIEsbnw9WlKIUNs_31wFXcgtVcrWdU2UuFTBemgTRgMT2r5FU8w_bt4Znp8jSxEPvtY_p-cXEKla-T8ZxTITQjNpmpMo38WgzPb5nl7BXeFtTThRKIuXDMzc-eNVz4artOGGyiuDBzHuQ1XNMws-VfYRRuBZvxDwbmdBr1fIHvTuUsinLol3Poc42LuuhzMA3y-L3QpQYyHO1il1WEhbBmC2g0zuttdbEv5AdYucN17MQAF2XgM2E5cY9hrelgmmrcN8mZtMH3IQz3wN3NLT4OleT8vMQen2lQWEUq7KV6oIt1h6RaTaOJLbldb5wGVIbWp_B-cmXcWROFq7DZ-Ee_p5IhhpTWq1p8WjztrDqcup7PdSkhlgFnIO8Gwosta54ymSJbv59VXnWOwqEAzGk0Soqkuoob5i87HifjN96Ai16LtbbcVcJuBy6VXQOv1Ngbxgt_szTCz1lXklpUjE31sR7LvWJlQ3jdLNuJ2qUHi9muqq2C2qMQiH8Y3N10bQUEcX-1IjgED_9eqlZpckjQxB8tvo17ScPHk3QLi2SW4o_WMy18Es9-Sti-byp72RBQ61ykt_lvWDQoVUBVshBKvcnJR6qzSbpzKTjXoV0zPY_10u6z_6mrXCgpMpppCjQYmxkYpmgSuV48iydT5gxuaT6PknarrNmREQwE4I99XMcyXI6CyBEdsZ3JNtGAhse5S0Cyn2iJh0G1Vd2tUltiX4X6ApYzR-SBofIpGKn60f1O8k69TtIzkyz2Y4uLuhsDdud8y3h4sbgPPx_2EsW0DPrBVuzADFuD4coPnfovyIzcvXHETgFjkhLaOenGL8Ex0-36q7MXnB3SnsoCdko0Wk6x04UtjXAdHmYjgNpEBJWicfNY4U9IzUUOuV154tIWdblBDa5wXAIBZR_4BdDNaqXb5JPVJuBOlS7Mu9kpn2HzNpM7';
+
+        // Form submission handler
+        document.getElementById('scanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const folderUrl = document.getElementById('folderUrl').value.trim();
+            if (!folderUrl) return;
+            
+            // Basic validation
+            if (!folderUrl.includes('dropbox.com')) {
+                showResult('error', '❌ Please enter a valid Dropbox folder URL');
+                return;
+            }
+            
+            await scanDropboxFolder(folderUrl);
+        });
+
+        async function scanDropboxFolder(folderUrl) {
+            const resultDiv = document.getElementById('scanResult');
+            const btn = document.getElementById('scanBtn');
+            const videoListDiv = document.getElementById('videoList');
+            const videosDiv = document.getElementById('videos');
+            const statsDiv = document.getElementById('videoStats');
+            
+            btn.disabled = true;
+            btn.textContent = '🔍 Scanning...';
+            videoListDiv.style.display = 'none';
+            
+            showResult('info', 'Starting recursive folder scan...');
+
+            try {
+                // Step 1: Get shared link metadata
+                console.log('🔍 Step 1: Getting folder metadata...');
+                resultDiv.textContent = 'Step 1: Getting folder metadata...';
+                
+                const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${DROPBOX_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: folderUrl
+                    })
+                });
+
+                if (!metadataResponse.ok) {
+                    throw new Error(`Cannot access folder: ${metadataResponse.status} - ${await metadataResponse.text()}`);
+                }
+
+                const metadata = await metadataResponse.json();
+                console.log('📁 Folder metadata:', metadata);
+                
+                showResult('info', `Step 1: ✅ Got folder metadata
+Folder: ${metadata.name}
+Path: ${metadata.path_lower}
+
+Step 2: Recursively scanning for videos...`);
+
+                // Step 2: Recursively scan for all files
+                const allVideos = await recursiveFolderScan(metadata.path_lower);
+                
+                if (allVideos.length === 0) {
+                    showResult('error', `✅ Scan complete - No video files found
+
+Folder: ${metadata.name}
+Total video files: 0
+
+This folder either:
+• Contains no video files
+• Has only non-video file types
+• Videos are in unsupported formats
+
+Supported formats: .mp4, .mov, .avi, .mkv, .webm, .m4v, .wmv, .flv`);
+                    return;
+                }
+
+                // Success! Show results
+                showResult('success', `✅ Recursive scan complete!
+
+Folder: ${metadata.name}
+Total video files found: ${allVideos.length}
+VidShare compatibility: EXCELLENT
+
+🚀 This folder will work perfectly with VidShare!`);
+
+                // Group videos by folder for display
+                const videosByFolder = {};
+                allVideos.forEach(video => {
+                    if (!videosByFolder[video.folder]) {
+                        videosByFolder[video.folder] = [];
+                    }
+                    videosByFolder[video.folder].push(video);
+                });
+
+                // Show statistics
+                const totalSize = allVideos.reduce((sum, video) => sum + parseFloat(video.rawSize || 0), 0);
+                const folderCount = Object.keys(videosByFolder).length;
+                
+                statsDiv.innerHTML = `
+                    <strong>📊 Summary Statistics:</strong><br>
+                    • Total Videos: ${allVideos.length}<br>
+                    • Folders: ${folderCount} ${folderCount > 1 ? '(navigation pills will be created)' : '(no navigation needed)'}<br>
+                    • Total Size: ${formatFileSize(totalSize)}<br>
+                    • Average Duration: ${formatDuration(Math.round(allVideos.reduce((sum, v) => sum + v.durationSeconds, 0) / allVideos.length))}
+                `;
+
+                // Show video list grouped by folder
+                videoListDiv.style.display = 'block';
+                videosDiv.innerHTML = Object.entries(videosByFolder).map(([folderName, videos]) => `
+                    <div class="folder-group">
+                        📁 ${folderName} (${videos.length} video${videos.length === 1 ? '' : 's'})
+                    </div>
+                    ${videos.map(video => `
+                        <div class="video-item">
+                            <strong>🎬 ${video.title}</strong><br>
+                            Size: ${video.size} | Duration: ~${video.duration}<br>
+                            Modified: ${video.dateDisplay}<br>
+                            <code style="font-size: 11px; color: #666;">${video.path}</code>
+                        </div>
+                    `).join('')}
+                `).join('');
+
+            } catch (error) {
+                console.error('❌ Scan failed:', error);
+                showResult('error', `❌ Folder scan failed: ${error.message}
+
+Common issues:
+• Folder is private (make sure it's publicly shared)
+• Invalid Dropbox URL format
+• Network connectivity problem
+• Dropbox API rate limits
+
+Solution:
+• Try sharing the folder publicly
+• Check the URL format
+• Wait a moment and try again`);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔍 Scan Folder for Videos';
+        }
+
+        async function recursiveFolderScan(folderPath) {
+            console.log(`📂 Scanning folder: ${folderPath}`);
+            
+            const allVideos = [];
+            let cursor = null;
+            let hasMore = true;
+            
+            while (hasMore) {
+                try {
+                    const endpoint = cursor ? 
+                        'https://api.dropboxapi.com/2/files/list_folder/continue' :
+                        'https://api.dropboxapi.com/2/files/list_folder';
+                    
+                    const body = cursor ? 
+                        JSON.stringify({ cursor }) :
+                        JSON.stringify({
+                            path: folderPath || '',
+                            recursive: true,  // This is key - scans all subfolders!
+                            include_media_info: true,
+                            include_deleted: false
+                        });
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${DROPBOX_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: body
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API call failed: ${response.status} - ${await response.text()}`);
+                    }
+
+                    const data = await response.json();
+                    console.log(`📋 Found ${data.entries.length} items in this batch`);
+                    
+                    // Filter for video files
+                    const videoFiles = data.entries.filter(entry => 
+                        entry['.tag'] === 'file' && 
+                        isVideoFile(entry.name) &&
+                        entry.size > 0
+                    );
+                    
+                    console.log(`🎬 Found ${videoFiles.length} video files in this batch`);
+                    
+                    // Convert to our video format
+                    const videos = videoFiles.map((file, index) => {
+                        return {
+                            id: allVideos.length + index + 1,
+                            title: file.name,
+                            folder: getVideoFolder(file.path_lower),
+                            path: file.path_lower,
+                            url: createDirectUrl(file.path_lower),
+                            lastModified: file.server_modified,
+                            rawSize: file.size,
+                            size: formatFileSize(file.size),
+                            durationSeconds: extractDuration(file),
+                            duration: formatDuration(extractDuration(file)),
+                            dateDisplay: formatDate(file.server_modified),
+                            date: file.server_modified.split('T')[0]
+                        };
+                    });
+                    
+                    allVideos.push(...videos);
+                    
+                    // Check if there are more results
+                    hasMore = data.has_more;
+                    cursor = data.cursor;
+                    
+                } catch (error) {
+                    console.error('❌ Error in batch scan:', error);
+                    throw error;
+                }
+            }
+            
+            console.log(`✅ Recursive scan complete. Found ${allVideos.length} total videos`);
+            return allVideos;
+        }
+
+        function createDirectUrl(filePath) {
+            // Create a download URL (this is what the gallery will use)
+            return `https://api.dropboxapi.com/2/files/download?arg=${encodeURIComponent(JSON.stringify({path: filePath}))}`;
+        }
+
+        function isVideoFile(filename) {
+            const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.wmv', '.flv'];
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            return videoExtensions.includes(ext);
+        }
+
+        function getVideoFolder(filePath) {
+            const pathParts = filePath.split('/').filter(part => part.length > 0);
+            if (pathParts.length > 1) {
+                return pathParts[pathParts.length - 2]; // Parent folder name
+            }
+            return 'Root';
+        }
+
+        function extractDuration(file) {
+            // Try to get duration from media_info if available
+            if (file.media_info && file.media_info.metadata && file.media_info.metadata.duration) {
+                return Math.floor(file.media_info.metadata.duration / 1000);
+            }
+            
+            // Fallback: estimate based on file size
+            const sizeMB = file.size / (1024 * 1024);
+            const estimatedDuration = Math.max(30, Math.min(3600, sizeMB * 3)); // 30s to 1hr estimate
+            return Math.floor(estimatedDuration);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('scanResult');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+
+        // Helper functions
+        function loadTestFolder() {
+            document.getElementById('folderUrl').value = 'https://www.dropbox.com/scl/fo/gb50nb8pi109aowl70ja6/AAX1ksJ5Z9kRw5gL5kyWIV8?rlkey=oy1lx4vp9aeigxxzfpd7reihp&st=8vio47mh&dl=0';
+        }
+
+        function clearForm() {
+            document.getElementById('folderUrl').value = '';
+            document.getElementById('scanResult').style.display = 'none';
+            document.getElementById('videoList').style.display = 'none';
+        }
+
+        console.log('🔍 Dropbox Folder Scanner Ready!');
+        console.log('📋 Perfect for testing VidShare compatibility with any Dropbox folder');
+    </script>
+</body>
+</html>
