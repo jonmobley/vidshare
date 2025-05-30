@@ -33,45 +33,69 @@
 
         .admin-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .admin-title {
-            font-size: 2.5rem;
-            font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 600;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
         }
 
         .admin-subtitle {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #666;
         }
 
-        .mvp-notice {
-            background: #e3f2fd;
-            border: 1px solid #90caf9;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 25px;
-            font-size: 0.9rem;
-            color: #1565c0;
+        .demo-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
         }
 
-        .mvp-notice h4 {
-            margin-bottom: 8px;
-            color: #0d47a1;
+        .demo-link a {
+            color: #764ba2;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .demo-link a:hover {
+            color: #667eea;
+        }
+
+        .demo-link a::after {
+            content: '→';
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .demo-link a:hover::after {
+            transform: translateX(2px);
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .form-label {
             display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #444;
+            font-size: 0.95rem;
         }
 
         .form-input {
@@ -80,6 +104,7 @@
             border: 2px solid #e9ecef;
             border-radius: 12px;
             font-size: 16px;
+            text-align: center;
             transition: all 0.3s ease;
         }
 
@@ -91,20 +116,20 @@
 
         .generate-btn {
             width: 100%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             color: white;
             border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .generate-btn:disabled {
@@ -159,6 +184,11 @@
             background: #5a6268;
         }
 
+        .form-input::placeholder {
+            color: #999;
+            font-style: normal;
+        }
+
         .demo-features {
             margin-top: 15px;
             padding: 15px;
@@ -198,34 +228,31 @@
     <div class="admin-container">
         <div class="admin-card">
             <div class="admin-header">
-                <h1 class="admin-title">🎬 VidShare</h1>
-                <p class="admin-subtitle">Generate beautiful video galleries from your Dropbox folders</p>
-            </div>
-
-            <div class="mvp-notice">
-                <h4>🚀 MVP Demo Mode</h4>
-                <p>This version demonstrates VidShare functionality with sample videos. The gallery will show how your videos would look and behave once integrated with your Dropbox folders.</p>
+                <h1 class="admin-title">VidShare</h1>
+                <p class="admin-subtitle">Create a video gallery from a Dropbox folder</p>
             </div>
 
             <form id="galleryForm">
                 <div class="form-group">
-                    <label class="form-label" for="folderUrl">Dropbox Folder URL</label>
                     <input 
                         type="url" 
                         id="folderUrl" 
                         class="form-input"
-                        placeholder="https://www.dropbox.com/scl/fo/..."
-                        value="https://www.dropbox.com/scl/fo/gzgxtf52n77s1ypnkiq6t/AGZ7dI3Y8-EhHCRr0GIAk3A?rlkey=vc0trve8p95rn&st=1hd7lqnx&dl=0"
+                        placeholder="Copy/Paste Dropbox Folder Share Link"
                         required>
                 </div>
 
                 <button type="submit" class="generate-btn" id="generateBtn">
-                    Generate Demo Gallery
+                    Create Gallery
                 </button>
             </form>
 
             <div id="resultSection" class="result-section">
                 <div id="resultMessage"></div>
+            </div>
+
+            <div class="demo-link">
+                <a href="/gallery?folder=demo" target="_blank">View Example Gallery</a>
             </div>
         </div>
     </div>
@@ -243,7 +270,7 @@
             if (!folderUrl) return;
             
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Generating Demo...';
+            generateBtn.textContent = 'Creating...';
             
             try {
                 // Simulate processing time for better UX
@@ -262,27 +289,15 @@
                 localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
                 
                 showResult('success', `
-                    <h3>✅ VidShare Gallery Created!</h3>
-                    <p><strong>Your demo gallery is ready:</strong></p>
+                    <h3>✅ Gallery Created!</h3>
+                    <p>Your gallery is ready:</p>
                     <div class="gallery-link">
                         ${galleryUrl}
                         <button class="copy-btn" onclick="copyToClipboard('${galleryUrl}')">Copy</button>
                     </div>
-                    <button onclick="window.open('${galleryUrl}', '_blank')" style="margin-top: 15px; padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
-                        🎬 Open Gallery
+                    <button onclick="window.open('${galleryUrl}', '_blank')" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        Open Gallery
                     </button>
-                    
-                    <div class="demo-features">
-                        <h4>🎯 Demo Features You'll See:</h4>
-                        <ul>
-                            <li>Beautiful responsive video player</li>
-                            <li>Thumbnail grid with hover effects</li>
-                            <li>Folder-based organization</li>
-                            <li>Mobile-optimized design</li>
-                            <li>Video download & sharing options</li>
-                            <li>Watch progress tracking</li>
-                        </ul>
-                    </div>
                 `);
                 
             } catch (error) {
@@ -293,7 +308,7 @@
             }
             
             generateBtn.disabled = false;
-            generateBtn.textContent = 'Generate Demo Gallery';
+            generateBtn.textContent = 'Create Gallery';
         });
 
         function generateShortCode() {
