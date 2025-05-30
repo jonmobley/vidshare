@@ -32,8 +32,25 @@
             position: relative;
             width: 100%;
             background: white;
+        }
+
+        .main-player.landscape {
             aspect-ratio: 16 / 9;
             max-height: 70vh;
+        }
+
+        .main-player.portrait {
+            aspect-ratio: 9 / 16;
+            max-height: 80vh;
+            max-width: 45vh; /* Maintain reasonable width for portrait */
+            margin: 0 auto;
+        }
+
+        .main-player.square {
+            aspect-ratio: 1 / 1;
+            max-height: 70vh;
+            max-width: 70vh;
+            margin: 0 auto;
         }
 
         .main-video {
@@ -50,7 +67,7 @@
             right: 0;
             background: linear-gradient(rgba(0,0,0,0.8), transparent);
             color: white;
-            padding: 20px 20px 30px;
+            padding: 25px 25px 40px;
             opacity: 0;
             transform: translateY(0);
             transition: opacity 0.3s ease;
@@ -63,10 +80,10 @@
 
         .main-player-actions {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 25px;
+            right: 25px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             opacity: 0;
             transform: translateY(-10px);
             transition: all 0.3s ease;
@@ -103,11 +120,11 @@
         }
 
         .main-download-btn::before {
-            content: '⬇';
+            content: '↓';
         }
 
         .main-share-btn::before {
-            content: '🔗';
+            content: '⧉';
         }
 
         .current-video-title {
@@ -127,10 +144,12 @@
         .status-message {
             background: #e3f2fd;
             border-bottom: 1px solid #90caf9;
-            padding: 15px 20px;
+            padding: 15px 20px 15px 80px; /* Extra left padding to avoid layout toggle */
             text-align: center;
             color: #1565c0;
             font-size: 0.9rem;
+            position: relative;
+            z-index: 999; /* Below layout toggle */
         }
 
         .status-message.error {
@@ -145,9 +164,15 @@
             color: #ef6c00;
         }
 
+        .status-message.success {
+            background: #e8f5e8;
+            border-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
         /* Compact Navigation Toolbar */
         .navigation-toolbar {
-            padding: 20px;
+            padding: 25px 30px;
             background: white;
             border-bottom: 1px solid #e9ecef;
             position: relative;
@@ -223,21 +248,112 @@
 
         /* Thumbnails Section */
         .thumbnails-section {
-            padding: 20px;
+            padding: 30px;
             background: white;
         }
 
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
+        .thumbnails-container {
+            margin-top: 40px; /* Space between player and thumbnails */
         }
 
-        .thumbnails-grid {
+        /* Desktop layout with side thumbnails */
+        .desktop-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .desktop-layout .main-player-container {
+            flex: 1;
+            min-width: 0; /* Allows flex item to shrink */
+        }
+
+        .desktop-layout .thumbnails-sidebar {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        .desktop-layout .thumbnails-container {
+            margin-top: 0; /* No top margin in desktop layout */
+        }
+
+        .thumbnails-sidebar {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .thumbnails-sidebar .thumbnails-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+
+        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        .thumbnails-sidebar .thumbnail-card {
+            flex-shrink: 0;
+        }
+
+        .thumbnails-sidebar .thumbnail-image {
+            height: 80px;
+        }
+
+        .thumbnails-sidebar .thumbnail-video {
+            object-fit: contain; /* Better for vertical videos in sidebar */
+        }
+
+        /* Layout toggle button */
+        .layout-toggle {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .layout-toggle:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.05);
+        }
+
+        /* Regular grid layout (default) */
+        .grid-layout .thumbnails-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
+        }
+
+        .grid-layout .thumbnail-video {
+            object-fit: contain; /* Better for mixed aspect ratios */
         }
 
         .thumbnail-card {
@@ -350,7 +466,7 @@
         .thumbnail-actions {
             position: absolute;
             top: 8px;
-            left: 8px;
+            right: 8px;
             display: flex;
             gap: 6px;
             opacity: 0;
@@ -385,29 +501,35 @@
         }
 
         .download-btn::before {
-            content: '⬇';
+            content: '↓';
         }
 
         .external-btn::before {
-            content: '🔗';
+            content: '⧉';
         }
 
         .loading {
             text-align: center;
             padding: 60px 20px;
             color: #666;
+            transition: opacity 0.3s ease;
         }
 
         .loading::after {
             content: '';
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e9ecef;
-            border-top: 2px solid #667eea;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e9ecef;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-left: 10px;
+            margin-left: 12px;
+        }
+
+        .loading.fade-out {
+            opacity: 0;
+            pointer-events: none;
         }
 
         @keyframes spin {
@@ -422,16 +544,53 @@
         }
 
         /* Mobile Optimizations */
+        @media (max-width: 1024px) {
+            .layout-toggle {
+                display: none; /* Hide layout toggle on mobile/tablet */
+            }
+
+            .desktop-layout {
+                display: block; /* Force grid layout on smaller screens */
+            }
+
+            .thumbnails-sidebar {
+                width: auto;
+                margin-top: 30px;
+            }
+
+            .thumbnails-sidebar .thumbnails-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+                max-height: none;
+                overflow-y: visible;
+            }
+
+            .thumbnails-section {
+                padding: 25px;
+            }
+
+            .thumbnails-container {
+                margin-top: 30px;
+            }
+        }
+
         @media (max-width: 768px) {
-            .main-player {
+            .main-player.landscape {
                 aspect-ratio: 16 / 9;
                 max-height: 50vh;
             }
 
+            .main-player.portrait {
+                aspect-ratio: 9 / 16;
+                max-height: 60vh;
+                max-width: 33vh;
+            }
+
             .main-player-actions {
-                top: 15px;
-                right: 15px;
-                gap: 8px;
+                top: 20px;
+                right: 20px;
+                gap: 10px;
             }
 
             .main-action-btn {
@@ -441,7 +600,7 @@
             }
 
             .navigation-toolbar {
-                padding: 15px;
+                padding: 20px;
             }
 
             .folder-pill {
@@ -449,9 +608,17 @@
                 padding: 5px 10px;
             }
 
+            .thumbnails-section {
+                padding: 20px;
+            }
+
+            .thumbnails-container {
+                margin-top: 25px;
+            }
+
             .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 12px;
+                gap: 15px;
             }
 
             .thumbnail-image {
@@ -466,11 +633,20 @@
                 flex-direction: column;
                 gap: 5px;
             }
+
+            .video-info-overlay {
+                padding: 20px 20px 30px;
+            }
         }
 
         @media (max-width: 480px) {
-            .main-player {
+            .main-player.landscape {
                 max-height: 40vh;
+            }
+
+            .main-player.portrait {
+                max-height: 50vh;
+                max-width: 25vh;
             }
 
             .main-action-btn {
@@ -487,9 +663,13 @@
                 padding: 15px;
             }
 
+            .thumbnails-container {
+                margin-top: 20px;
+            }
+
             .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 10px;
+                gap: 12px;
             }
 
             .thumbnail-image {
@@ -502,47 +682,36 @@
         }
 
         /* Desktop Layout Adjustments */
-        @media (min-width: 1024px) {
-            .main-player {
-                max-height: 80vh;
-            }
-
-            .thumbnails-grid {
+        @media (min-width: 1025px) {
+            .grid-layout .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 20px;
+                gap: 25px;
             }
 
-            .thumbnail-image {
+            .grid-layout .thumbnail-image {
                 height: 140px;
+            }
+
+            .thumbnails-sidebar {
+                padding: 25px;
+            }
+
+            .thumbnails-sidebar .thumbnails-grid {
+                gap: 18px;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
+        <!-- Layout Toggle Button (Desktop only) -->
+        <button class="layout-toggle" id="layoutToggle" title="Toggle layout">
+            📱 Grid View
+        </button>
+
         <!-- Status Message (for errors/info) -->
         <div id="statusMessage" class="status-message" style="display: none;">
             Status message will appear here
-        </div>
-
-        <!-- Main Video Player -->
-        <div class="main-player">
-            <video class="main-video" id="mainVideo" controls preload="metadata">
-                <source id="mainVideoSource" src="" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <div class="video-info-overlay">
-                <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
-                <div class="current-video-meta" id="currentVideoMeta">
-                    <span id="currentDuration">--:--</span>
-                    <span id="currentSize">-- MB</span>
-                    <span id="currentDate">--</span>
-                </div>
-            </div>
-            <div class="main-player-actions" id="mainPlayerActions">
-                <button class="main-action-btn main-download-btn" id="mainDownloadBtn" title="Download video"></button>
-                <button class="main-action-btn main-share-btn" id="mainShareBtn" title="Share video"></button>
-            </div>
         </div>
 
         <!-- Compact Navigation Toolbar -->
@@ -554,13 +723,38 @@
             </div>
         </div>
 
-        <!-- Thumbnails Section -->
-        <div class="thumbnails-section">
+        <!-- Main Content Area -->
+        <div class="thumbnails-section grid-layout" id="mainContentArea">
             <div id="loadingMessage" class="loading">
                 Loading videos from Dropbox...
             </div>
 
-            <div class="thumbnails-grid" id="thumbnailsGrid"></div>
+            <!-- Main Video Player Container -->
+            <div class="main-player-container">
+                <div class="main-player landscape" id="mainPlayer">
+                    <video class="main-video" id="mainVideo" controls preload="metadata">
+                        <source id="mainVideoSource" src="" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-info-overlay">
+                        <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
+                        <div class="current-video-meta" id="currentVideoMeta">
+                            <span id="currentDuration">--:--</span>
+                            <span id="currentSize">-- MB</span>
+                            <span id="currentDate">--</span>
+                        </div>
+                    </div>
+                    <div class="main-player-actions" id="mainPlayerActions">
+                        <button class="main-action-btn main-download-btn" id="mainDownloadBtn" title="Download video"></button>
+                        <button class="main-action-btn main-share-btn" id="mainShareBtn" title="Share video"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thumbnails Container -->
+            <div class="thumbnails-container" id="thumbnailsContainer">
+                <div class="thumbnails-grid" id="thumbnailsGrid"></div>
+            </div>
 
             <div class="no-results" id="noResults" style="display: none;">
                 No videos found in this folder.
@@ -578,6 +772,7 @@
         let currentFolder = 'all';
         let availableFolders = [];
         let watchedVideos = new Set();
+        let isDesktopLayout = false;
 
         // Initialize the app
         async function init() {
@@ -640,7 +835,9 @@
         }
 
         async function loadFolderContents(folderUrl) {
-            document.getElementById('loadingMessage').style.display = 'block';
+            const loadingElement = document.getElementById('loadingMessage');
+            loadingElement.style.display = 'block';
+            loadingElement.classList.remove('fade-out');
             document.getElementById('thumbnailsGrid').innerHTML = '';
             
             try {
@@ -681,14 +878,14 @@
                 if (folderVideos.length === 0) {
                     console.log('⚠️ No videos found in folder');
                     showStatusMessage('warning', 'No video files found in this folder.');
-                    document.getElementById('loadingMessage').style.display = 'none';
+                    fadeOutLoading();
                     document.getElementById('noResults').style.display = 'block';
                     return;
                 }
                 
                 allVideos = folderVideos;
                 
-                document.getElementById('loadingMessage').style.display = 'none';
+                fadeOutLoading();
                 
                 // Extract unique folders for navigation (excluding 'Root' unless it's the only one)
                 const uniqueFolders = [...new Set(allVideos.map(video => video.folder))];
@@ -703,7 +900,14 @@
                 renderFolderNavigation();
                 
                 if (filteredVideos.length > 0) {
+                    // Get the first video to determine initial player aspect ratio
+                    const firstVideo = filteredVideos[0];
+                    await setInitialPlayerAspectRatio(firstVideo);
                     loadVideo(filteredVideos[0].id);
+                } else {
+                    // No videos, keep default 16:9 landscape
+                    const mainPlayer = document.getElementById('mainPlayer');
+                    mainPlayer.className = 'main-player landscape';
                 }
                 
                 renderThumbnails();
@@ -711,12 +915,20 @@
             } catch (error) {
                 console.error('❌ Error scanning folder:', error);
                 showStatusMessage('error', `Error accessing folder: ${error.message}. Please check the URL and try again.`);
-                document.getElementById('loadingMessage').style.display = 'none';
+                fadeOutLoading();
                 document.getElementById('noResults').style.display = 'block';
                 
                 // DON'T fall back to sample videos - show the actual error instead
                 // This way we can debug what's really happening
             }
+        }
+
+        function fadeOutLoading() {
+            const loadingElement = document.getElementById('loadingMessage');
+            loadingElement.classList.add('fade-out');
+            setTimeout(() => {
+                loadingElement.style.display = 'none';
+            }, 300);
         }
 
         async function listFolderContents(folderPath) {
@@ -797,24 +1009,6 @@
             
             console.log(`✅ Recursive scan complete. Found ${allVideos.length} total videos across all folders`);
             return allVideos;
-        }
-
-        async function scanSharedLinkContents(folderUrl) {
-            console.log('🔄 Trying shared link content scanning...');
-            
-            // This is a simplified approach - in a real implementation,
-            // you might need to use more complex parsing
-            
-            // For now, return sample data with a note
-            showStatusMessage('warning', 'Using sample data. Full shared link scanning requires additional setup.');
-            
-            return generateSampleVideoList();
-        }
-
-        function createDirectUrl(filePath) {
-            // Use Dropbox's temporary link API for authenticated access
-            // This will be replaced by a proper temporary link in the updated implementation
-            return `TEMP_LINK_${encodeURIComponent(filePath)}`;
         }
 
         async function getTemporaryVideoUrl(filePath) {
@@ -941,28 +1135,17 @@
             renderFolderNavigation();
             
             if (filteredVideos.length > 0) {
+                // Set initial aspect ratio based on first video
+                const firstVideo = filteredVideos[0];
+                await setInitialPlayerAspectRatio(firstVideo);
                 loadVideo(filteredVideos[0].id);
+            } else {
+                // No videos, keep default 16:9 landscape
+                const mainPlayer = document.getElementById('mainPlayer');
+                mainPlayer.className = 'main-player landscape';
             }
             
             renderThumbnails();
-        }
-
-        function generateSampleVideoList() {
-            // Fallback sample data
-            return [
-                {
-                    id: 1,
-                    title: "Sample Video 1.mp4",
-                    folder: "Demo",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    lastModified: "2024-03-15T10:30:00Z",
-                    size: "15.2 MB",
-                    durationSeconds: 634,
-                    duration: "10:34",
-                    dateDisplay: "Mar 15, 2024",
-                    date: "2024-03-15"
-                }
-            ];
         }
 
         function renderFolderNavigation() {
@@ -1076,6 +1259,7 @@
             
             const mainVideo = document.getElementById('mainVideo');
             const mainVideoSource = document.getElementById('mainVideoSource');
+            const mainPlayer = document.getElementById('mainPlayer');
             const currentVideoTitle = document.getElementById('currentVideoTitle');
             const currentDuration = document.getElementById('currentDuration');
             const currentSize = document.getElementById('currentSize');
@@ -1102,6 +1286,11 @@
                 
                 // Update the video object with the working URL
                 video.url = videoUrl;
+                
+                // Detect video orientation and adjust player
+                const orientation = await detectVideoOrientation(video);
+                mainPlayer.className = `main-player ${orientation}`;
+                console.log(`📱 Video orientation detected: ${orientation}`);
                 
                 // Auto-play the video when clicked from grid
                 mainVideo.addEventListener('loadedmetadata', function autoPlay() {
@@ -1224,12 +1413,15 @@
             noResults.style.display = 'none';
             
             grid.innerHTML = filteredVideos.map(video => {
+                // Smart thumbnail timing: 10% into video, minimum 2 seconds, maximum 30 seconds
+                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+                
                 return `
                 <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
                     <div class="thumbnail-image">
-                        <div class="thumbnail-placeholder" style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
-                            🎬
-                        </div>
+                        <video class="thumbnail-video" preload="metadata" muted data-video-id="${video.id}" data-file-path="${video.filePath}">
+                            <!-- Source will be added dynamically when needed -->
+                        </video>
                         <div class="thumbnail-overlay">▶</div>
                         <div class="thumbnail-actions">
                             <button class="action-btn download-btn" title="Download video" data-video-id="${video.id}"></button>
@@ -1246,6 +1438,9 @@
                     </div>
                 </div>
             `});
+            
+            // Load thumbnail sources when they come into view
+            setupThumbnailLazyLoading();
             
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -1265,9 +1460,15 @@
                     if (video) {
                         if (!video.url) {
                             showToast('Getting download link...');
-                            video.url = await getTemporaryVideoUrl(video.filePath);
+                            try {
+                                video.url = await getTemporaryVideoUrl(video.filePath);
+                                downloadVideo(video.url, video.title);
+                            } catch (error) {
+                                showToast('Failed to get download link');
+                            }
+                        } else {
+                            downloadVideo(video.url, video.title);
                         }
-                        downloadVideo(video.url, video.title);
                     }
                 });
             });
@@ -1280,11 +1481,60 @@
                     if (video) {
                         if (!video.url) {
                             showToast('Getting video link...');
-                            video.url = await getTemporaryVideoUrl(video.filePath);
+                            try {
+                                video.url = await getTemporaryVideoUrl(video.filePath);
+                                openInNewWindow(video.url);
+                            } catch (error) {
+                                showToast('Failed to get video link');
+                            }
+                        } else {
+                            openInNewWindow(video.url);
                         }
-                        openInNewWindow(video.url);
                     }
                 });
+            });
+        }
+
+        function setupThumbnailLazyLoading() {
+            // Intersection Observer for lazy loading thumbnails
+            const thumbnailObserver = new IntersectionObserver(async (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        const videoId = parseInt(video.dataset.videoId);
+                        const filePath = video.dataset.filePath;
+                        
+                        // Only load if not already loaded
+                        if (!video.src && filePath) {
+                            try {
+                                console.log('🖼️ Loading thumbnail for:', filePath);
+                                const videoUrl = await getTemporaryVideoUrl(filePath);
+                                
+                                // Smart thumbnail timing
+                                const videoObj = allVideos.find(v => v.id === videoId);
+                                const thumbnailTime = videoObj ? Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30) : 10;
+                                
+                                video.src = `${videoUrl}#t=${thumbnailTime}`;
+                                video.load();
+                                
+                                // Stop observing this element
+                                thumbnailObserver.unobserve(video);
+                                
+                            } catch (error) {
+                                console.error('❌ Error loading thumbnail:', error);
+                                // Stop observing failed elements too
+                                thumbnailObserver.unobserve(video);
+                            }
+                        }
+                    }
+                }
+            }, {
+                rootMargin: '50px' // Start loading 50px before the element comes into view
+            });
+
+            // Observe all thumbnail videos
+            document.querySelectorAll('.thumbnail-video').forEach(video => {
+                thumbnailObserver.observe(video);
             });
         }
 
@@ -1344,6 +1594,128 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
+
+        // Layout toggle functionality
+        document.getElementById('layoutToggle').addEventListener('click', toggleLayout);
+
+        // Handle browser resize to maintain aspect ratios
+        window.addEventListener('resize', handleWindowResize);
+
+        function handleWindowResize() {
+            // Debounce resize events
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                // Re-setup thumbnail lazy loading after resize
+                setupThumbnailLazyLoading();
+                
+                // Update overflow indicators for folder navigation
+                checkOverflow();
+                
+                // Ensure layout toggle visibility is correct
+                updateLayoutToggleVisibility();
+            }, 150);
+        }
+
+        function updateLayoutToggleVisibility() {
+            const layoutToggle = document.getElementById('layoutToggle');
+            const mainContentArea = document.getElementById('mainContentArea');
+            
+            if (window.innerWidth <= 1024) {
+                layoutToggle.style.display = 'none';
+                // Force grid layout on smaller screens
+                if (isDesktopLayout) {
+                    mainContentArea.className = 'thumbnails-section grid-layout';
+                    const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+                    thumbnailsContainer.className = 'thumbnails-container';
+                }
+            } else {
+                layoutToggle.style.display = 'block';
+            }
+        }
+
+        function toggleLayout() {
+            const mainContentArea = document.getElementById('mainContentArea');
+            const layoutToggle = document.getElementById('layoutToggle');
+            
+            isDesktopLayout = !isDesktopLayout;
+            
+            if (isDesktopLayout) {
+                mainContentArea.className = 'thumbnails-section desktop-layout';
+                layoutToggle.innerHTML = '📱 Grid View';
+                layoutToggle.title = 'Switch to grid view';
+                
+                // Move thumbnails to sidebar
+                const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+                thumbnailsContainer.className = 'thumbnails-sidebar';
+                
+            } else {
+                mainContentArea.className = 'thumbnails-section grid-layout';
+                layoutToggle.innerHTML = '📺 Side View';
+                layoutToggle.title = 'Switch to side view';
+                
+                // Move thumbnails back to bottom
+                const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+                thumbnailsContainer.className = 'thumbnails-container';
+            }
+            
+            // Re-setup thumbnail lazy loading after layout change
+            setTimeout(setupThumbnailLazyLoading, 100);
+        }
+
+        function detectVideoOrientation(video) {
+            return new Promise((resolve) => {
+                if (!video.url) {
+                    resolve('landscape'); // Default assumption
+                    return;
+                }
+                
+                const testVideo = document.createElement('video');
+                testVideo.preload = 'metadata';
+                
+                testVideo.addEventListener('loadedmetadata', () => {
+                    const aspectRatio = testVideo.videoWidth / testVideo.videoHeight;
+                    
+                    if (aspectRatio > 1.2) {
+                        resolve('landscape');
+                    } else if (aspectRatio < 0.8) {
+                        resolve('portrait');
+                    } else {
+                        resolve('square');
+                    }
+                });
+                
+                testVideo.addEventListener('error', () => {
+                    resolve('landscape'); // Fallback
+                });
+                
+                testVideo.src = video.url;
+            });
+        }
+
+        async function setInitialPlayerAspectRatio(firstVideo) {
+            const mainPlayer = document.getElementById('mainPlayer');
+            
+            try {
+                // Try to detect orientation from the first video
+                if (firstVideo.filePath) {
+                    console.log('🎬 Getting initial aspect ratio from first video...');
+                    const videoUrl = await getTemporaryVideoUrl(firstVideo.filePath);
+                    firstVideo.url = videoUrl; // Cache the URL
+                    
+                    const orientation = await detectVideoOrientation(firstVideo);
+                    mainPlayer.className = `main-player ${orientation}`;
+                    console.log(`📱 Initial player set to: ${orientation}`);
+                } else {
+                    // Fallback to landscape if no file path
+                    mainPlayer.className = 'main-player landscape';
+                    console.log('📱 Using default landscape aspect ratio');
+                }
+            } catch (error) {
+                // If detection fails, default to landscape (16:9)
+                console.log('📱 Using default landscape aspect ratio (detection failed)');
+                mainPlayer.className = 'main-player landscape';
+            }
+        }
 
         console.log('🎬 VidShare Gallery Ready!');
     </script>
