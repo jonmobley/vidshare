@@ -252,7 +252,7 @@
             </div>
 
             <div class="demo-link">
-                <a href="/gallery?folder=demo" target="_blank">View Example Gallery</a>
+                <a href="/gallery/example" target="_blank">View Example Gallery</a>
             </div>
         </div>
     </div>
@@ -277,16 +277,7 @@
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 // Generate short URL
-                const shortCode = generateShortCode();
-                const galleryUrl = `${window.location.origin}/g/${shortCode}`;
-                
-                // Store the mapping
-                galleryStore[shortCode] = {
-                    folderUrl: folderUrl,
-                    created: new Date().toISOString(),
-                    title: extractFolderName(folderUrl)
-                };
-                localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
+                const galleryUrl = generateGalleryUrl(folderUrl);
                 
                 showResult('success', `
                     <h3>✅ Gallery Created!</h3>
