@@ -123,8 +123,8 @@
             opacity: 0.9;
         }
 
-        /* Demo Notice */
-        .demo-notice {
+        /* Error/Status Messages */
+        .status-message {
             background: #e3f2fd;
             border-bottom: 1px solid #90caf9;
             padding: 15px 20px;
@@ -133,8 +133,16 @@
             font-size: 0.9rem;
         }
 
-        .demo-notice strong {
-            color: #0d47a1;
+        .status-message.error {
+            background: #ffebee;
+            border-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .status-message.warning {
+            background: #fff3e0;
+            border-color: #ffcc02;
+            color: #ef6c00;
         }
 
         /* Compact Navigation Toolbar */
@@ -512,6 +520,11 @@
 </head>
 <body>
     <div class="main-container">
+        <!-- Status Message (for errors/info) -->
+        <div id="statusMessage" class="status-message" style="display: none;">
+            Status message will appear here
+        </div>
+
         <!-- Main Video Player -->
         <div class="main-player">
             <video class="main-video" id="mainVideo" controls preload="metadata">
@@ -533,7 +546,7 @@
         </div>
 
         <!-- Compact Navigation Toolbar -->
-        <div class="navigation-toolbar">
+        <div class="navigation-toolbar" id="navigationToolbar" style="display: none;">
             <div class="folder-pills-container" id="folderPillsContainer">
                 <div class="folder-pills" id="folderPills">
                     <!-- Folder pills will be populated here -->
@@ -544,18 +557,21 @@
         <!-- Thumbnails Section -->
         <div class="thumbnails-section">
             <div id="loadingMessage" class="loading">
-                Loading demo videos...
+                Loading videos from Dropbox...
             </div>
 
             <div class="thumbnails-grid" id="thumbnailsGrid"></div>
 
             <div class="no-results" id="noResults" style="display: none;">
-                No videos found in this demo.
+                No videos found in this folder.
             </div>
         </div>
     </div>
 
     <script>
+        // ADD YOUR DROPBOX TOKEN HERE
+        const DROPBOX_TOKEN = 'sl.u.AFy4s08XCdzmFz_LyPvSH6wDM84mOHGwORo8CtJnJR5yxbySa3iwLThPR1zXiNd5ZV5yTbMbdoY8fI62W9mL7ItNclEC1MT8TCM35htgq9PZIN_4TGjBVv90MaAHxCfFRp9KVDMmklgFAXSJjW1DdMzYiw-Q9uGysKQaW_rj0XXcNj-4E53X18UVo8mRBZ2kJskCw0XBgRJvrwKck6CECGL7K8dcythqnYwN9UKUNIQqN22jZIS_9M7dRhd08iBDFm2JQzfHHe94MkjOg-JDL2aGljaTE9cFbRvbUe7f_6xMdt_oSDcSByyPWLm0ZsWtfVYKE5gqYiD1vL4BXclARyGQpbVxdftgxLtlLrg6ex52D77_M2BwSnl1KsZrGONNoN2AER13k2kvcKrerf3TY7nhsEPsZDUFpSHK-KeIEsbnw9WlKIUNs_31wFXcgtVcrWdU2UuFTBemgTRgMT2r5FU8w_bt4Znp8jSxEPvtY_p-cXEKla-T8ZxTITQjNpmpMo38WgzPb5nl7BXeFtTThRKIuXDMzc-eNVz4artOGGyiuDBzHuQ1XNMws-VfYRRuBZvxDwbmdBr1fIHvTuUsinLol3Poc42LuuhzMA3y-L3QpQYyHO1il1WEhbBmC2g0zuttdbEv5AdYucN17MQAF2XgM2E5cY9hrelgmmrcN8mZtMH3IQz3wN3NLT4OleT8vMQen2lQWEUq7KV6oIt1h6RaTaOJLbldb5wGVIbWp_B-cmXcWROFq7DZ-Ee_p5IhhpTWq1p8WjztrDqcup7PdSkhlgFnIO8Gwosta54ymSJbv59VXnWOwqEAzGk0Soqkuoob5i87HifjN96Ai16LtbbcVcJuBy6VXQOv1Ngbxgt_szTCz1lXklpUjE31sR7LvWJlQ3jdLNuJ2qUHi9muqq2C2qMQiH8Y3N10bQUEcX-1IjgED_9eqlZpckjQxB8tvo17ScPHk3QLi2SW4o_WMy18Es9-Sti-byp72RBQ61ykt_lvWDQoVUBVshBKvcnJR6qzSbpzKTjXoV0zPY_10u6z_6mrXCgpMpppCjQYmxkYpmgSuV48iydT5gxuaT6PknarrNmREQwE4I99XMcyXI6CyBEdsZ3JNtGAhse5S0Cyn2iJh0G1Vd2tUltiX4X6ApYzR-SBofIpGKn60f1O8k69TtIzkyz2Y4uLuhsDdud8y3h4sbgPPx_2EsW0DPrBVuzADFuD4coPnfovyIzcvXHETgFjkhLaOenGL8Ex0-36q7MXnB3SnsoCdko0Wk6x04UtjXAdHmYjgNpEBJWicfNY4U9IzUUOuV154tIWdblBDa5wXAIBZR_4BdDNaqXb5JPVJuBOlS7Mu9kpn2HzNpM7';
+
         let allVideos = [];
         let filteredVideos = [];
         let currentVideoId = null;
@@ -566,18 +582,37 @@
         // Initialize the app
         async function init() {
             try {
-                // Get folder URL from query parameters (for reference only)
+                // Get folder URL from query parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 const folderUrl = urlParams.get('folder');
                 
-                console.log('Loading gallery for folder:', folderUrl);
-
-                // Simulate dynamic folder scanning
+                if (!folderUrl) {
+                    showStatusMessage('error', 'No folder URL provided. Please use the admin panel to generate a gallery link.');
+                    await loadSampleVideos(); // Fallback to demo
+                    return;
+                }
+                
+                console.log('🔍 Loading gallery for folder:', folderUrl);
                 await loadFolderContents(folderUrl);
                 
             } catch (error) {
-                console.error('Error initializing gallery:', error);
+                console.error('❌ Error initializing gallery:', error);
+                showStatusMessage('error', 'Error loading gallery. Using demo videos instead.');
                 await loadSampleVideos(); // Fallback to sample videos
+            }
+        }
+
+        function showStatusMessage(type, message) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
             }
         }
 
@@ -586,41 +621,9 @@
             document.getElementById('thumbnailsGrid').innerHTML = '';
             
             try {
-                // Simulate folder scanning with dynamic content
-                const folderVideos = await scanFolderForVideos(folderUrl);
+                console.log('🔍 Scanning Dropbox folder...');
                 
-                // Filter out any videos that don't exist (simulate missing files)
-                const existingVideos = await validateVideoExistence(folderVideos);
-                
-                allVideos = existingVideos;
-                availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
-                filteredVideos = [...allVideos];
-                
-                document.getElementById('loadingMessage').style.display = 'none';
-                
-                renderFolderNavigation();
-                
-                if (filteredVideos.length > 0) {
-                    loadVideo(filteredVideos[0].id);
-                } else {
-                    // No videos found
-                    document.getElementById('noResults').style.display = 'block';
-                }
-                
-                renderThumbnails();
-                
-            } catch (error) {
-                console.error('Error scanning folder:', error);
-                document.getElementById('loadingMessage').style.display = 'none';
-                document.getElementById('noResults').style.display = 'block';
-            }
-        }
-
-        async function scanFolderForVideos(folderUrl) {
-            console.log('🔍 Scanning Dropbox folder:', folderUrl);
-            
-            try {
-                // Get shared link metadata first
+                // First, try to get shared link metadata
                 const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
                     method: 'POST',
                     headers: {
@@ -628,125 +631,124 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        url: folderUrl,
-                        direct_only: true
+                        url: folderUrl
                     })
                 });
 
                 if (!metadataResponse.ok) {
-                    throw new Error(`Cannot access folder: ${metadataResponse.status}`);
+                    throw new Error(`Cannot access folder: ${metadataResponse.status} - ${await metadataResponse.text()}`);
                 }
 
                 const metadata = await metadataResponse.json();
                 console.log('📁 Folder metadata:', metadata);
 
-                // Get folder contents using files/list_folder
-                const folderResponse = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${DROPBOX_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        path: metadata.path_lower || '',
-                        recursive: true,
-                        include_media_info: true,
-                        include_deleted: false,
-                        include_has_explicit_shared_members: false
-                    })
-                });
-
-                if (!folderResponse.ok) {
-                    // Try alternative method with shared link
-                    return await scanFolderViaSharedLink(folderUrl);
-                }
-
-                const folderData = await folderResponse.json();
+                // Try to list folder contents using the path
+                let folderVideos;
                 
-                // Filter for video files and process
-                const videoFiles = folderData.entries.filter(entry => 
-                    entry['.tag'] === 'file' && 
-                    isVideoFile(entry.name) &&
-                    entry.size > 0
-                );
-
-                console.log(`🎬 Found ${videoFiles.length} video files`);
-
-                // Convert to our video format
-                const videos = await Promise.all(
-                    videoFiles.map(async (file, index) => {
-                        const directUrl = await getDirectVideoUrl(file.path_lower, folderUrl);
-                        
-                        return {
-                            id: index + 1,
-                            title: file.name,
-                            folder: getVideoFolder(file.path_lower),
-                            url: directUrl,
-                            lastModified: file.server_modified,
-                            size: formatFileSize(file.size),
-                            durationSeconds: extractDuration(file),
-                            duration: formatDuration(extractDuration(file)),
-                            dateDisplay: formatDate(file.server_modified),
-                            date: file.server_modified.split('T')[0]
-                        };
-                    })
-                );
-
-                return videos.filter(video => video.url); // Only return videos with valid URLs
+                try {
+                    folderVideos = await listFolderContents(metadata.path_lower);
+                } catch (listError) {
+                    console.log('⚠️ Direct folder listing failed, trying shared link method...');
+                    folderVideos = await scanSharedLinkContents(folderUrl);
+                }
+                
+                allVideos = folderVideos;
+                availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
+                filteredVideos = [...allVideos];
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                if (filteredVideos.length === 0) {
+                    showStatusMessage('warning', 'No video files found in this folder.');
+                    document.getElementById('noResults').style.display = 'block';
+                    return;
+                }
+                
+                showStatusMessage('success', `Found ${filteredVideos.length} video${filteredVideos.length === 1 ? '' : 's'} in folder!`);
+                
+                renderFolderNavigation();
+                
+                if (filteredVideos.length > 0) {
+                    loadVideo(filteredVideos[0].id);
+                }
+                
+                renderThumbnails();
                 
             } catch (error) {
                 console.error('❌ Error scanning folder:', error);
-                throw error;
+                showStatusMessage('error', `Error accessing folder: ${error.message}`);
+                document.getElementById('loadingMessage').style.display = 'none';
+                await loadSampleVideos(); // Fallback to demo
             }
         }
 
-        async function scanFolderViaSharedLink(folderUrl) {
-            console.log('🔄 Trying alternative shared link method...');
+        async function listFolderContents(folderPath) {
+            console.log('📂 Listing contents of:', folderPath);
             
-            try {
-                // Use shared link to get file list
-                const response = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_file', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${DROPBOX_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'Dropbox-API-Arg': JSON.stringify({
-                            url: folderUrl
-                        })
-                    }
-                });
+            const response = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${DROPBOX_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    path: folderPath || '',
+                    recursive: true,
+                    include_media_info: true,
+                    include_deleted: false
+                })
+            });
 
-                if (!response.ok) {
-                    throw new Error(`Shared link access failed: ${response.status}`);
-                }
-
-                // This is more complex - we'd need to parse the response
-                // For now, fall back to sample data but log the attempt
-                console.log('📋 Shared link access successful, but parsing not implemented yet');
-                
-                // Return sample data as fallback
-                return generateSampleVideoList();
-                
-            } catch (error) {
-                console.error('❌ Shared link method failed:', error);
-                // Final fallback to sample data
-                return generateSampleVideoList();
+            if (!response.ok) {
+                throw new Error(`Folder listing failed: ${response.status} - ${await response.text()}`);
             }
+
+            const folderData = await response.json();
+            
+            // Filter for video files
+            const videoFiles = folderData.entries.filter(entry => 
+                entry['.tag'] === 'file' && 
+                isVideoFile(entry.name) &&
+                entry.size > 0
+            );
+
+            console.log(`🎬 Found ${videoFiles.length} video files`);
+
+            // Convert to our video format
+            const videos = videoFiles.map((file, index) => {
+                return {
+                    id: index + 1,
+                    title: file.name,
+                    folder: getVideoFolder(file.path_lower),
+                    url: createDirectUrl(file.path_lower),
+                    lastModified: file.server_modified,
+                    size: formatFileSize(file.size),
+                    durationSeconds: extractDuration(file),
+                    duration: formatDuration(extractDuration(file)),
+                    dateDisplay: formatDate(file.server_modified),
+                    date: file.server_modified.split('T')[0]
+                };
+            });
+
+            return videos;
         }
 
-        async function getDirectVideoUrl(filePath, originalShareUrl) {
-            try {
-                // Convert file path to direct download URL
-                // Dropbox direct URLs follow pattern: shared_link + &dl=1
-                const baseUrl = originalShareUrl.split('?')[0];
-                const directUrl = `${baseUrl}/${encodeURIComponent(filePath.substring(1))}?dl=1`;
-                
-                return directUrl;
-                
-            } catch (error) {
-                console.error('❌ Error getting direct URL for:', filePath, error);
-                return null;
-            }
+        async function scanSharedLinkContents(folderUrl) {
+            console.log('🔄 Trying shared link content scanning...');
+            
+            // This is a simplified approach - in a real implementation,
+            // you might need to use more complex parsing
+            
+            // For now, return sample data with a note
+            showStatusMessage('warning', 'Using sample data. Full shared link scanning requires additional setup.');
+            
+            return generateSampleVideoList();
+        }
+
+        function createDirectUrl(filePath) {
+            // Simple approach: create a Dropbox direct download URL
+            // Note: This might need adjustment based on your specific setup
+            return `https://api.dropboxapi.com/2/files/download?arg={"path":"${filePath}"}`;
         }
 
         function isVideoFile(filename) {
@@ -771,7 +773,7 @@
             
             // Fallback: estimate based on file size (very rough)
             const sizeMB = file.size / (1024 * 1024);
-            const estimatedDuration = Math.max(15, Math.min(600, sizeMB * 10)); // 15s to 10min estimate
+            const estimatedDuration = Math.max(15, Math.min(600, sizeMB * 5)); // 15s to 10min estimate
             return Math.floor(estimatedDuration);
         }
 
@@ -783,11 +785,27 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
-        function generateSampleVideoList() {
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        async function loadSampleVideos() {
             // Fallback sample data when API fails
-            console.log('📺 Using sample video data as fallback');
+            console.log('📺 Loading sample video data as fallback');
+            showStatusMessage('warning', 'Showing demo videos. Please check your Dropbox folder URL.');
             
-            return [
+            allVideos = [
                 {
                     id: 1,
                     title: "Big Buck Bunny.mp4",
@@ -813,82 +831,43 @@
                     date: "2024-03-20"
                 }
             ];
-        }
-
-        async function validateVideoExistence(videos) {
-            console.log(`🔍 Validating ${videos.length} video files...`);
             
-            const validVideos = [];
+            availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
+            filteredVideos = [...allVideos];
             
-            for (const video of videos) {
-                try {
-                    // Test if video URL is accessible
-                    const isValid = await testVideoUrl(video.url);
-                    
-                    if (isValid) {
-                        validVideos.push(video);
-                        console.log('✅ Valid:', video.title);
-                    } else {
-                        console.log('❌ Invalid:', video.title);
-                    }
-                } catch (error) {
-                    console.log('⚠️ Error testing:', video.title, error.message);
-                    // Include video anyway - let browser handle the error
-                    validVideos.push(video);
-                }
+            document.getElementById('loadingMessage').style.display = 'none';
+            
+            renderFolderNavigation();
+            
+            if (filteredVideos.length > 0) {
+                loadVideo(filteredVideos[0].id);
             }
             
-            console.log(`✅ ${validVideos.length} valid videos found`);
-            return validVideos;
+            renderThumbnails();
         }
 
-        async function testVideoUrl(url) {
-            try {
-                // Test with HEAD request to avoid downloading video data
-                const response = await fetch(url, { 
-                    method: 'HEAD',
-                    mode: 'no-cors' // Avoid CORS issues
-                });
-                
-                // With no-cors, we can't read the status, so assume valid
-                return true;
-                
-            } catch (error) {
-                // If HEAD fails, try a range request for first byte
-                try {
-                    const response = await fetch(url, {
-                        headers: {
-                            'Range': 'bytes=0-0'
-                        },
-                        mode: 'no-cors'
-                    });
-                    return true;
-                } catch (rangeError) {
-                    console.log('🚫 URL test failed:', url);
-                    return false;
+        function generateSampleVideoList() {
+            // Fallback sample data
+            return [
+                {
+                    id: 1,
+                    title: "Sample Video 1.mp4",
+                    folder: "Demo",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    lastModified: "2024-03-15T10:30:00Z",
+                    size: "15.2 MB",
+                    durationSeconds: 634,
+                    duration: "10:34",
+                    dateDisplay: "Mar 15, 2024",
+                    date: "2024-03-15"
                 }
-            }
-        }
-
-        function formatDuration(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-
-        function formatDate(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
+            ];
         }
 
         function renderFolderNavigation() {
+            const navigationToolbar = document.getElementById('navigationToolbar');
             const folderPills = document.getElementById('folderPills');
             const folderPillsContainer = document.getElementById('folderPillsContainer');
-            const navigationToolbar = document.querySelector('.navigation-toolbar');
             
             // If no subfolders or only one folder, hide navigation entirely
             if (availableFolders.length <= 1) {
@@ -942,7 +921,7 @@
             currentFolder = folder;
             
             // Only update pills if navigation is visible
-            const navigationToolbar = document.querySelector('.navigation-toolbar');
+            const navigationToolbar = document.getElementById('navigationToolbar');
             if (navigationToolbar.style.display !== 'none') {
                 document.querySelectorAll('.folder-pill').forEach(pill => {
                     pill.classList.remove('active');
@@ -982,7 +961,6 @@
             const mainVideo = document.getElementById('mainVideo');
             const mainVideoSource = document.getElementById('mainVideoSource');
             const currentVideoTitle = document.getElementById('currentVideoTitle');
-            const currentVideoMeta = document.getElementById('currentVideoMeta');
             const currentDuration = document.getElementById('currentDuration');
             const currentSize = document.getElementById('currentSize');
             const currentDate = document.getElementById('currentDate');
@@ -1212,7 +1190,7 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎬 VidShare Dynamic Gallery Ready!');
+        console.log('🎬 VidShare Gallery Ready!');
     </script>
 </body>
 </html>
