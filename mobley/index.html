@@ -360,9 +360,11 @@
                     throw new Error('Invalid Dropbox URL format');
                 }
                 
+                // Generate short code for compact URL
+                const shortCode = generateShortCode();
+                
                 // Store the mapping for reference
-                const galleryId = generateShortCode();
-                galleryStore[galleryId] = {
+                galleryStore[shortCode] = {
                     folderUrl: folderUrl,
                     created: new Date().toISOString(),
                     name: extractFolderName(folderUrl)
@@ -371,9 +373,9 @@
                 // Save to localStorage
                 localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
                 
-                // Return the gallery URL
+                // Return the SHORT gallery URL using the 7-character code
                 const baseUrl = window.location.origin;
-                return `${baseUrl}/gallery?folder=${encodeURIComponent(folderUrl)}`;
+                return `${baseUrl}/g/${shortCode}`;
                 
             } catch (error) {
                 console.error('Error generating gallery URL:', error);
@@ -382,10 +384,10 @@
         }
 
         function generateShortCode() {
-            // Generate 6-character code for better uniqueness
+            // Generate 7-character code 
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 7; i++) {
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             
@@ -469,7 +471,7 @@
         // Handle short URL routing (for future use)
         function handleShortUrl() {
             const path = window.location.pathname;
-            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{6})/);
+            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{7})/);
             
             if (shortCodeMatch) {
                 const shortCode = shortCodeMatch[1];
