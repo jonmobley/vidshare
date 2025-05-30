@@ -1,4 +1,5 @@
 /                    /mobley/index.html    200
 /mobley              /mobley/index.html    200
-/g/*                 /mobley/index.html    200
+/gallery/example     /gallery/index.html   200
+/g/:shortcode        /gallery/index.html   200
 /gallery/*           /gallery/index.html   200
