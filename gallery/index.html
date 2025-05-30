@@ -735,13 +735,14 @@
                     
                     console.log(`🎬 Found ${videoFiles.length} video files in this batch`);
                     
-                    // Convert to our video format
+                    // Convert to our video format with temporary URL placeholders
                     const videos = videoFiles.map((file, index) => {
                         return {
                             id: allVideos.length + index + 1,
                             title: file.name,
                             folder: getVideoFolder(file.path_lower),
-                            url: createDirectUrl(file.path_lower),
+                            filePath: file.path_lower, // Store original path for temporary links
+                            url: null, // Will be populated with temporary link when needed
                             lastModified: file.server_modified,
                             size: formatFileSize(file.size),
                             durationSeconds: extractDuration(file),
@@ -780,9 +781,39 @@
         }
 
         function createDirectUrl(filePath) {
-            // Simple approach: create a Dropbox direct download URL
-            // Note: This might need adjustment based on your specific setup
-            return `https://api.dropboxapi.com/2/files/download?arg={"path":"${filePath}"}`;
+            // Use Dropbox's temporary link API for authenticated access
+            // This will be replaced by a proper temporary link in the updated implementation
+            return `TEMP_LINK_${encodeURIComponent(filePath)}`;
+        }
+
+        async function getTemporaryVideoUrl(filePath) {
+            try {
+                console.log('🔗 Getting temporary link for:', filePath);
+                
+                const response = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${DROPBOX_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        path: filePath
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Temporary link failed: ${response.status} - ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Got temporary link:', data.link);
+                return data.link;
+                
+            } catch (error) {
+                console.error('❌ Error getting temporary link:', error);
+                // Fallback to direct download (may not work)
+                return `https://api.dropboxapi.com/2/files/download?arg=${encodeURIComponent(JSON.stringify({path: filePath}))}`;
+            }
         }
 
         function isVideoFile(filename) {
@@ -920,9 +951,11 @@
             
             const pillsHTML = [
                 '<div class="folder-pill active" data-folder="all">All Videos</div>',
-                ...availableFolders.map(folder => 
-                    `<div class="folder-pill" data-folder="${folder}">${folder}</div>`
-                )
+                ...availableFolders.map(folder => {
+                    // Capitalize first letter, lowercase the rest
+                    const displayName = folder.charAt(0).toUpperCase() + folder.slice(1).toLowerCase();
+                    return `<div class="folder-pill" data-folder="${folder}">${displayName}</div>`;
+                })
             ].join('');
             
             folderPills.innerHTML = pillsHTML;
@@ -992,7 +1025,7 @@
             }
         }
 
-        function loadVideo(videoId) {
+        async function loadVideo(videoId) {
             const video = allVideos.find(v => v.id === videoId);
             if (!video) return;
 
@@ -1007,23 +1040,47 @@
             const currentSize = document.getElementById('currentSize');
             const currentDate = document.getElementById('currentDate');
 
-            mainVideoSource.src = video.url;
-            mainVideo.load();
-            
-            // Auto-play the video when clicked from grid
-            mainVideo.addEventListener('loadedmetadata', function autoPlay() {
-                mainVideo.play().catch(error => {
-                    // Auto-play might be blocked by browser, that's okay
-                    console.log('Auto-play prevented by browser:', error);
-                });
-                // Remove listener after first use
-                mainVideo.removeEventListener('loadedmetadata', autoPlay);
-            });
-            
-            currentVideoTitle.textContent = video.title;
+            // Show loading state
+            currentVideoTitle.textContent = `Loading ${video.title}...`;
             currentDuration.textContent = video.duration;
             currentSize.textContent = video.size;
             currentDate.textContent = video.dateDisplay;
+
+            try {
+                // Get temporary URL for the video
+                console.log('🎬 Loading video:', video.title);
+                const videoUrl = await getTemporaryVideoUrl(video.filePath);
+                
+                mainVideoSource.src = videoUrl;
+                mainVideo.load();
+                
+                // Update the video object with the working URL
+                video.url = videoUrl;
+                
+                // Auto-play the video when clicked from grid
+                mainVideo.addEventListener('loadedmetadata', function autoPlay() {
+                    currentVideoTitle.textContent = video.title; // Remove "Loading..." text
+                    mainVideo.play().catch(error => {
+                        // Auto-play might be blocked by browser, that's okay
+                        console.log('Auto-play prevented by browser:', error);
+                    });
+                    // Remove listener after first use
+                    mainVideo.removeEventListener('loadedmetadata', autoPlay);
+                });
+                
+                // Handle loading errors
+                mainVideo.addEventListener('error', function handleError() {
+                    console.error('❌ Video loading failed:', video.title);
+                    currentVideoTitle.textContent = `Error loading ${video.title}`;
+                    showToast(`Error loading ${video.title}. Please try again.`);
+                    mainVideo.removeEventListener('error', handleError);
+                });
+                
+            } catch (error) {
+                console.error('❌ Error getting video URL:', error);
+                currentVideoTitle.textContent = `Error: ${video.title}`;
+                showToast(`Failed to load ${video.title}`);
+            }
 
             // Setup main player action buttons
             setupMainPlayerActions(video);
@@ -1121,19 +1178,16 @@
             noResults.style.display = 'none';
             
             grid.innerHTML = filteredVideos.map(video => {
-                // Smart thumbnail timing: 10% into video, minimum 2 seconds, maximum 30 seconds
-                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
-                
                 return `
                 <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
                     <div class="thumbnail-image">
-                        <video class="thumbnail-video" preload="metadata" muted>
-                            <source src="${video.url}#t=${thumbnailTime}" type="video/mp4">
-                        </video>
+                        <div class="thumbnail-placeholder" style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            🎬
+                        </div>
                         <div class="thumbnail-overlay">▶</div>
                         <div class="thumbnail-actions">
-                            <button class="action-btn download-btn" title="Download video" data-video-url="${video.url}" data-video-title="${video.title}"></button>
-                            <button class="action-btn external-btn" title="Open in new window" data-video-url="${video.url}"></button>
+                            <button class="action-btn download-btn" title="Download video" data-video-id="${video.id}"></button>
+                            <button class="action-btn external-btn" title="Open in new window" data-video-id="${video.id}"></button>
                         </div>
                         <div class="duration-badge">${video.duration}</div>
                         ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
@@ -1145,7 +1199,7 @@
                         </div>
                     </div>
                 </div>
-            `}).join('');
+            `});
             
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -1158,19 +1212,32 @@
             });
 
             document.querySelectorAll('.download-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const videoUrl = btn.dataset.videoUrl;
-                    const videoTitle = btn.dataset.videoTitle;
-                    downloadVideo(videoUrl, videoTitle);
+                    const videoId = parseInt(btn.dataset.videoId);
+                    const video = allVideos.find(v => v.id === videoId);
+                    if (video) {
+                        if (!video.url) {
+                            showToast('Getting download link...');
+                            video.url = await getTemporaryVideoUrl(video.filePath);
+                        }
+                        downloadVideo(video.url, video.title);
+                    }
                 });
             });
 
             document.querySelectorAll('.external-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const videoUrl = btn.dataset.videoUrl;
-                    openInNewWindow(videoUrl);
+                    const videoId = parseInt(btn.dataset.videoId);
+                    const video = allVideos.find(v => v.id === videoId);
+                    if (video) {
+                        if (!video.url) {
+                            showToast('Getting video link...');
+                            video.url = await getTemporaryVideoUrl(video.filePath);
+                        }
+                        openInNewWindow(video.url);
+                    }
                 });
             });
         }
