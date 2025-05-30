@@ -139,7 +139,9 @@
             border: 1px solid #dee2e6;
             margin: 15px 0;
             word-break: break-all;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
         }
 
         .copy-btn {
@@ -229,6 +231,9 @@
     </div>
 
     <script>
+        // Store gallery mappings in localStorage for short URLs
+        let galleryStore = JSON.parse(localStorage.getItem('vidshare_galleries') || '{}');
+
         document.getElementById('galleryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -244,8 +249,17 @@
                 // Simulate processing time for better UX
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                // Always succeed in MVP mode
-                const galleryUrl = generateGalleryUrl(folderUrl);
+                // Generate short URL
+                const shortCode = generateShortCode();
+                const galleryUrl = `${window.location.origin}/g/${shortCode}`;
+                
+                // Store the mapping
+                galleryStore[shortCode] = {
+                    folderUrl: folderUrl,
+                    created: new Date().toISOString(),
+                    title: extractFolderName(folderUrl)
+                };
+                localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
                 
                 showResult('success', `
                     <h3>✅ VidShare Gallery Created!</h3>
@@ -282,10 +296,30 @@
             generateBtn.textContent = 'Generate Demo Gallery';
         });
 
-        function generateGalleryUrl(folderUrl) {
-            const baseUrl = window.location.origin;
-            const encodedUrl = encodeURIComponent(folderUrl);
-            return `${baseUrl}/gallery?folder=${encodedUrl}`;
+        function generateShortCode() {
+            // Generate 4-character code
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 4; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Check if code already exists
+            if (galleryStore[result]) {
+                return generateShortCode(); // Try again if collision
+            }
+            
+            return result;
+        }
+
+        function extractFolderName(url) {
+            try {
+                // Extract folder name from Dropbox URL
+                const match = url.match(/\/fo\/([^\/\?]+)/);
+                return match ? match[1].substring(0, 8) + '...' : 'Gallery';
+            } catch {
+                return 'Gallery';
+            }
         }
 
         function showResult(type, message) {
@@ -325,8 +359,29 @@
             });
         }
 
-        // Add some nice loading animations
+        // Handle short URL routing
+        function handleShortUrl() {
+            const path = window.location.pathname;
+            const shortCodeMatch = path.match(/\/g\/([a-z0-9]{4})/);
+            
+            if (shortCodeMatch) {
+                const shortCode = shortCodeMatch[1];
+                const galleries = JSON.parse(localStorage.getItem('vidshare_galleries') || '{}');
+                
+                if (galleries[shortCode]) {
+                    // Redirect to full gallery URL
+                    const folderUrl = encodeURIComponent(galleries[shortCode].folderUrl);
+                    window.location.href = `/gallery?folder=${folderUrl}`;
+                } else {
+                    // Short code not found
+                    alert('Gallery not found. Please check the URL.');
+                }
+            }
+        }
+
+        // Check for short URL on page load
         document.addEventListener('DOMContentLoaded', () => {
+            handleShortUrl();
             console.log('🎬 VidShare Admin Panel Loaded!');
             console.log('🚀 MVP Mode: Demonstrating gallery functionality with sample videos');
         });
