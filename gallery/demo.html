@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+            min-height: 100vh;
+        }
+
+        /* Main Video Player */
+        .main-player {
+            position: relative;
+            width: 100%;
+            background: white;
+            aspect-ratio: 16 / 9;
+            max-height: 70vh;
+        }
+
+        .main-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+
+        .video-info-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 20px 20px 30px;
+            opacity: 0;
+            transform: translateY(0);
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .main-player:hover .video-info-overlay {
+            opacity: 1;
+        }
+
+        .main-player-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .main-player:hover .main-player-actions {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .main-action-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .main-action-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-download-btn::before {
+            content: '⬇';
+        }
+
+        .main-share-btn::before {
+            content: '🔗';
+        }
+
+        .current-video-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .current-video-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Demo Notice */
+        .demo-notice {
+            background: #e3f2fd;
+            border-bottom: 1px solid #90caf9;
+            padding: 15px 20px;
+            text-align: center;
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+
+        .demo-notice strong {
+            color: #0d47a1;
+        }
+
+        /* Compact Navigation Toolbar */
+        .navigation-toolbar {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+        }
+
+        .folder-pills-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .folder-pills {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2px 0;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .folder-pills::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .folder-pill {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .folder-pill:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .folder-pill.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .folder-pill.active:hover {
+            background: #5a6fd8;
+            border-color: #5a6fd8;
+        }
+
+        /* Fade indicator for overflow on mobile */
+        .folder-pills-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(to left, white, transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .folder-pills-container.has-overflow::after {
+            opacity: 1;
+        }
+
+        /* Thumbnails Section */
+        .thumbnails-section {
+            padding: 20px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .thumbnails-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .thumbnail-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .thumbnail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .thumbnail-card.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .thumbnail-image {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            background: white;
+            overflow: hidden;
+        }
+
+        .thumbnail-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .watched-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .thumbnail-card:hover .thumbnail-overlay {
+            opacity: 1;
+        }
+
+        .thumbnail-card.active .thumbnail-overlay {
+            opacity: 1;
+            background: #667eea;
+        }
+
+        .thumbnail-info {
+            padding: 12px;
+        }
+
+        .thumbnail-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            line-height: 1.2;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .thumbnail-meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .duration-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            z-index: 10;
+        }
+
+        .thumbnail-actions {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            z-index: 15;
+        }
+
+        .thumbnail-card:hover .thumbnail-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
+        }
+
+        .download-btn::before {
+            content: '⬇';
+        }
+
+        .external-btn::before {
+            content: '🔗';
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .main-player {
+                aspect-ratio: 16 / 9;
+                max-height: 50vh;
+            }
+
+            .main-player-actions {
+                top: 15px;
+                right: 15px;
+                gap: 8px;
+            }
+
+            .main-action-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .navigation-toolbar {
+                padding: 15px;
+            }
+
+            .folder-pill {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+
+            .thumbnails-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .thumbnail-image {
+                height: 100px;
+            }
+
+            .current-video-title {
+                font-size: 1.2rem;
+            }
+
+            .current-video-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-player {
+                max-height: 40vh;
+            }
+
+            .main-action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+
+            .thumbnails-section {
+                padding: 15px;
+            }
+
+            .navigation-toolbar {
+                padding: 15px;
+            }
+
+            .thumbnails-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+
+            .thumbnail-image {
+                height: 90px;
+            }
+
+            .thumbnail-info {
+                padding: 10px;
+            }
+        }
+
+        /* Desktop Layout Adjustments */
+        @media (min-width: 1024px) {
+            .main-player {
+                max-height: 80vh;
+            }
+
+            .thumbnails-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .thumbnail-image {
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Demo Notice -->
+        <div class="demo-notice">
+            <strong>🎬 VidShare Demo Gallery</strong> - Showcasing dynamic folder sync with sample videos
+        </div>
+
+        <!-- Main Video Player -->
+        <div class="main-player">
+            <video class="main-video" id="mainVideo" controls preload="metadata">
+                <source id="mainVideoSource" src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-info-overlay">
+                <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
+                <div class="current-video-meta" id="currentVideoMeta">
+                    <span id="currentDuration">--:--</span>
+                    <span id="currentSize">-- MB</span>
+                    <span id="currentDate">--</span>
+                </div>
+            </div>
+            <div class="main-player-actions" id="mainPlayerActions">
+                <button class="main-action-btn main-download-btn" id="mainDownloadBtn" title="Download video"></button>
+                <button class="main-action-btn main-share-btn" id="mainShareBtn" title="Share video"></button>
+            </div>
+        </div>
+
+        <!-- Compact Navigation Toolbar -->
+        <div class="navigation-toolbar">
+            <div class="folder-pills-container" id="folderPillsContainer">
+                <div class="folder-pills" id="folderPills">
+                    <!-- Folder pills will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Thumbnails Section -->
+        <div class="thumbnails-section">
+            <div id="loadingMessage" class="loading">
+                Loading demo videos...
+            </div>
+
+            <div class="thumbnails-grid" id="thumbnailsGrid"></div>
+
+            <div class="no-results" id="noResults" style="display: none;">
+                No videos found in this demo.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allVideos = [];
+        let filteredVideos = [];
+        let currentVideoId = null;
+        let currentFolder = 'all';
+        let availableFolders = [];
+        let watchedVideos = new Set();
+
+        // Initialize the app
+        async function init() {
+            try {
+                // Get folder URL from query parameters (for reference only)
+                const urlParams = new URLSearchParams(window.location.search);
+                const folderUrl = urlParams.get('folder');
+                
+                console.log('Loading gallery for folder:', folderUrl);
+
+                // Simulate dynamic folder scanning
+                await loadFolderContents(folderUrl);
+                
+            } catch (error) {
+                console.error('Error initializing gallery:', error);
+                await loadSampleVideos(); // Fallback to sample videos
+            }
+        }
+
+        async function loadFolderContents(folderUrl) {
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('thumbnailsGrid').innerHTML = '';
+            
+            try {
+                // Simulate folder scanning with dynamic content
+                const folderVideos = await scanFolderForVideos(folderUrl);
+                
+                // Filter out any videos that don't exist (simulate missing files)
+                const existingVideos = await validateVideoExistence(folderVideos);
+                
+                allVideos = existingVideos;
+                availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
+                filteredVideos = [...allVideos];
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                renderFolderNavigation();
+                
+                if (filteredVideos.length > 0) {
+                    loadVideo(filteredVideos[0].id);
+                } else {
+                    // No videos found
+                    document.getElementById('noResults').style.display = 'block';
+                }
+                
+                renderThumbnails();
+                
+            } catch (error) {
+                console.error('Error scanning folder:', error);
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('noResults').style.display = 'block';
+            }
+        }
+
+        async function scanFolderForVideos(folderUrl) {
+            // Simulate loading delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simulate dynamic folder contents (in real implementation, this would be Dropbox API)
+            // This simulates files that could be added, removed, or renamed
+            const simulatedFolderContents = generateDynamicVideoList(folderUrl);
+            
+            console.log('Scanned folder, found videos:', simulatedFolderContents.length);
+            return simulatedFolderContents;
+        }
+
+        function generateDynamicVideoList(folderUrl) {
+            // Simulate different folder contents based on URL
+            // In real implementation, this would be actual Dropbox file listing
+            
+            const baseVideos = [
+                {
+                    id: 1,
+                    title: "Big Buck Bunny.mp4",
+                    folder: "Animation", 
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    lastModified: "2024-03-15T10:30:00Z",
+                    size: "15.2 MB",
+                    durationSeconds: 634
+                },
+                {
+                    id: 2,
+                    title: "Elephants Dream.mp4",
+                    folder: "Animation",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", 
+                    lastModified: "2024-03-20T14:15:00Z",
+                    size: "18.7 MB",
+                    durationSeconds: 653
+                },
+                {
+                    id: 3,
+                    title: "For Bigger Blazes.mp4",
+                    folder: "Advertising",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    lastModified: "2024-03-10T09:45:00Z", 
+                    size: "2.3 MB",
+                    durationSeconds: 15
+                }
+            ];
+
+            // Simulate dynamic changes based on current time
+            const now = new Date();
+            const minute = now.getMinutes();
+            
+            // Simulate different folder states to demonstrate dynamic behavior
+            if (minute % 4 === 0) {
+                // Simulate a "renamed" video
+                baseVideos[0].title = "Big Buck Bunny - Remastered.mp4";
+            }
+            
+            if (minute % 3 === 0) {
+                // Simulate an "added" video  
+                baseVideos.push({
+                    id: 7,
+                    title: "New Video Added.mp4",
+                    folder: "Recent",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                    lastModified: new Date().toISOString(),
+                    size: "2.1 MB", 
+                    durationSeconds: 15
+                });
+            }
+            
+            if (minute % 5 === 0) {
+                // Simulate a "removed" video (remove last item)
+                baseVideos.pop();
+            }
+
+            // Add computed fields
+            return baseVideos.map(video => ({
+                ...video,
+                duration: formatDuration(video.durationSeconds),
+                dateDisplay: formatDate(video.lastModified),
+                date: video.lastModified.split('T')[0]
+            }));
+        }
+
+        async function validateVideoExistence(videos) {
+            // Simulate checking if videos actually exist
+            // In real implementation, this would validate file URLs
+            
+            const validVideos = [];
+            
+            for (const video of videos) {
+                try {
+                    // Simulate file existence check
+                    // In reality, this might be a HEAD request to the video URL
+                    const exists = await simulateFileExistence(video);
+                    
+                    if (exists) {
+                        validVideos.push(video);
+                    } else {
+                        console.log('Video not found, skipping:', video.title);
+                    }
+                } catch (error) {
+                    console.log('Error checking video:', video.title, error);
+                    // Skip videos that can't be validated
+                }
+            }
+            
+            return validVideos;
+        }
+
+        async function simulateFileExistence(video) {
+            // Simulate file existence check with 95% success rate
+            // In real implementation, this would be actual file validation
+            return Math.random() > 0.05; // 95% of videos "exist"
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function renderFolderNavigation() {
+            const folderPills = document.getElementById('folderPills');
+            const folderPillsContainer = document.getElementById('folderPillsContainer');
+            const navigationToolbar = document.querySelector('.navigation-toolbar');
+            
+            // If no subfolders or only one folder, hide navigation entirely
+            if (availableFolders.length <= 1) {
+                navigationToolbar.style.display = 'none';
+                currentFolder = 'all'; // Show all videos
+                applyFilters();
+                return;
+            }
+            
+            // Show navigation with multiple folders
+            navigationToolbar.style.display = 'block';
+            
+            const pillsHTML = [
+                '<div class="folder-pill active" data-folder="all">All Videos</div>',
+                ...availableFolders.map(folder => 
+                    `<div class="folder-pill" data-folder="${folder}">${folder}</div>`
+                )
+            ].join('');
+            
+            folderPills.innerHTML = pillsHTML;
+            
+            document.querySelectorAll('.folder-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const folder = pill.dataset.folder;
+                    selectFolder(folder);
+                });
+            });
+
+            checkOverflow();
+            folderPills.addEventListener('scroll', checkOverflow);
+            window.addEventListener('resize', checkOverflow);
+        }
+
+        function checkOverflow() {
+            const folderPills = document.getElementById('folderPills');
+            const folderPillsContainer = document.getElementById('folderPillsContainer');
+            
+            if (folderPills && folderPillsContainer) {
+                const isOverflowing = folderPills.scrollWidth > folderPills.clientWidth;
+                const isAtEnd = folderPills.scrollLeft >= (folderPills.scrollWidth - folderPills.clientWidth - 5);
+                
+                if (isOverflowing && !isAtEnd) {
+                    folderPillsContainer.classList.add('has-overflow');
+                } else {
+                    folderPillsContainer.classList.remove('has-overflow');
+                }
+            }
+        }
+
+        function selectFolder(folder) {
+            currentFolder = folder;
+            
+            // Only update pills if navigation is visible
+            const navigationToolbar = document.querySelector('.navigation-toolbar');
+            if (navigationToolbar.style.display !== 'none') {
+                document.querySelectorAll('.folder-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                });
+                const targetPill = document.querySelector(`[data-folder="${folder}"]`);
+                if (targetPill) {
+                    targetPill.classList.add('active');
+                }
+            }
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let videos = [...allVideos];
+            
+            if (currentFolder !== 'all') {
+                videos = videos.filter(video => video.folder === currentFolder);
+            }
+            
+            filteredVideos = videos;
+            renderThumbnails();
+            
+            if (currentVideoId && !filteredVideos.find(v => v.id === currentVideoId) && filteredVideos.length > 0) {
+                loadVideo(filteredVideos[0].id);
+            }
+        }
+
+        function loadVideo(videoId) {
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) return;
+
+            currentVideoId = videoId;
+            
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            
+            const mainVideo = document.getElementById('mainVideo');
+            const mainVideoSource = document.getElementById('mainVideoSource');
+            const currentVideoTitle = document.getElementById('currentVideoTitle');
+            const currentVideoMeta = document.getElementById('currentVideoMeta');
+            const currentDuration = document.getElementById('currentDuration');
+            const currentSize = document.getElementById('currentSize');
+            const currentDate = document.getElementById('currentDate');
+
+            mainVideoSource.src = video.url;
+            mainVideo.load();
+            
+            // Auto-play the video when clicked from grid
+            mainVideo.addEventListener('loadedmetadata', function autoPlay() {
+                mainVideo.play().catch(error => {
+                    // Auto-play might be blocked by browser, that's okay
+                    console.log('Auto-play prevented by browser:', error);
+                });
+                // Remove listener after first use
+                mainVideo.removeEventListener('loadedmetadata', autoPlay);
+            });
+            
+            currentVideoTitle.textContent = video.title;
+            currentDuration.textContent = video.duration;
+            currentSize.textContent = video.size;
+            currentDate.textContent = video.dateDisplay;
+
+            // Setup main player action buttons
+            setupMainPlayerActions(video);
+
+            document.querySelectorAll('.thumbnail-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            const activeCard = document.querySelector(`[data-video-id="${videoId}"]`);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+
+            setupWatchTracking(mainVideo, videoId);
+        }
+
+        function setupMainPlayerActions(video) {
+            const downloadBtn = document.getElementById('mainDownloadBtn');
+            const shareBtn = document.getElementById('mainShareBtn');
+            
+            // Remove existing listeners
+            downloadBtn.replaceWith(downloadBtn.cloneNode(true));
+            shareBtn.replaceWith(shareBtn.cloneNode(true));
+            
+            // Get fresh references
+            const newDownloadBtn = document.getElementById('mainDownloadBtn');
+            const newShareBtn = document.getElementById('mainShareBtn');
+            
+            // Add download functionality
+            newDownloadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadVideo(video.url, video.title);
+            });
+            
+            // Add share functionality
+            newShareBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                shareVideo(video);
+            });
+        }
+
+        function shareVideo(video) {
+            // Copy video URL to clipboard and show share options
+            const videoUrl = video.url;
+            
+            navigator.clipboard.writeText(videoUrl).then(() => {
+                showToast(`Video link copied! Share: ${video.title}`);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = videoUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showToast(`Video link copied! Share: ${video.title}`);
+            });
+        }
+
+        function setupWatchTracking(videoElement, videoId) {
+            videoElement.removeEventListener('timeupdate', videoElement._watchTracker);
+            
+            const watchTracker = function() {
+                if (videoElement.currentTime > 5 && !watchedVideos.has(videoId)) {
+                    watchedVideos.add(videoId);
+                    updateWatchedStatus(videoId);
+                }
+            };
+            
+            videoElement._watchTracker = watchTracker;
+            videoElement.addEventListener('timeupdate', watchTracker);
+        }
+
+        function updateWatchedStatus(videoId) {
+            const thumbnailCard = document.querySelector(`[data-video-id="${videoId}"]`);
+            if (thumbnailCard && !thumbnailCard.querySelector('.watched-badge')) {
+                const watchedBadge = document.createElement('div');
+                watchedBadge.className = 'watched-badge';
+                watchedBadge.textContent = 'Watched';
+                thumbnailCard.querySelector('.thumbnail-image').appendChild(watchedBadge);
+            }
+        }
+
+        function renderThumbnails() {
+            const grid = document.getElementById('thumbnailsGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (filteredVideos.length === 0) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            grid.innerHTML = filteredVideos.map(video => {
+                // Smart thumbnail timing: 10% into video, minimum 2 seconds, maximum 30 seconds
+                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+                
+                return `
+                <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
+                    <div class="thumbnail-image">
+                        <video class="thumbnail-video" preload="metadata" muted>
+                            <source src="${video.url}#t=${thumbnailTime}" type="video/mp4">
+                        </video>
+                        <div class="thumbnail-overlay">▶</div>
+                        <div class="thumbnail-actions">
+                            <button class="action-btn download-btn" title="Download video" data-video-url="${video.url}" data-video-title="${video.title}"></button>
+                            <button class="action-btn external-btn" title="Open in new window" data-video-url="${video.url}"></button>
+                        </div>
+                        <div class="duration-badge">${video.duration}</div>
+                        ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
+                    </div>
+                    <div class="thumbnail-info">
+                        <div class="thumbnail-title">${video.title.replace(/\.[^/.]+$/, '')}</div>
+                        <div class="thumbnail-meta">
+                            <span>${video.size}</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            
+            document.querySelectorAll('.thumbnail-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.action-btn')) {
+                        return;
+                    }
+                    const videoId = parseInt(card.dataset.videoId);
+                    loadVideo(videoId);
+                });
+            });
+
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const videoUrl = btn.dataset.videoUrl;
+                    const videoTitle = btn.dataset.videoTitle;
+                    downloadVideo(videoUrl, videoTitle);
+                });
+            });
+
+            document.querySelectorAll('.external-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const videoUrl = btn.dataset.videoUrl;
+                    openInNewWindow(videoUrl);
+                });
+            });
+        }
+
+        function downloadVideo(videoUrl, videoTitle) {
+            const link = document.createElement('a');
+            link.href = videoUrl;
+            link.download = videoTitle;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast(`Downloading ${videoTitle}...`);
+        }
+
+        function openInNewWindow(videoUrl) {
+            window.open(videoUrl, '_blank', 'noopener,noreferrer');
+            showToast('Opening video in new window...');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', init);
+
+        console.log('🎬 VidShare Dynamic Gallery Ready!');
+    </script>
+</body>
+</html>
