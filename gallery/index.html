@@ -19,7 +19,7 @@
         }
 
         .main-container {
-            max-width: 1400px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             overflow: hidden;
@@ -31,33 +31,15 @@
         .main-player {
             position: relative;
             width: 100%;
-            background: white;
-        }
-
-        .main-player.landscape {
-            aspect-ratio: 16 / 9;
-            max-height: 70vh;
-        }
-
-        .main-player.portrait {
-            aspect-ratio: 9 / 16;
-            max-height: 80vh;
-            max-width: 45vh; /* Maintain reasonable width for portrait */
-            margin: 0 auto;
-        }
-
-        .main-player.square {
-            aspect-ratio: 1 / 1;
-            max-height: 70vh;
-            max-width: 70vh;
-            margin: 0 auto;
+            background: #000;
+            aspect-ratio: 16/9;
         }
 
         .main-video {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            background: white;
+            background: #000;
         }
 
         .video-info-overlay {
@@ -67,7 +49,7 @@
             right: 0;
             background: linear-gradient(rgba(0,0,0,0.8), transparent);
             color: white;
-            padding: 25px 25px 40px;
+            padding: 20px 20px 30px;
             opacity: 0;
             transform: translateY(0);
             transition: opacity 0.3s ease;
@@ -78,29 +60,32 @@
             opacity: 1;
         }
 
+        .current-video-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
         .main-player-actions {
             position: absolute;
-            top: 25px;
-            right: 25px;
+            top: 15px;
+            right: 15px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             transition: all 0.3s ease;
-            pointer-events: none;
             z-index: 20;
         }
 
         .main-player:hover .main-player-actions {
             opacity: 1;
             transform: translateY(0);
-            pointer-events: all;
         }
 
         .main-action-btn {
             width: 48px;
             height: 48px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.7);
             color: white;
             border: none;
             border-radius: 50%;
@@ -110,46 +95,28 @@
             justify-content: center;
             font-size: 18px;
             transition: all 0.3s ease;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(5px);
         }
 
         .main-action-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0,0,0,0.9);
             transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .main-download-btn::before {
-            content: '↓';
+        .main-action-btn.external-btn {
+            font-size: 22px;
         }
 
-        .main-share-btn::before {
-            content: '⧉';
-        }
-
-        .current-video-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .current-video-meta {
-            display: flex;
-            gap: 20px;
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        /* Error/Status Messages */
+        /* Status Messages */
         .status-message {
             background: #e3f2fd;
             border-bottom: 1px solid #90caf9;
-            padding: 15px 20px 15px 80px; /* Extra left padding to avoid layout toggle */
+            padding: 15px 20px;
             text-align: center;
             color: #1565c0;
             font-size: 0.9rem;
             position: relative;
-            z-index: 999; /* Below layout toggle */
+            z-index: 999;
         }
 
         .status-message.error {
@@ -170,9 +137,43 @@
             color: #2e7d32;
         }
 
+        /* Demo Notice */
+        .demo-notice {
+            background: #e3f2fd;
+            border-bottom: 1px solid #90caf9;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+
+        .demo-notice strong {
+            color: #0d47a1;
+        }
+
+        .create-own-btn {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .create-own-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
         /* Compact Navigation Toolbar */
         .navigation-toolbar {
-            padding: 25px 30px;
+            padding: 20px;
             background: white;
             border-bottom: 1px solid #e9ecef;
             position: relative;
@@ -248,112 +249,51 @@
 
         /* Thumbnails Section */
         .thumbnails-section {
-            padding: 30px;
+            padding: 20px;
             background: white;
         }
 
-        .thumbnails-container {
-            margin-top: 40px; /* Space between player and thumbnails */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
         }
 
-        /* Desktop layout with side thumbnails */
-        .desktop-layout {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-        }
-
-        .desktop-layout .main-player-container {
-            flex: 1;
-            min-width: 0; /* Allows flex item to shrink */
-        }
-
-        .desktop-layout .thumbnails-sidebar {
-            width: 320px;
-            flex-shrink: 0;
-        }
-
-        .desktop-layout .thumbnails-container {
-            margin-top: 0; /* No top margin in desktop layout */
-        }
-
-        .thumbnails-sidebar {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .thumbnails-sidebar .thumbnails-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 70vh;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-
-        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-track {
-            background: #e9ecef;
-            border-radius: 3px;
-        }
-
-        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 3px;
-        }
-
-        .thumbnails-sidebar .thumbnails-grid::-webkit-scrollbar-thumb:hover {
-            background: #5a6fd8;
-        }
-
-        .thumbnails-sidebar .thumbnail-card {
-            flex-shrink: 0;
-        }
-
-        .thumbnails-sidebar .thumbnail-image {
-            height: 80px;
-        }
-
-        .thumbnails-sidebar .thumbnail-video {
-            object-fit: contain; /* Better for vertical videos in sidebar */
-        }
-
-        /* Layout toggle button */
-        .layout-toggle {
-            position: fixed;
-            top: 25px;
-            left: 25px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .layout-toggle:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.05);
-        }
-
-        /* Regular grid layout (default) */
-        .grid-layout .thumbnails-grid {
+        .thumbnails-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            gap: 15px;
         }
 
-        .grid-layout .thumbnail-video {
-            object-fit: contain; /* Better for mixed aspect ratios */
+        .thumbnails-grid.vertical-layout {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        .thumbnails-grid.vertical-layout .thumbnail-image {
+            aspect-ratio: 9/16;
+        }
+
+        /* Mobile vertical layout */
+        @media (max-width: 768px) {
+            .thumbnails-grid.vertical-layout {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 12px;
+                padding: 0 15px;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .thumbnails-grid.vertical-layout::-webkit-scrollbar {
+                display: none;
+            }
+
+            .thumbnails-grid.vertical-layout .thumbnail-card {
+                flex: 0 0 calc(40vw - 8px);
+                scroll-snap-align: start;
+            }
         }
 
         .thumbnail-card {
@@ -363,6 +303,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
         }
 
         .thumbnail-card:hover {
@@ -378,8 +320,8 @@
         .thumbnail-image {
             position: relative;
             width: 100%;
-            height: 120px;
-            background: white;
+            aspect-ratio: 16/9;
+            background: #e9ecef;
             overflow: hidden;
         }
 
@@ -409,8 +351,8 @@
 
         .watched-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            bottom: 8px;
+            left: 8px;
             background: #28a745;
             color: white;
             padding: 4px 8px;
@@ -431,23 +373,18 @@
 
         .thumbnail-info {
             padding: 12px;
+            flex-grow: 1;
         }
 
         .thumbnail-title {
             font-size: 0.9rem;
             font-weight: 500;
-            margin-bottom: 6px;
             line-height: 1.2;
             color: #333;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-        }
-
-        .thumbnail-meta {
-            font-size: 0.8rem;
-            color: #666;
         }
 
         .duration-badge {
@@ -501,7 +438,7 @@
         }
 
         .download-btn::before {
-            content: '↓';
+            content: '⬇';
         }
 
         .external-btn::before {
@@ -518,13 +455,13 @@
         .loading::after {
             content: '';
             display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid #e9ecef;
-            border-top: 3px solid #667eea;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-left: 12px;
+            margin-left: 10px;
         }
 
         .loading.fade-out {
@@ -544,63 +481,9 @@
         }
 
         /* Mobile Optimizations */
-        @media (max-width: 1024px) {
-            .layout-toggle {
-                display: none; /* Hide layout toggle on mobile/tablet */
-            }
-
-            .desktop-layout {
-                display: block; /* Force grid layout on smaller screens */
-            }
-
-            .thumbnails-sidebar {
-                width: auto;
-                margin-top: 30px;
-            }
-
-            .thumbnails-sidebar .thumbnails-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 15px;
-                max-height: none;
-                overflow-y: visible;
-            }
-
-            .thumbnails-section {
-                padding: 25px;
-            }
-
-            .thumbnails-container {
-                margin-top: 30px;
-            }
-        }
-
         @media (max-width: 768px) {
-            .main-player.landscape {
-                aspect-ratio: 16 / 9;
-                max-height: 50vh;
-            }
-
-            .main-player.portrait {
-                aspect-ratio: 9 / 16;
-                max-height: 60vh;
-                max-width: 33vh;
-            }
-
-            .main-player-actions {
-                top: 20px;
-                right: 20px;
-                gap: 10px;
-            }
-
-            .main-action-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-
             .navigation-toolbar {
-                padding: 20px;
+                padding: 15px;
             }
 
             .folder-pill {
@@ -608,30 +491,13 @@
                 padding: 5px 10px;
             }
 
-            .thumbnails-section {
-                padding: 20px;
-            }
-
-            .thumbnails-container {
-                margin-top: 25px;
-            }
-
             .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 15px;
-            }
-
-            .thumbnail-image {
-                height: 100px;
+                gap: 12px;
             }
 
             .current-video-title {
                 font-size: 1.2rem;
-            }
-
-            .current-video-meta {
-                flex-direction: column;
-                gap: 5px;
             }
 
             .video-info-overlay {
@@ -640,21 +506,6 @@
         }
 
         @media (max-width: 480px) {
-            .main-player.landscape {
-                max-height: 40vh;
-            }
-
-            .main-player.portrait {
-                max-height: 50vh;
-                max-width: 25vh;
-            }
-
-            .main-action-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 14px;
-            }
-
             .thumbnails-section {
                 padding: 15px;
             }
@@ -663,17 +514,9 @@
                 padding: 15px;
             }
 
-            .thumbnails-container {
-                margin-top: 20px;
-            }
-
             .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
-            }
-
-            .thumbnail-image {
-                height: 90px;
+                gap: 10px;
             }
 
             .thumbnail-info {
@@ -682,36 +525,42 @@
         }
 
         /* Desktop Layout Adjustments */
-        @media (min-width: 1025px) {
-            .grid-layout .thumbnails-grid {
+        @media (min-width: 1024px) {
+            .thumbnails-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 25px;
-            }
-
-            .grid-layout .thumbnail-image {
-                height: 140px;
-            }
-
-            .thumbnails-sidebar {
-                padding: 25px;
-            }
-
-            .thumbnails-sidebar .thumbnails-grid {
-                gap: 18px;
+                gap: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <!-- Layout Toggle Button (Desktop only) -->
-        <button class="layout-toggle" id="layoutToggle" title="Toggle layout">
-            📱 Grid View
-        </button>
-
         <!-- Status Message (for errors/info) -->
         <div id="statusMessage" class="status-message" style="display: none;">
             Status message will appear here
+        </div>
+
+        <!-- Demo Notice -->
+        <div class="demo-notice" id="demoNotice">
+            <div>
+                <strong>VidShare Demo Gallery</strong>
+            </div>
+            <a href="#" class="create-own-btn">Create Your Own</a>
+        </div>
+
+        <!-- Main Video Player -->
+        <div class="main-player">
+            <video class="main-video" id="mainVideo" controls preload="metadata">
+                <source id="mainVideoSource" src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-info-overlay">
+                <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
+            </div>
+            <div class="main-player-actions" id="mainPlayerActions" style="display: none;">
+                <button class="main-action-btn" id="mainDownloadBtn" title="Download video" style="display: none;">⬇</button>
+                <button class="main-action-btn external-btn" id="mainExternalBtn" title="Open in new window" style="display: none;">⧉</button>
+            </div>
         </div>
 
         <!-- Compact Navigation Toolbar -->
@@ -723,56 +572,34 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="thumbnails-section grid-layout" id="mainContentArea">
+        <!-- Thumbnails Section -->
+        <div class="thumbnails-section">
             <div id="loadingMessage" class="loading">
-                Loading videos from Dropbox...
+                Loading videos...
             </div>
 
-            <!-- Main Video Player Container -->
-            <div class="main-player-container">
-                <div class="main-player landscape" id="mainPlayer">
-                    <video class="main-video" id="mainVideo" controls preload="metadata">
-                        <source id="mainVideoSource" src="" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="video-info-overlay">
-                        <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
-                        <div class="current-video-meta" id="currentVideoMeta">
-                            <span id="currentDuration">--:--</span>
-                            <span id="currentSize">-- MB</span>
-                            <span id="currentDate">--</span>
-                        </div>
-                    </div>
-                    <div class="main-player-actions" id="mainPlayerActions">
-                        <button class="main-action-btn main-download-btn" id="mainDownloadBtn" title="Download video"></button>
-                        <button class="main-action-btn main-share-btn" id="mainShareBtn" title="Share video"></button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Thumbnails Container -->
-            <div class="thumbnails-container" id="thumbnailsContainer">
-                <div class="thumbnails-grid" id="thumbnailsGrid"></div>
-            </div>
+            <div class="thumbnails-grid" id="thumbnailsGrid"></div>
 
             <div class="no-results" id="noResults" style="display: none;">
-                No videos found in this folder.
+                No videos found.
             </div>
         </div>
     </div>
 
     <script>
-        // ADD YOUR DROPBOX TOKEN HERE
-        const DROPBOX_TOKEN = 'sl.u.AFy4s08XCdzmFz_LyPvSH6wDM84mOHGwORo8CtJnJR5yxbySa3iwLThPR1zXiNd5ZV5yTbMbdoY8fI62W9mL7ItNclEC1MT8TCM35htgq9PZIN_4TGjBVv90MaAHxCfFRp9KVDMmklgFAXSJjW1DdMzYiw-Q9uGysKQaW_rj0XXcNj-4E53X18UVo8mRBZ2kJskCw0XBgRJvrwKck6CECGL7K8dcythqnYwN9UKUNIQqN22jZIS_9M7dRhd08iBDFm2JQzfHHe94MkjOg-JDL2aGljaTE9cFbRvbUe7f_6xMdt_oSDcSByyPWLm0ZsWtfVYKE5gqYiD1vL4BXclARyGQpbVxdftgxLtlLrg6ex52D77_M2BwSnl1KsZrGONNoN2AER13k2kvcKrerf3TY7nhsEPsZDUFpSHK-KeIEsbnw9WlKIUNs_31wFXcgtVcrWdU2UuFTBemgTRgMT2r5FU8w_bt4Znp8jSxEPvtY_p-cXEKla-T8ZxTITQjNpmpMo38WgzPb5nl7BXeFtTThRKIuXDMzc-eNVz4artOGGyiuDBzHuQ1XNMws-VfYRRuBZvxDwbmdBr1fIHvTuUsinLol3Poc42LuuhzMA3y-L3QpQYyHO1il1WEhbBmC2g0zuttdbEv5AdYucN17MQAF2XgM2E5cY9hrelgmmrcN8mZtMH3IQz3wN3NLT4OleT8vMQen2lQWEUq7KV6oIt1h6RaTaOJLbldb5wGVIbWp_B-cmXcWROFq7DZ-Ee_p5IhhpTWq1p8WjztrDqcup7PdSkhlgFnIO8Gwosta54ymSJbv59VXnWOwqEAzGk0Soqkuoob5i87HifjN96Ai16LtbbcVcJuBy6VXQOv1Ngbxgt_szTCz1lXklpUjE31sR7LvWJlQ3jdLNuJ2qUHi9muqq2C2qMQiH8Y3N10bQUEcX-1IjgED_9eqlZpckjQxB8tvo17ScPHk3QLi2SW4o_WMy18Es9-Sti-byp72RBQ61ykt_lvWDQoVUBVshBKvcnJR6qzSbpzKTjXoV0zPY_10u6z_6mrXCgpMpppCjQYmxkYpmgSuV48iydT5gxuaT6PknarrNmREQwE4I99XMcyXI6CyBEdsZ3JNtGAhse5S0Cyn2iJh0G1Vd2tUltiX4X6ApYzR-SBofIpGKn60f1O8k69TtIzkyz2Y4uLuhsDdud8y3h4sbgPPx_2EsW0DPrBVuzADFuD4coPnfovyIzcvXHETgFjkhLaOenGL8Ex0-36q7MXnB3SnsoCdko0Wk6x04UtjXAdHmYjgNpEBJWicfNY4U9IzUUOuV154tIWdblBDa5wXAIBZR_4BdDNaqXb5JPVJuBOlS7Mu9kpn2HzNpM7';
-
+        // Configuration - ADD YOUR DROPBOX TOKEN HERE
+        const DROPBOX_TOKEN = '';
+        
         let allVideos = [];
         let filteredVideos = [];
         let currentVideoId = null;
         let currentFolder = 'all';
         let availableFolders = [];
         let watchedVideos = new Set();
-        let isDesktopLayout = false;
+        let galleryConfig = {
+            allowDownloads: false,
+            allowSharing: false
+        };
 
         // Initialize the app
         async function init() {
@@ -790,12 +617,22 @@
                     
                     if (galleries[shortCode]) {
                         console.log('✅ Found gallery for short code:', galleries[shortCode]);
-                        const folderUrl = galleries[shortCode].folderUrl;
+                        const galleryData = galleries[shortCode];
+                        const folderUrl = galleryData.folderUrl;
+                        
+                        // Load gallery configuration
+                        if (galleryData.config) {
+                            galleryConfig = galleryData.config;
+                            console.log('🎛️ Gallery config loaded:', galleryConfig);
+                        }
+                        
+                        hideDemoNotice();
                         await loadFolderContents(folderUrl);
                         return;
                     } else {
                         console.error('❌ Short code not found:', shortCode);
                         showStatusMessage('error', `Gallery not found for code: ${shortCode}. The link may be expired or invalid.`);
+                        await loadSampleVideos(); // Fallback to demo
                         return;
                     }
                 }
@@ -805,18 +642,32 @@
                 const folderUrl = urlParams.get('folder');
                 
                 if (!folderUrl) {
-                    showStatusMessage('error', 'No folder URL provided. Please use the admin panel to generate a gallery link.');
+                    console.log('📺 No folder URL provided, loading demo videos');
+                    await loadSampleVideos(); // Show demo
+                    return;
+                }
+                
+                if (!DROPBOX_TOKEN) {
+                    showStatusMessage('error', 'Dropbox token not configured. Please add your token to use real folders.');
                     await loadSampleVideos(); // Fallback to demo
                     return;
                 }
                 
                 console.log('🔍 Loading gallery for folder:', folderUrl);
+                hideDemoNotice();
                 await loadFolderContents(folderUrl);
                 
             } catch (error) {
                 console.error('❌ Error initializing gallery:', error);
                 showStatusMessage('error', 'Error loading gallery. Using demo videos instead.');
                 await loadSampleVideos(); // Fallback to sample videos
+            }
+        }
+
+        function hideDemoNotice() {
+            const demoNotice = document.getElementById('demoNotice');
+            if (demoNotice) {
+                demoNotice.style.display = 'none';
             }
         }
 
@@ -831,6 +682,39 @@
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
                 }, 5000);
+            }
+        }
+
+        function applyGalleryConfiguration() {
+            console.log('🎛️ Applying gallery configuration:', galleryConfig);
+            
+            // Show/hide action buttons based on configuration
+            const mainDownloadBtn = document.getElementById('mainDownloadBtn');
+            const mainExternalBtn = document.getElementById('mainExternalBtn');
+            
+            if (galleryConfig.allowDownloads) {
+                mainDownloadBtn.style.display = 'flex';
+                console.log('✅ Downloads enabled');
+            } else {
+                mainDownloadBtn.style.display = 'none';
+                console.log('❌ Downloads disabled');
+            }
+            
+            if (galleryConfig.allowSharing) {
+                mainExternalBtn.style.display = 'flex';
+                console.log('✅ Individual sharing enabled');
+            } else {
+                mainExternalBtn.style.display = 'none';
+                console.log('❌ Individual sharing disabled');
+            }
+            
+            // Update status message to show configuration
+            let configStatus = [];
+            if (!galleryConfig.allowDownloads) configStatus.push('Downloads disabled');
+            if (!galleryConfig.allowSharing) configStatus.push('Individual sharing disabled');
+            
+            if (configStatus.length > 0) {
+                showStatusMessage('info', `Gallery settings: ${configStatus.join(', ')}`);
             }
         }
 
@@ -897,17 +781,13 @@
                 
                 showStatusMessage('success', `Found ${allVideos.length} video${allVideos.length === 1 ? '' : 's'} across ${availableFolders.length} folder${availableFolders.length === 1 ? '' : 's'}!`);
                 
+                // Apply gallery configuration to UI
+                applyGalleryConfiguration();
+                
                 renderFolderNavigation();
                 
                 if (filteredVideos.length > 0) {
-                    // Get the first video to determine initial player aspect ratio
-                    const firstVideo = filteredVideos[0];
-                    await setInitialPlayerAspectRatio(firstVideo);
-                    loadVideo(filteredVideos[0].id);
-                } else {
-                    // No videos, keep default 16:9 landscape
-                    const mainPlayer = document.getElementById('mainPlayer');
-                    mainPlayer.className = 'main-player landscape';
+                    setActiveVideo(filteredVideos[0].id);
                 }
                 
                 renderThumbnails();
@@ -917,9 +797,6 @@
                 showStatusMessage('error', `Error accessing folder: ${error.message}. Please check the URL and try again.`);
                 fadeOutLoading();
                 document.getElementById('noResults').style.display = 'block';
-                
-                // DON'T fall back to sample videos - show the actual error instead
-                // This way we can debug what's really happening
             }
         }
 
@@ -991,7 +868,8 @@
                             durationSeconds: extractDuration(file),
                             duration: formatDuration(extractDuration(file)),
                             dateDisplay: formatDate(file.server_modified),
-                            date: file.server_modified.split('T')[0]
+                            date: file.server_modified.split('T')[0],
+                            isVertical: false // Will be detected later if needed
                         };
                     });
                     
@@ -1083,6 +961,13 @@
         function formatDuration(seconds) {
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = seconds % 60;
+            
+            // For videos 59 seconds or less, use X:XX format
+            if (seconds <= 59) {
+                return `${seconds}s`;
+            }
+            
+            // For videos 60 seconds or more, use M:SS format
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
@@ -1095,38 +980,165 @@
             });
         }
 
-        async function loadSampleVideos() {
-            // Fallback sample data when API fails
-            console.log('📺 Loading sample video data as fallback');
-            showStatusMessage('warning', 'Showing demo videos. Please check your Dropbox folder URL.');
+        function formatFolderName(folderName) {
+            // Remove non-alphanumeric characters except spaces and hyphens
+            let cleaned = folderName.replace(/[^a-zA-Z0-9\s\-]/g, '');
             
-            allVideos = [
+            // Split by spaces or hyphens, capitalize first letter of each word, rest lowercase
+            let formatted = cleaned.split(/[\s\-]+/)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+            
+            // Enforce character limit (20 characters) with ellipsis
+            const maxLength = 20;
+            if (formatted.length > maxLength) {
+                formatted = formatted.substring(0, maxLength - 3) + '...';
+            }
+            
+            return formatted;
+        }
+
+        async function loadSampleVideos() {
+            // Simulate loading delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Sample videos that demonstrate the gallery functionality
+            const sampleVideos = [
                 {
                     id: 1,
                     title: "Big Buck Bunny.mp4",
                     folder: "Animation",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    lastModified: "2024-03-15T10:30:00Z",
-                    size: "15.2 MB",
-                    durationSeconds: 634,
                     duration: "10:34",
+                    durationSeconds: 634,
+                    date: "2024-03-15",
                     dateDisplay: "Mar 15, 2024",
-                    date: "2024-03-15"
+                    isVertical: false
                 },
                 {
                     id: 2,
-                    title: "Elephants Dream.mp4", 
+                    title: "Elephants Dream.mp4",
                     folder: "Animation",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                    lastModified: "2024-03-20T14:15:00Z",
-                    size: "18.7 MB",
-                    durationSeconds: 653,
                     duration: "10:53",
+                    durationSeconds: 653,
+                    date: "2024-03-20",
                     dateDisplay: "Mar 20, 2024",
-                    date: "2024-03-20"
+                    isVertical: false
+                },
+                {
+                    id: 3,
+                    title: "For Bigger Blazes.mp4",
+                    folder: "Advertising",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    duration: "00:15",
+                    durationSeconds: 15,
+                    date: "2024-03-10",
+                    dateDisplay: "Mar 10, 2024",
+                    isVertical: false
+                },
+                {
+                    id: 4,
+                    title: "For Bigger Escapes.mp4",
+                    folder: "Advertising",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                    duration: "00:15",
+                    durationSeconds: 15,
+                    date: "2024-03-25",
+                    dateDisplay: "Mar 25, 2024",
+                    isVertical: false
+                },
+                {
+                    id: 5,
+                    title: "For Bigger Fun.mp4",
+                    folder: "Demos",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                    duration: "00:15",
+                    durationSeconds: 15,
+                    date: "2024-03-12",
+                    dateDisplay: "Mar 12, 2024",
+                    isVertical: false
+                },
+                {
+                    id: 6,
+                    title: "For Bigger Joyrides.mp4",
+                    folder: "Demos",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                    duration: "00:15",
+                    durationSeconds: 15,
+                    date: "2024-03-18",
+                    dateDisplay: "Mar 18, 2024",
+                    isVertical: false
+                },
+                {
+                    id: 7,
+                    title: "Vertical Story 1.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    duration: "00:30",
+                    durationSeconds: 30,
+                    date: "2024-03-22",
+                    dateDisplay: "Mar 22, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 8,
+                    title: "Vertical Story 2.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                    duration: "00:45",
+                    durationSeconds: 45,
+                    date: "2024-03-23",
+                    dateDisplay: "Mar 23, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 9,
+                    title: "Vertical Story 3.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    duration: "00:25",
+                    durationSeconds: 25,
+                    date: "2024-03-24",
+                    dateDisplay: "Mar 24, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 10,
+                    title: "Vertical Story 4.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                    duration: "00:20",
+                    durationSeconds: 20,
+                    date: "2024-03-25",
+                    dateDisplay: "Mar 25, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 11,
+                    title: "Vertical Story 5.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                    duration: "00:35",
+                    durationSeconds: 35,
+                    date: "2024-03-26",
+                    dateDisplay: "Mar 26, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 12,
+                    title: "Vertical Story 6.mp4",
+                    folder: "Vertical",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                    duration: "00:40",
+                    durationSeconds: 40,
+                    date: "2024-03-27",
+                    dateDisplay: "Mar 27, 2024",
+                    isVertical: true
                 }
             ];
-            
+
+            allVideos = sampleVideos;
             availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
             filteredVideos = [...allVideos];
             
@@ -1135,51 +1147,37 @@
             renderFolderNavigation();
             
             if (filteredVideos.length > 0) {
-                // Set initial aspect ratio based on first video
-                const firstVideo = filteredVideos[0];
-                await setInitialPlayerAspectRatio(firstVideo);
-                loadVideo(filteredVideos[0].id);
-            } else {
-                // No videos, keep default 16:9 landscape
-                const mainPlayer = document.getElementById('mainPlayer');
-                mainPlayer.className = 'main-player landscape';
+                setActiveVideo(filteredVideos[0].id);
             }
             
             renderThumbnails();
         }
 
         function renderFolderNavigation() {
-            const navigationToolbar = document.getElementById('navigationToolbar');
             const folderPills = document.getElementById('folderPills');
             const folderPillsContainer = document.getElementById('folderPillsContainer');
+            const navigationToolbar = document.getElementById('navigationToolbar');
             
-            // Extract unique folders from videos (excluding 'Root' if it's the only folder)
-            const uniqueFolders = [...new Set(allVideos.map(video => video.folder))].filter(folder => folder !== 'Root' || allVideos.length === 0);
-            
-            // If no subfolders or only one folder (or only Root), hide navigation entirely
-            if (uniqueFolders.length <= 1) {
+            // If no subfolders or only one folder, hide navigation entirely
+            if (availableFolders.length <= 1) {
                 navigationToolbar.style.display = 'none';
-                currentFolder = 'all'; // Always show all videos when no navigation
+                currentFolder = 'all'; // Show all videos
                 applyFilters();
                 return;
             }
             
-            // Show navigation when we have multiple folders
+            // Show navigation with multiple folders
             navigationToolbar.style.display = 'block';
-            availableFolders = uniqueFolders.sort(); // Update available folders
             
             const pillsHTML = [
                 '<div class="folder-pill active" data-folder="all">All Videos</div>',
-                ...availableFolders.map(folder => {
-                    // Capitalize first letter, lowercase the rest
-                    const displayName = folder.charAt(0).toUpperCase() + folder.slice(1).toLowerCase();
-                    return `<div class="folder-pill" data-folder="${folder}">${displayName}</div>`;
-                })
+                ...availableFolders.map(folder => 
+                    `<div class="folder-pill" data-folder="${folder}">${formatFolderName(folder)}</div>`
+                )
             ].join('');
             
             folderPills.innerHTML = pillsHTML;
             
-            // Add click listeners to folder pills
             document.querySelectorAll('.folder-pill').forEach(pill => {
                 pill.addEventListener('click', () => {
                     const folder = pill.dataset.folder;
@@ -1211,7 +1209,7 @@
         function selectFolder(folder) {
             currentFolder = folder;
             
-            // Update active pill state (only if navigation is visible)
+            // Only update pills if navigation is visible
             const navigationToolbar = document.getElementById('navigationToolbar');
             if (navigationToolbar.style.display !== 'none') {
                 document.querySelectorAll('.folder-pill').forEach(pill => {
@@ -1229,96 +1227,100 @@
         function applyFilters() {
             let videos = [...allVideos];
             
-            // "All Videos" shows everything, regardless of folder location
             if (currentFolder !== 'all') {
                 videos = videos.filter(video => video.folder === currentFolder);
             }
-            // If currentFolder === 'all', show ALL videos from ALL folders/subfolders
             
             filteredVideos = videos;
             renderThumbnails();
             
-            // If current video is filtered out, load first available video
-            if (currentVideoId && !filteredVideos.find(v => v.id === currentVideoId) && filteredVideos.length > 0) {
-                loadVideo(filteredVideos[0].id);
+            // Only auto-select first video if current video is not in filtered results AND no video is currently playing
+            const currentVideoInResults = filteredVideos.find(v => v.id === currentVideoId);
+            const mainVideo = document.getElementById('mainVideo');
+            const isVideoPlaying = mainVideo && !mainVideo.paused;
+            
+            if (!currentVideoInResults && filteredVideos.length > 0 && !isVideoPlaying) {
+                setActiveVideo(filteredVideos[0].id);
+            }
+        }
+
+        function setActiveVideo(videoId) {
+            // Just set the active video without loading/playing it
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) return;
+
+            currentVideoId = videoId;
+            
+            // Update video info display without loading
+            const currentVideoTitle = document.getElementById('currentVideoTitle');
+            const cleanTitle = video.title.replace(/\.[^/.]+$/, '');
+            currentVideoTitle.textContent = cleanTitle;
+
+            // Update active thumbnail state
+            document.querySelectorAll('.thumbnail-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            const activeCard = document.querySelector(`[data-video-id="${videoId}"]`);
+            if (activeCard) {
+                activeCard.classList.add('active');
             }
         }
 
         async function loadVideo(videoId) {
             const video = allVideos.find(v => v.id === videoId);
-            if (!video) {
-                console.error('❌ Video not found for ID:', videoId);
-                return;
-            }
-
-            console.log('🎬 Loading video:', video.title, 'with filePath:', video.filePath);
+            if (!video) return;
 
             currentVideoId = videoId;
             
+            // Only scroll to top when actually playing a video
             window.scrollTo({ top: 0, behavior: 'instant' });
             
             const mainVideo = document.getElementById('mainVideo');
             const mainVideoSource = document.getElementById('mainVideoSource');
-            const mainPlayer = document.getElementById('mainPlayer');
             const currentVideoTitle = document.getElementById('currentVideoTitle');
-            const currentDuration = document.getElementById('currentDuration');
-            const currentSize = document.getElementById('currentSize');
-            const currentDate = document.getElementById('currentDate');
+            const mainPlayerActions = document.getElementById('mainPlayerActions');
+            const mainDownloadBtn = document.getElementById('mainDownloadBtn');
+            const mainExternalBtn = document.getElementById('mainExternalBtn');
 
             // Show loading state
             currentVideoTitle.textContent = `Loading ${video.title}...`;
-            currentDuration.textContent = video.duration;
-            currentSize.textContent = video.size;
-            currentDate.textContent = video.dateDisplay;
 
             try {
-                // Check if filePath exists
-                if (!video.filePath) {
-                    throw new Error(`No file path found for video: ${video.title}`);
-                }
+                let videoUrl = video.url;
                 
-                // Get temporary URL for the video
-                console.log('🎬 Getting temporary URL for:', video.filePath);
-                const videoUrl = await getTemporaryVideoUrl(video.filePath);
+                // If this is a Dropbox video without a URL, get temporary link
+                if (!videoUrl && video.filePath) {
+                    console.log('🎬 Getting temporary URL for:', video.filePath);
+                    videoUrl = await getTemporaryVideoUrl(video.filePath);
+                    video.url = videoUrl; // Cache the URL
+                }
                 
                 mainVideoSource.src = videoUrl;
                 mainVideo.load();
                 
-                // Update the video object with the working URL
-                video.url = videoUrl;
-                
-                // Detect video orientation and adjust player
-                const orientation = await detectVideoOrientation(video);
-                mainPlayer.className = `main-player ${orientation}`;
-                console.log(`📱 Video orientation detected: ${orientation}`);
-                
                 // Auto-play the video when clicked from grid
-                mainVideo.addEventListener('loadedmetadata', function autoPlay() {
-                    currentVideoTitle.textContent = video.title; // Remove "Loading..." text
-                    mainVideo.play().catch(error => {
-                        // Auto-play might be blocked by browser, that's okay
-                        console.log('Auto-play prevented by browser:', error);
+                mainVideo.addEventListener('loadeddata', () => {
+                    mainVideo.play().catch(e => {
+                        console.log('Auto-play prevented by browser:', e);
                     });
-                    // Remove listener after first use
-                    mainVideo.removeEventListener('loadedmetadata', autoPlay);
-                });
+                }, { once: true });
                 
-                // Handle loading errors
-                mainVideo.addEventListener('error', function handleError() {
-                    console.error('❌ Video loading failed:', video.title);
-                    currentVideoTitle.textContent = `Error loading ${video.title}`;
-                    showToast(`Error loading ${video.title}. Please try again.`);
-                    mainVideo.removeEventListener('error', handleError);
-                });
+                // Remove .mp4 extension from title
+                const cleanTitle = video.title.replace(/\.[^/.]+$/, '');
+                currentVideoTitle.textContent = cleanTitle;
+                
+                // Show main player actions container
+                mainPlayerActions.style.display = 'flex';
+                
+                // Setup action buttons based on configuration
+                setupMainPlayerActions(video);
                 
             } catch (error) {
                 console.error('❌ Error loading video:', video.title, error);
                 currentVideoTitle.textContent = `Error: ${video.title}`;
                 showToast(`Failed to load ${video.title}: ${error.message}`);
             }
-
-            // Setup main player action buttons
-            setupMainPlayerActions(video);
 
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.classList.remove('active');
@@ -1334,46 +1336,31 @@
 
         function setupMainPlayerActions(video) {
             const downloadBtn = document.getElementById('mainDownloadBtn');
-            const shareBtn = document.getElementById('mainShareBtn');
+            const externalBtn = document.getElementById('mainExternalBtn');
             
             // Remove existing listeners
             downloadBtn.replaceWith(downloadBtn.cloneNode(true));
-            shareBtn.replaceWith(shareBtn.cloneNode(true));
+            externalBtn.replaceWith(externalBtn.cloneNode(true));
             
             // Get fresh references
             const newDownloadBtn = document.getElementById('mainDownloadBtn');
-            const newShareBtn = document.getElementById('mainShareBtn');
+            const newExternalBtn = document.getElementById('mainExternalBtn');
             
-            // Add download functionality
-            newDownloadBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                downloadVideo(video.url, video.title);
-            });
+            // Add download functionality (only if enabled)
+            if (galleryConfig.allowDownloads) {
+                newDownloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadVideo(video.url, video.title);
+                });
+            }
             
-            // Add share functionality
-            newShareBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                shareVideo(video);
-            });
-        }
-
-        function shareVideo(video) {
-            // Copy video URL to clipboard and show share options
-            const videoUrl = video.url;
-            
-            navigator.clipboard.writeText(videoUrl).then(() => {
-                showToast(`Video link copied! Share: ${video.title}`);
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = videoUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                showToast(`Video link copied! Share: ${video.title}`);
-            });
+            // Add share functionality (only if enabled)
+            if (galleryConfig.allowSharing) {
+                newExternalBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openInNewWindow(video.url);
+                });
+            }
         }
 
         function setupWatchTracking(videoElement, videoId) {
@@ -1400,6 +1387,25 @@
             }
         }
 
+        function generateThumbnailActions(video) {
+            let actions = [];
+            
+            if (galleryConfig.allowDownloads) {
+                actions.push(`<button class="action-btn download-btn" title="Download video" data-video-id="${video.id}"></button>`);
+            }
+            
+            if (galleryConfig.allowSharing) {
+                actions.push(`<button class="action-btn external-btn" title="Open in new window" data-video-id="${video.id}"></button>`);
+            }
+            
+            // Only show the actions container if there are actions to show
+            if (actions.length > 0) {
+                return `<div class="thumbnail-actions">${actions.join('')}</div>`;
+            }
+            
+            return '';
+        }
+
         function renderThumbnails() {
             const grid = document.getElementById('thumbnailsGrid');
             const noResults = document.getElementById('noResults');
@@ -1412,32 +1418,32 @@
             
             noResults.style.display = 'none';
             
-            grid.innerHTML = filteredVideos.map(video => {
-                // Smart thumbnail timing: 10% into video, minimum 2 seconds, maximum 30 seconds
-                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
-                
-                return `
+            // Check if all videos in current view are vertical
+            const allVertical = filteredVideos.every(video => video.isVertical);
+            
+            // Apply appropriate grid class
+            if (allVertical) {
+                grid.className = 'thumbnails-grid vertical-layout';
+            } else {
+                grid.className = 'thumbnails-grid';
+            }
+            
+            grid.innerHTML = filteredVideos.map(video => `
                 <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
                     <div class="thumbnail-image">
-                        <video class="thumbnail-video" preload="metadata" muted data-video-id="${video.id}" data-file-path="${video.filePath}">
+                        <video class="thumbnail-video" preload="metadata" muted data-video-id="${video.id}" data-file-path="${video.filePath || ''}">
                             <!-- Source will be added dynamically when needed -->
                         </video>
                         <div class="thumbnail-overlay">▶</div>
-                        <div class="thumbnail-actions">
-                            <button class="action-btn download-btn" title="Download video" data-video-id="${video.id}"></button>
-                            <button class="action-btn external-btn" title="Open in new window" data-video-id="${video.id}"></button>
-                        </div>
+                        ${generateThumbnailActions(video)}
                         <div class="duration-badge">${video.duration}</div>
                         ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
                     </div>
                     <div class="thumbnail-info">
                         <div class="thumbnail-title">${video.title.replace(/\.[^/.]+$/, '')}</div>
-                        <div class="thumbnail-meta">
-                            <span>${video.size}</span>
-                        </div>
                     </div>
                 </div>
-            `});
+            `).join('');
             
             // Load thumbnail sources when they come into view
             setupThumbnailLazyLoading();
@@ -1452,47 +1458,52 @@
                 });
             });
 
-            document.querySelectorAll('.download-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const videoId = parseInt(btn.dataset.videoId);
-                    const video = allVideos.find(v => v.id === videoId);
-                    if (video) {
-                        if (!video.url) {
-                            showToast('Getting download link...');
-                            try {
-                                video.url = await getTemporaryVideoUrl(video.filePath);
+            // Add event listeners for action buttons (only if they exist)
+            if (galleryConfig.allowDownloads) {
+                document.querySelectorAll('.download-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const videoId = parseInt(btn.dataset.videoId);
+                        const video = allVideos.find(v => v.id === videoId);
+                        if (video) {
+                            if (!video.url && video.filePath) {
+                                showToast('Getting download link...');
+                                try {
+                                    video.url = await getTemporaryVideoUrl(video.filePath);
+                                    downloadVideo(video.url, video.title);
+                                } catch (error) {
+                                    showToast('Failed to get download link');
+                                }
+                            } else {
                                 downloadVideo(video.url, video.title);
-                            } catch (error) {
-                                showToast('Failed to get download link');
                             }
-                        } else {
-                            downloadVideo(video.url, video.title);
                         }
-                    }
+                    });
                 });
-            });
+            }
 
-            document.querySelectorAll('.external-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const videoId = parseInt(btn.dataset.videoId);
-                    const video = allVideos.find(v => v.id === videoId);
-                    if (video) {
-                        if (!video.url) {
-                            showToast('Getting video link...');
-                            try {
-                                video.url = await getTemporaryVideoUrl(video.filePath);
+            if (galleryConfig.allowSharing) {
+                document.querySelectorAll('.external-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const videoId = parseInt(btn.dataset.videoId);
+                        const video = allVideos.find(v => v.id === videoId);
+                        if (video) {
+                            if (!video.url && video.filePath) {
+                                showToast('Getting video link...');
+                                try {
+                                    video.url = await getTemporaryVideoUrl(video.filePath);
+                                    openInNewWindow(video.url);
+                                } catch (error) {
+                                    showToast('Failed to get video link');
+                                }
+                            } else {
                                 openInNewWindow(video.url);
-                            } catch (error) {
-                                showToast('Failed to get video link');
                             }
-                        } else {
-                            openInNewWindow(video.url);
                         }
-                    }
+                    });
                 });
-            });
+            }
         }
 
         function setupThumbnailLazyLoading() {
@@ -1505,17 +1516,28 @@
                         const filePath = video.dataset.filePath;
                         
                         // Only load if not already loaded
-                        if (!video.src && filePath) {
+                        if (!video.src) {
                             try {
-                                console.log('🖼️ Loading thumbnail for:', filePath);
-                                const videoUrl = await getTemporaryVideoUrl(filePath);
+                                let videoUrl;
                                 
-                                // Smart thumbnail timing
+                                // Get URL from our video data
                                 const videoObj = allVideos.find(v => v.id === videoId);
-                                const thumbnailTime = videoObj ? Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30) : 10;
-                                
-                                video.src = `${videoUrl}#t=${thumbnailTime}`;
-                                video.load();
+                                if (videoObj) {
+                                    if (videoObj.url) {
+                                        videoUrl = videoObj.url;
+                                    } else if (filePath && DROPBOX_TOKEN) {
+                                        console.log('🖼️ Loading thumbnail for:', filePath);
+                                        videoUrl = await getTemporaryVideoUrl(filePath);
+                                        videoObj.url = videoUrl; // Cache it
+                                    }
+                                    
+                                    if (videoUrl) {
+                                        // Smart thumbnail timing
+                                        const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                        video.src = `${videoUrl}#t=${thumbnailTime}`;
+                                        video.load();
+                                    }
+                                }
                                 
                                 // Stop observing this element
                                 thumbnailObserver.unobserve(video);
@@ -1539,6 +1561,11 @@
         }
 
         function downloadVideo(videoUrl, videoTitle) {
+            if (!galleryConfig.allowDownloads) {
+                showToast('Downloads are disabled for this gallery');
+                return;
+            }
+            
             const link = document.createElement('a');
             link.href = videoUrl;
             link.download = videoTitle;
@@ -1552,6 +1579,11 @@
         }
 
         function openInNewWindow(videoUrl) {
+            if (!galleryConfig.allowSharing) {
+                showToast('Individual video sharing is disabled for this gallery');
+                return;
+            }
+            
             window.open(videoUrl, '_blank', 'noopener,noreferrer');
             showToast('Opening video in new window...');
         }
@@ -1594,128 +1626,6 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
-
-        // Layout toggle functionality
-        document.getElementById('layoutToggle').addEventListener('click', toggleLayout);
-
-        // Handle browser resize to maintain aspect ratios
-        window.addEventListener('resize', handleWindowResize);
-
-        function handleWindowResize() {
-            // Debounce resize events
-            clearTimeout(window.resizeTimeout);
-            window.resizeTimeout = setTimeout(() => {
-                // Re-setup thumbnail lazy loading after resize
-                setupThumbnailLazyLoading();
-                
-                // Update overflow indicators for folder navigation
-                checkOverflow();
-                
-                // Ensure layout toggle visibility is correct
-                updateLayoutToggleVisibility();
-            }, 150);
-        }
-
-        function updateLayoutToggleVisibility() {
-            const layoutToggle = document.getElementById('layoutToggle');
-            const mainContentArea = document.getElementById('mainContentArea');
-            
-            if (window.innerWidth <= 1024) {
-                layoutToggle.style.display = 'none';
-                // Force grid layout on smaller screens
-                if (isDesktopLayout) {
-                    mainContentArea.className = 'thumbnails-section grid-layout';
-                    const thumbnailsContainer = document.getElementById('thumbnailsContainer');
-                    thumbnailsContainer.className = 'thumbnails-container';
-                }
-            } else {
-                layoutToggle.style.display = 'block';
-            }
-        }
-
-        function toggleLayout() {
-            const mainContentArea = document.getElementById('mainContentArea');
-            const layoutToggle = document.getElementById('layoutToggle');
-            
-            isDesktopLayout = !isDesktopLayout;
-            
-            if (isDesktopLayout) {
-                mainContentArea.className = 'thumbnails-section desktop-layout';
-                layoutToggle.innerHTML = '📱 Grid View';
-                layoutToggle.title = 'Switch to grid view';
-                
-                // Move thumbnails to sidebar
-                const thumbnailsContainer = document.getElementById('thumbnailsContainer');
-                thumbnailsContainer.className = 'thumbnails-sidebar';
-                
-            } else {
-                mainContentArea.className = 'thumbnails-section grid-layout';
-                layoutToggle.innerHTML = '📺 Side View';
-                layoutToggle.title = 'Switch to side view';
-                
-                // Move thumbnails back to bottom
-                const thumbnailsContainer = document.getElementById('thumbnailsContainer');
-                thumbnailsContainer.className = 'thumbnails-container';
-            }
-            
-            // Re-setup thumbnail lazy loading after layout change
-            setTimeout(setupThumbnailLazyLoading, 100);
-        }
-
-        function detectVideoOrientation(video) {
-            return new Promise((resolve) => {
-                if (!video.url) {
-                    resolve('landscape'); // Default assumption
-                    return;
-                }
-                
-                const testVideo = document.createElement('video');
-                testVideo.preload = 'metadata';
-                
-                testVideo.addEventListener('loadedmetadata', () => {
-                    const aspectRatio = testVideo.videoWidth / testVideo.videoHeight;
-                    
-                    if (aspectRatio > 1.2) {
-                        resolve('landscape');
-                    } else if (aspectRatio < 0.8) {
-                        resolve('portrait');
-                    } else {
-                        resolve('square');
-                    }
-                });
-                
-                testVideo.addEventListener('error', () => {
-                    resolve('landscape'); // Fallback
-                });
-                
-                testVideo.src = video.url;
-            });
-        }
-
-        async function setInitialPlayerAspectRatio(firstVideo) {
-            const mainPlayer = document.getElementById('mainPlayer');
-            
-            try {
-                // Try to detect orientation from the first video
-                if (firstVideo.filePath) {
-                    console.log('🎬 Getting initial aspect ratio from first video...');
-                    const videoUrl = await getTemporaryVideoUrl(firstVideo.filePath);
-                    firstVideo.url = videoUrl; // Cache the URL
-                    
-                    const orientation = await detectVideoOrientation(firstVideo);
-                    mainPlayer.className = `main-player ${orientation}`;
-                    console.log(`📱 Initial player set to: ${orientation}`);
-                } else {
-                    // Fallback to landscape if no file path
-                    mainPlayer.className = 'main-player landscape';
-                    console.log('📱 Using default landscape aspect ratio');
-                }
-            } catch (error) {
-                // If detection fails, default to landscape (16:9)
-                console.log('📱 Using default landscape aspect ratio (detection failed)');
-                mainPlayer.className = 'main-player landscape';
-            }
-        }
 
         console.log('🎬 VidShare Gallery Ready!');
     </script>
