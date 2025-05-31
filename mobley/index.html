@@ -115,16 +115,16 @@
         }
 
         .generate-btn {
-            width: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             color: white;
             border: none;
-            padding: 16px;
+            padding: 16px 24px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            min-width: 140px;
         }
 
         .generate-btn:hover {
@@ -136,6 +136,215 @@
             opacity: 0.7;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* Multi-step form styles */
+        .form-step {
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .step-header h3 {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .step-subtitle {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-section h4 {
+            font-size: 1.1rem;
+            color: #444;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Toggle switch styles */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-item:hover {
+            background: #f1f3f4;
+            border-color: #667eea;
+        }
+
+        .toggle-switch {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        .toggle-label {
+            display: block;
+            width: 48px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-input:checked + .toggle-label {
+            background: #667eea;
+        }
+
+        .toggle-input:checked + .toggle-label .toggle-slider {
+            transform: translateX(20px);
+        }
+
+        .toggle-content {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .toggle-description {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* URL customization styles */
+        .url-customization {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .url-preview {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-family: monospace;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .url-preview:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .url-base {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .url-input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: monospace;
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .url-input::placeholder {
+            color: #999;
+            font-weight: normal;
+        }
+
+        .url-help {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Form actions */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        #step1 .generate-btn {
+            width: 100%;
         }
 
         .result-section {
@@ -252,6 +461,42 @@
             .admin-title {
                 font-size: 2rem;
             }
+
+            .toggle-item {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .toggle-switch {
+                align-self: center;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .back-btn,
+            .generate-btn {
+                width: 100%;
+            }
+
+            .url-preview {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .url-base {
+                text-align: center;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .url-input {
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -273,20 +518,81 @@
                 </ol>
             </div>
 
-            <form id="galleryForm">
-                <div class="form-group">
-                    <input 
-                        type="url" 
-                        id="folderUrl" 
-                        class="form-input"
-                        placeholder="https://www.dropbox.com/scl/fo/your-folder-link..."
-                        required>
+            <!-- Step 1: Folder URL Input -->
+            <div id="step1" class="form-step">
+                <form id="galleryForm">
+                    <div class="form-group">
+                        <input 
+                            type="url" 
+                            id="folderUrl" 
+                            class="form-input"
+                            placeholder="https://www.dropbox.com/scl/fo/your-folder-link..."
+                            required>
+                    </div>
+
+                    <button type="submit" class="generate-btn" id="generateBtn">
+                        Next: Configure Gallery
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Gallery Configuration -->
+            <div id="step2" class="form-step" style="display: none;">
+                <div class="step-header">
+                    <h3>📐 Gallery Settings</h3>
+                    <p class="step-subtitle">Customize your gallery's features and URL</p>
                 </div>
 
-                <button type="submit" class="generate-btn" id="generateBtn">
-                    Create Gallery
-                </button>
-            </form>
+                <div class="config-section">
+                    <h4>🎛️ Features</h4>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="allowDownloads" class="toggle-input">
+                                <label for="allowDownloads" class="toggle-label">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-content">
+                                <div class="toggle-title">Allow Downloads</div>
+                                <div class="toggle-description">Show download buttons on videos for viewers to save files locally</div>
+                            </div>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="allowSharing" class="toggle-input">
+                                <label for="allowSharing" class="toggle-label">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-content">
+                                <div class="toggle-title">Individual Video Sharing</div>
+                                <div class="toggle-description">Allow viewers to copy direct links to specific videos in your gallery</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h4>🔗 Custom URL</h4>
+                    <div class="url-customization">
+                        <div class="url-preview">
+                            <span class="url-base" id="urlBase">your-site.com/g/</span>
+                            <input type="text" id="customCode" class="url-input" placeholder="my-videos" minlength="3" maxlength="20" pattern="[a-z0-9-]+">
+                        </div>
+                        <div class="url-help">
+                            Customize your gallery URL (3-20 characters, letters/numbers/hyphens only)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="back-btn" id="backBtn">← Back</button>
+                    <button type="button" class="generate-btn" id="createGalleryBtn">Create Gallery</button>
+                </div>
+            </div>
 
             <div id="resultSection" class="result-section">
                 <div id="resultMessage"></div>
@@ -301,7 +607,9 @@
     <script>
         // Store gallery mappings in localStorage for short URLs
         let galleryStore = JSON.parse(localStorage.getItem('vidshare_galleries') || '{}');
+        let currentFolderUrl = '';
 
+        // Step 1: Validate folder URL and proceed to configuration
         document.getElementById('galleryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -320,62 +628,203 @@
             }
             
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Creating...';
+            generateBtn.textContent = 'Validating...';
             
             try {
-                // Generate gallery URL
-                const galleryUrl = generateGalleryUrl(folderUrl);
+                // Quick validation - try to access the folder
+                await validateFolderAccess(folderUrl);
+                
+                // If successful, store URL and proceed to step 2
+                currentFolderUrl = folderUrl;
+                showStep2();
+                
+            } catch (error) {
+                showResult('error', `
+                    <h3>❌ Folder Access Error</h3>
+                    <p>Cannot access this Dropbox folder: ${error.message}</p>
+                    <p>Please check:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>The folder URL is correct</li>
+                        <li>The folder is publicly shared</li>
+                        <li>Your internet connection is working</li>
+                    </ul>
+                `);
+            }
+            
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Next: Configure Gallery';
+        });
+
+        // Step 2: Create gallery with configuration
+        document.getElementById('createGalleryBtn').addEventListener('click', async () => {
+            const createBtn = document.getElementById('createGalleryBtn');
+            const customCode = document.getElementById('customCode').value.trim();
+            const allowDownloads = document.getElementById('allowDownloads').checked;
+            const allowSharing = document.getElementById('allowSharing').checked;
+            
+            // Validate custom code
+            if (customCode) {
+                if (customCode.length < 3) {
+                    alert('Custom URL must be at least 3 characters long');
+                    return;
+                }
+                
+                if (!/^[a-z0-9-]+$/.test(customCode)) {
+                    alert('Custom URL can only contain lowercase letters, numbers, and hyphens');
+                    return;
+                }
+                
+                // Check if code already exists
+                if (galleryStore[customCode]) {
+                    alert('This custom URL is already taken. Please choose a different one.');
+                    return;
+                }
+            }
+            
+            createBtn.disabled = true;
+            createBtn.textContent = 'Creating...';
+            
+            try {
+                // Generate gallery URL with configuration
+                const result = generateGalleryUrl(currentFolderUrl, customCode, {
+                    allowDownloads,
+                    allowSharing
+                });
                 
                 showResult('success', `
-                    <h3>✅ Gallery Created!</h3>
-                    <p>Your gallery is ready:</p>
+                    <h3>✅ Gallery Created Successfully!</h3>
+                    <p>Your customized gallery is ready with these settings:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px; margin-bottom: 15px;">
+                        <li><strong>Downloads:</strong> ${allowDownloads ? '✅ Enabled' : '❌ Disabled'}</li>
+                        <li><strong>Individual Sharing:</strong> ${allowSharing ? '✅ Enabled' : '❌ Disabled'}</li>
+                        <li><strong>Custom URL:</strong> ${customCode ? `✅ ${customCode}` : '🎲 Auto-generated'}</li>
+                    </ul>
                     <div class="gallery-link">
-                        ${galleryUrl}
-                        <button class="copy-btn" onclick="copyToClipboard('${galleryUrl}')">Copy</button>
+                        ${result.galleryUrl}
+                        <button class="copy-btn" onclick="copyToClipboard('${result.galleryUrl}')">Copy</button>
                     </div>
-                    <button onclick="window.open('${galleryUrl}', '_blank')" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    <button onclick="window.open('${result.galleryUrl}', '_blank')" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
                         Open Gallery
                     </button>
                     <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 14px; color: #666;">
-                        <strong>💡 Tip:</strong> Share this URL with others to let them view your videos!
+                        <strong>💡 Share this URL</strong> with others to let them view your videos with your custom settings!
                     </div>
                 `);
                 
             } catch (error) {
                 showResult('error', `
                     <h3>❌ Error</h3>
-                    <p>Something went wrong generating the gallery: ${error.message}</p>
-                    <p>Please check your folder URL and try again.</p>
+                    <p>Something went wrong creating the gallery: ${error.message}</p>
+                    <p>Please try again.</p>
                 `);
             }
             
-            generateBtn.disabled = false;
-            generateBtn.textContent = 'Create Gallery';
+            createBtn.disabled = false;
+            createBtn.textContent = 'Create Gallery';
         });
 
-        function generateGalleryUrl(folderUrl) {
+        // Navigation between steps
+        document.getElementById('backBtn').addEventListener('click', () => {
+            showStep1();
+        });
+
+        async function validateFolderAccess(folderUrl) {
+            // Quick validation without requiring full token
+            // For now, just basic URL structure validation
+            if (!folderUrl.match(/dropbox\.com.*\/scl\/fo\/|dropbox\.com.*\/sh\//)) {
+                throw new Error('Invalid Dropbox folder URL format');
+            }
+            
+            // Additional validation could be added here if needed
+            return true;
+        }
+
+        function showStep1() {
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+            
+            // Update URL base display
+            updateUrlBase();
+        }
+
+        function showStep2() {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            
+            // Generate a suggested custom code based on the folder URL
+            suggestCustomCode();
+            
+            // Update URL base display
+            updateUrlBase();
+        }
+
+        function suggestCustomCode() {
+            const input = document.getElementById('customCode');
+            
             try {
-                // Validate the URL format
-                if (!folderUrl.includes('dropbox.com')) {
-                    throw new Error('Invalid Dropbox URL format');
+                // Try to extract a meaningful name from the folder URL
+                let suggestion = '';
+                
+                // Look for folder identifiers in the URL
+                const urlMatch = currentFolderUrl.match(/\/([^\/\?&]+)(?=[\?&]|$)/);
+                if (urlMatch) {
+                    suggestion = urlMatch[1]
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]/g, '-')
+                        .replace(/-+/g, '-')
+                        .replace(/^-|-$/g, '')
+                        .substring(0, 15);
                 }
                 
-                // Generate short code for compact URL
-                const shortCode = generateShortCode();
+                // Fallback suggestions
+                if (!suggestion || suggestion.length < 3) {
+                    const suggestions = ['my-videos', 'gallery', 'media', 'clips'];
+                    suggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+                }
                 
-                // Store the mapping for reference
+                input.placeholder = suggestion;
+                
+            } catch (error) {
+                console.log('Could not generate suggestion:', error);
+                input.placeholder = 'my-videos';
+            }
+        }
+
+        function updateUrlBase() {
+            const urlBase = document.getElementById('urlBase');
+            if (urlBase) {
+                urlBase.textContent = `${window.location.origin}/g/`;
+            }
+        }
+
+        function generateGalleryUrl(folderUrl, customCode, config) {
+            try {
+                // Use custom code or generate one
+                const shortCode = customCode || generateShortCode();
+                
+                // Store the mapping with configuration
                 galleryStore[shortCode] = {
                     folderUrl: folderUrl,
                     created: new Date().toISOString(),
-                    name: extractFolderName(folderUrl)
+                    name: extractFolderName(folderUrl),
+                    config: {
+                        allowDownloads: config.allowDownloads || false,
+                        allowSharing: config.allowSharing || false
+                    }
                 };
                 
                 // Save to localStorage
                 localStorage.setItem('vidshare_galleries', JSON.stringify(galleryStore));
                 
-                // Return the SHORT gallery URL using the 7-character code
+                // Return the gallery URL
                 const baseUrl = window.location.origin;
-                return `${baseUrl}/g/${shortCode}`;
+                return {
+                    galleryUrl: `${baseUrl}/g/${shortCode}`,
+                    shortCode: shortCode,
+                    config: config
+                };
                 
             } catch (error) {
                 console.error('Error generating gallery URL:', error);
@@ -468,28 +917,40 @@
             });
         }
 
-
-
-        // Auto-fill for testing (remove in production)
-        function addTestData() {
-            const input = document.getElementById('folderUrl');
-            if (!input.value) {
-                input.value = 'https://www.dropbox.com/scl/fo/example-folder/sample';
-                input.style.color = '#999';
-                input.style.fontStyle = 'italic';
-            }
-        }
-
         // Check for short URL on page load
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🎬 VidShare Admin Panel Loaded!');
             console.log('📁 Ready to generate video galleries from Dropbox folders');
+            
+            // Initialize URL base display
+            updateUrlBase();
             
             // Show current stored galleries in console (for debugging)
             const storedGalleries = Object.keys(galleryStore).length;
             if (storedGalleries > 0) {
                 console.log(`💾 Found ${storedGalleries} previously created galleries`);
             }
+            
+            // Real-time custom code validation
+            const customCodeInput = document.getElementById('customCode');
+            customCodeInput.addEventListener('input', (e) => {
+                let value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                e.target.value = value;
+                
+                // Visual feedback for availability
+                if (value.length >= 3) {
+                    if (galleryStore[value]) {
+                        e.target.style.borderColor = '#dc3545';
+                        e.target.style.background = '#fff5f5';
+                    } else {
+                        e.target.style.borderColor = '#28a745';
+                        e.target.style.background = '#f8fff8';
+                    }
+                } else {
+                    e.target.style.borderColor = '#e9ecef';
+                    e.target.style.background = 'transparent';
+                }
+            });
         });
     </script>
 </body>
