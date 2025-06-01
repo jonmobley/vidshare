@@ -654,7 +654,9 @@
 
                 // Check if this is a short code URL first
                 const path = window.location.pathname;
-                const shortCodeMatch = path.match(/\/g\/([a-z0-9]{7})/);
+                console.log('🔍 Current path:', path);
+                
+                const shortCodeMatch = path.match(/\/g\/([a-zA-Z0-9\-]+)/);
                 
                 if (shortCodeMatch) {
                     // This is a short code URL, look it up
