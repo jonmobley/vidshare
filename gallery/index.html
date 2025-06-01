@@ -33,6 +33,7 @@
             width: 100%;
             background: #000;
             aspect-ratio: 16/9;
+            cursor: pointer;
         }
 
         .main-video {
@@ -40,6 +41,177 @@
             height: 100%;
             object-fit: contain;
             background: #000;
+            -webkit-appearance: none;
+        }
+
+        /* Hide controls by default, show on hover */
+        @media (min-width: 769px) {
+            .main-video::-webkit-media-controls {
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .main-player:hover .main-video::-webkit-media-controls {
+                opacity: 1;
+            }
+        }
+
+        /* Custom play overlay */
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .main-player:not(.playing):hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-overlay-button {
+            width: 80px;
+            height: 80px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            backdrop-filter: blur(10px);
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+
+        .main-player:not(.playing):hover .play-overlay-button {
+            transform: scale(1.1);
+        }
+
+        .main-video::-webkit-media-controls-start-playback-button {
+            -webkit-appearance: none;
+        }
+
+        /* Hide unwanted video controls */
+        .main-video::-webkit-media-controls-overflow-button {
+            display: none !important;
+        }
+
+        .main-video::-webkit-media-controls-picture-in-picture-button {
+            display: none !important;
+        }
+
+        .main-video::-webkit-media-controls-download-button {
+            display: none !important;
+        }
+
+        /* Hide three dots menu in all browsers */
+        .main-video::-webkit-media-controls-overlay-enclosure {
+            display: none !important;
+        }
+
+        .main-video::-webkit-media-controls-enclosure {
+            overflow: hidden;
+        }
+
+        /* Speed control integrated into video controls */
+        .speed-control-inline {
+            position: absolute;
+            bottom: 12px;
+            right: 60px; /* Position to the left of fullscreen button */
+            z-index: 2147483647; /* Maximum z-index to ensure it's on top */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .main-player:hover .speed-control-inline,
+        .main-video::-webkit-media-controls:hover ~ .speed-control-inline {
+            opacity: 1;
+        }
+
+        /* Show speed control when video controls are visible */
+        .main-player.controls-visible .speed-control-inline {
+            opacity: 1;
+        }
+
+        .speed-btn-inline {
+            height: 30px;
+            padding: 0 12px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .speed-btn-inline:hover {
+            background: rgba(0,0,0,0.7);
+        }
+
+        .speed-menu-inline {
+            position: absolute;
+            bottom: 35px;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            border-radius: 4px;
+            padding: 4px 0;
+            min-width: 60px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .speed-menu-inline.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .speed-option-inline {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .speed-option-inline:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .speed-option-inline.active {
+            background: rgba(102, 126, 234, 0.3);
+            color: #90caf9;
+        }
+
+        /* Disable right-click context menu on video */
+        .main-video {
+            pointer-events: auto;
+        }
+
+        .main-video:focus {
+            outline: none;
         }
 
         .video-info-overlay {
@@ -264,6 +436,12 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .thumbnails-grid.transitioning {
+            opacity: 0;
+            transform: translateY(10px);
         }
 
         .thumbnails-grid.vertical-layout {
@@ -305,6 +483,20 @@
             border: 2px solid transparent;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.4s ease forwards;
+        }
+
+        .thumbnail-card.hidden {
+            display: none;
+        }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .thumbnail-card:hover {
@@ -482,7 +674,29 @@
 
         /* Mobile Optimizations */
         @media (max-width: 768px) {
+            body {
+                padding-top: calc(50vh + 95px); /* Space for fixed player + nav */
+            }
+            
+            .main-player {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                background: white;
+                aspect-ratio: 16/9;
+                max-height: 50vh;
+            }
+            
             .navigation-toolbar {
+                position: fixed;
+                top: 50vh;
+                left: 0;
+                right: 0;
+                z-index: 99;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                 padding: 15px;
             }
 
@@ -549,13 +763,27 @@
         </div>
 
         <!-- Main Video Player -->
-        <div class="main-player">
-            <video class="main-video" id="mainVideo" controls preload="metadata">
+        <div class="main-player" id="mainPlayer">
+            <video class="main-video" id="mainVideo" controls preload="metadata" playsinline webkit-playsinline oncontextmenu="return false;">
                 <source id="mainVideoSource" src="" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+            <div class="play-overlay" id="playOverlay">
+                <div class="play-overlay-button">▶</div>
+            </div>
             <div class="video-info-overlay">
                 <div class="current-video-title" id="currentVideoTitle">Select a video to play</div>
+            </div>
+            <div class="speed-control-inline" id="speedControlInline">
+                <button class="speed-btn-inline" id="speedBtnInline">1×</button>
+                <div class="speed-menu-inline" id="speedMenuInline">
+                    <button class="speed-option-inline" data-speed="0.5">0.5×</button>
+                    <button class="speed-option-inline" data-speed="0.75">0.75×</button>
+                    <button class="speed-option-inline active" data-speed="1">1×</button>
+                    <button class="speed-option-inline" data-speed="1.25">1.25×</button>
+                    <button class="speed-option-inline" data-speed="1.5">1.5×</button>
+                    <button class="speed-option-inline" data-speed="2">2×</button>
+                </div>
             </div>
             <div class="main-player-actions" id="mainPlayerActions" style="display: none;">
                 <button class="main-action-btn" id="mainDownloadBtn" title="Download video" style="display: none;">⬇</button>
@@ -824,6 +1052,9 @@
                 const metadata = await metadataResponse.json();
                 console.log('📁 Folder metadata:', metadata);
 
+                // Update loading message
+                loadingElement.textContent = 'Scanning for videos...';
+
                 // Try to list folder contents using the path
                 let folderVideos;
                 
@@ -842,8 +1073,14 @@
                     document.getElementById('noResults').style.display = 'block';
                     return;
                 }
+
+                // Update loading message for duration detection
+                loadingElement.textContent = `Loading video details for ${folderVideos.length} videos...`;
+
+                // Pre-load accurate durations for all videos
+                const videosWithAccurateDurations = await batchLoadAccurateDurations(folderVideos);
                 
-                allVideos = folderVideos;
+                allVideos = videosWithAccurateDurations;
                 
                 fadeOutLoading();
                 
@@ -862,6 +1099,7 @@
                 
                 renderFolderNavigation();
                 
+                // Set active video AFTER URLs are cached from duration loading
                 if (filteredVideos.length > 0) {
                     setActiveVideo(filteredVideos[0].id);
                 }
@@ -874,6 +1112,103 @@
                 fadeOutLoading();
                 document.getElementById('noResults').style.display = 'block';
             }
+        }
+
+        async function batchLoadAccurateDurations(videos) {
+            console.log('📏 Pre-loading accurate durations for', videos.length, 'videos...');
+            
+            const videosWithDurations = [];
+            const concurrentLimit = 5; // Process 5 videos at a time to avoid overwhelming the browser
+            
+            // Process videos in batches
+            for (let i = 0; i < videos.length; i += concurrentLimit) {
+                const batch = videos.slice(i, i + concurrentLimit);
+                const loadingElement = document.getElementById('loadingMessage');
+                
+                // Update progress
+                const progress = Math.round(((i + batch.length) / videos.length) * 100);
+                loadingElement.textContent = `Loading video details... ${progress}% (${i + batch.length}/${videos.length})`;
+                
+                // Process batch concurrently
+                const batchPromises = batch.map(async (video) => {
+                    try {
+                        // Get temporary URL for this video
+                        const videoUrl = await getTemporaryVideoUrl(video.filePath);
+                        video.url = videoUrl; // Cache the URL
+                        
+                        // Get accurate duration by loading video metadata
+                        const accurateDuration = await getAccurateVideoDuration(videoUrl);
+                        
+                        if (accurateDuration > 0) {
+                            video.durationSeconds = Math.floor(accurateDuration);
+                            video.duration = formatDuration(Math.floor(accurateDuration));
+                            console.log(`✅ Got accurate duration for ${video.title}: ${video.duration}`);
+                        } else {
+                            // Keep the estimated duration if we can't get accurate one
+                            console.log(`⚠️ Using estimated duration for ${video.title}: ${video.duration}`);
+                        }
+                        
+                        return video;
+                        
+                    } catch (error) {
+                        console.error(`❌ Error loading duration for ${video.title}:`, error);
+                        // Keep the video with estimated duration if we can't get accurate one
+                        return video;
+                    }
+                });
+                
+                // Wait for batch to complete
+                const batchResults = await Promise.all(batchPromises);
+                videosWithDurations.push(...batchResults);
+                
+                // Small delay between batches to prevent overwhelming
+                if (i + concurrentLimit < videos.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            console.log('🎉 Completed pre-loading durations for all videos');
+            return videosWithDurations;
+        }
+
+        async function getAccurateVideoDuration(videoUrl) {
+            return new Promise((resolve) => {
+                const tempVideo = document.createElement('video');
+                tempVideo.preload = 'metadata';
+                tempVideo.muted = true;
+                tempVideo.style.display = 'none';
+                
+                const cleanup = () => {
+                    document.body.removeChild(tempVideo);
+                };
+                
+                const onLoadedMetadata = () => {
+                    const duration = tempVideo.duration;
+                    cleanup();
+                    resolve(duration && !isNaN(duration) ? duration : 0);
+                };
+                
+                const onError = () => {
+                    console.warn('Could not load video metadata for duration detection');
+                    cleanup();
+                    resolve(0); // Return 0 to indicate failure, will use estimate
+                };
+                
+                // Set up event listeners
+                tempVideo.addEventListener('loadedmetadata', onLoadedMetadata, { once: true });
+                tempVideo.addEventListener('error', onError, { once: true });
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (tempVideo.parentNode) {
+                        onError();
+                    }
+                }, 10000);
+                
+                // Add to DOM and start loading
+                document.body.appendChild(tempVideo);
+                tempVideo.src = videoUrl;
+            });
         }
 
         function fadeOutLoading() {
@@ -945,7 +1280,7 @@
                             duration: formatDuration(extractDuration(file)),
                             dateDisplay: formatDate(file.server_modified),
                             date: file.server_modified.split('T')[0],
-                            isVertical: false // Will be detected later if needed
+                            isVertical: detectVerticalVideo(file) // Detect based on media info
                         };
                     });
                     
@@ -1012,6 +1347,17 @@
                 return pathParts[pathParts.length - 2]; // Parent folder name
             }
             return 'Root';
+        }
+
+        function detectVerticalVideo(file) {
+            // Try to detect vertical videos from media info
+            if (file.media_info && file.media_info.metadata) {
+                const dimensions = file.media_info.metadata.dimensions;
+                if (dimensions && dimensions.width && dimensions.height) {
+                    return dimensions.height > dimensions.width;
+                }
+            }
+            return false; // Default to horizontal if can't determine
         }
 
         function extractDuration(file) {
@@ -1085,8 +1431,8 @@
                     title: "Big Buck Bunny.mp4",
                     folder: "Animation",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    duration: "10:34",
-                    durationSeconds: 634,
+                    duration: "9:56",
+                    durationSeconds: 596,
                     date: "2024-03-15",
                     dateDisplay: "Mar 15, 2024",
                     isVertical: false
@@ -1145,10 +1491,69 @@
                     date: "2024-03-18",
                     dateDisplay: "Mar 18, 2024",
                     isVertical: false
+                },
+                {
+                    id: 7,
+                    title: "Ocean Waves Portrait.mp4",
+                    folder: "Vertical",
+                    url: "https://videos.pexels.com/video-files/5752729/5752729-uhd_1440_2732_25fps.mp4",
+                    duration: "00:15",
+                    durationSeconds: 15,
+                    date: "2024-03-22",
+                    dateDisplay: "Mar 22, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 8,
+                    title: "City Traffic Vertical.mp4",
+                    folder: "Vertical",
+                    url: "https://videos.pexels.com/video-files/5377684/5377684-uhd_1440_2732_25fps.mp4",
+                    duration: "00:20",
+                    durationSeconds: 20,
+                    date: "2024-03-23",
+                    dateDisplay: "Mar 23, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 9,
+                    title: "Coffee Pour Vertical.mp4",
+                    folder: "Vertical",
+                    url: "https://videos.pexels.com/video-files/6802820/6802820-uhd_1440_2560_25fps.mp4",
+                    duration: "00:18",
+                    durationSeconds: 18,
+                    date: "2024-03-24",
+                    dateDisplay: "Mar 24, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 10,
+                    title: "Waterfall Portrait.mp4",
+                    folder: "Vertical",
+                    url: "https://archive.org/download/SampleVideo_1280x720_1mb/SampleVideo_720x1280_1mb.mp4",
+                    duration: "00:30",
+                    durationSeconds: 30,
+                    date: "2024-03-25",
+                    dateDisplay: "Mar 25, 2024",
+                    isVertical: true
+                },
+                {
+                    id: 11,
+                    title: "Abstract Lights Vertical.mp4",
+                    folder: "Vertical",
+                    url: "https://assets.mixkit.co/videos/preview/mixkit-vertical-shot-of-a-colorful-lights-1241-large.mp4",
+                    duration: "00:12",
+                    durationSeconds: 12,
+                    date: "2024-03-26",
+                    dateDisplay: "Mar 26, 2024",
+                    isVertical: true
                 }
             ];
 
-            allVideos = sampleVideos;
+            // Pre-load accurate durations for demo videos
+            console.log('📏 Loading accurate durations for demo videos...');
+            const videosWithAccurateDurations = await batchLoadAccurateDurations(sampleVideos);
+            
+            allVideos = videosWithAccurateDurations;
             availableFolders = [...new Set(allVideos.map(video => video.folder))].sort();
             filteredVideos = [...allVideos];
             
@@ -1161,6 +1566,9 @@
             }
             
             renderThumbnails();
+            
+            // Show a notice that this is demo content
+            showStatusMessage('info', 'Demo mode: Showing sample videos including real vertical content');
         }
 
         function renderFolderNavigation() {
@@ -1172,7 +1580,6 @@
             if (availableFolders.length <= 1) {
                 navigationToolbar.style.display = 'none';
                 currentFolder = 'all'; // Show all videos
-                applyFilters();
                 return;
             }
             
@@ -1217,6 +1624,9 @@
         }
 
         function selectFolder(folder) {
+            // Don't re-select the same folder
+            if (currentFolder === folder) return;
+            
             currentFolder = folder;
             
             // Only update pills if navigation is visible
@@ -1235,36 +1645,96 @@
         }
 
         function applyFilters() {
-            let videos = [...allVideos];
+            // Instead of re-rendering, just show/hide existing cards
+            const allCards = document.querySelectorAll('.thumbnail-card');
             
-            if (currentFolder !== 'all') {
-                videos = videos.filter(video => video.folder === currentFolder);
+            allCards.forEach(card => {
+                const videoId = parseInt(card.dataset.videoId);
+                const video = allVideos.find(v => v.id === videoId);
+                
+                if (!video) {
+                    card.classList.add('hidden');
+                    return;
+                }
+                
+                // Show/hide based on current folder filter
+                if (currentFolder === 'all' || video.folder === currentFolder) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            // Update filteredVideos array for other functions that depend on it
+            if (currentFolder === 'all') {
+                filteredVideos = [...allVideos];
+            } else {
+                filteredVideos = allVideos.filter(video => video.folder === currentFolder);
             }
             
-            filteredVideos = videos;
-            renderThumbnails();
+            // Update grid layout class based on visible videos
+            updateGridLayout();
             
-            // Only auto-select first video if current video is not in filtered results AND no video is currently playing
-            const currentVideoInResults = filteredVideos.find(v => v.id === currentVideoId);
-            const mainVideo = document.getElementById('mainVideo');
-            const isVideoPlaying = mainVideo && !mainVideo.paused;
-            
-            if (!currentVideoInResults && filteredVideos.length > 0 && !isVideoPlaying) {
-                setActiveVideo(filteredVideos[0].id);
+            // Show/hide no results message
+            const noResults = document.getElementById('noResults');
+            const visibleCards = document.querySelectorAll('.thumbnail-card:not(.hidden)');
+            if (visibleCards.length === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
             }
         }
 
         function setActiveVideo(videoId) {
-            // Just set the active video without loading/playing it
+            // Set the active video and load it into the main player
             const video = allVideos.find(v => v.id === videoId);
             if (!video) return;
 
             currentVideoId = videoId;
             
-            // Update video info display without loading
+            // Update video info display and load the video
             const currentVideoTitle = document.getElementById('currentVideoTitle');
+            const mainVideo = document.getElementById('mainVideo');
+            const mainVideoSource = document.getElementById('mainVideoSource');
+            const mainPlayerActions = document.getElementById('mainPlayerActions');
+            const mainPlayer = document.getElementById('mainPlayer');
+            
+            // Remove playing class
+            mainPlayer.classList.remove('playing');
+            
+            // Update title (remove file extension)
             const cleanTitle = video.title.replace(/\.[^/.]+$/, '');
             currentVideoTitle.textContent = cleanTitle;
+
+            // Calculate thumbnail time (10% of duration, between 2-30 seconds)
+            const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+
+            // Load video into main player with thumbnail timestamp
+            if (video.url) {
+                // Video URL is already available from duration pre-loading
+                mainVideoSource.src = `${video.url}#t=${thumbnailTime}`;
+                mainVideo.load();
+                
+                // Show main player actions
+                mainPlayerActions.style.display = 'flex';
+                setupMainPlayerActions(video);
+            } else if (video.filePath) {
+                // Fallback: get temporary URL if not cached
+                currentVideoTitle.textContent = `Loading ${cleanTitle}...`;
+                getTemporaryVideoUrl(video.filePath).then(videoUrl => {
+                    video.url = videoUrl; // Cache it
+                    mainVideoSource.src = `${videoUrl}#t=${thumbnailTime}`;
+                    mainVideo.load();
+                    currentVideoTitle.textContent = cleanTitle;
+                    
+                    // Show main player actions
+                    mainPlayerActions.style.display = 'flex';
+                    setupMainPlayerActions(video);
+                }).catch(error => {
+                    console.error('Error loading video:', error);
+                    currentVideoTitle.textContent = `Error: ${cleanTitle}`;
+                });
+            }
 
             // Update active thumbnail state
             document.querySelectorAll('.thumbnail-card').forEach(card => {
@@ -1275,6 +1745,9 @@
             if (activeCard) {
                 activeCard.classList.add('active');
             }
+
+            // Setup watch tracking for the main video
+            setupWatchTracking(mainVideo, videoId);
         }
 
         async function loadVideo(videoId) {
@@ -1283,13 +1756,19 @@
 
             currentVideoId = videoId;
             
-            // Only scroll to top when actually playing a video
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            // Only scroll to top on desktop - mobile has fixed player
+            if (window.innerWidth > 768) {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            }
             
             const mainVideo = document.getElementById('mainVideo');
             const mainVideoSource = document.getElementById('mainVideoSource');
             const currentVideoTitle = document.getElementById('currentVideoTitle');
             const mainPlayerActions = document.getElementById('mainPlayerActions');
+            const mainPlayer = document.getElementById('mainPlayer');
+
+            // Add playing class when video is clicked from grid
+            mainPlayer.classList.add('playing');
 
             // Show loading state
             currentVideoTitle.textContent = `Loading ${video.title}...`;
@@ -1304,13 +1783,19 @@
                     video.url = videoUrl; // Cache the URL
                 }
                 
-                mainVideoSource.src = videoUrl;
+                // Calculate thumbnail time for initial load
+                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+                
+                mainVideoSource.src = `${videoUrl}#t=${thumbnailTime}`;
                 mainVideo.load();
                 
                 // Auto-play the video when clicked from grid
                 mainVideo.addEventListener('loadeddata', () => {
+                    mainVideo.currentTime = 0; // Reset to beginning
                     mainVideo.play().catch(e => {
                         console.log('Auto-play prevented by browser:', e);
+                        // Remove playing class if auto-play fails
+                        mainPlayer.classList.remove('playing');
                     });
                 }, { once: true });
                 
@@ -1328,6 +1813,7 @@
                 console.error('❌ Error loading video:', video.title, error);
                 currentVideoTitle.textContent = `Error: ${video.title}`;
                 showToast(`Failed to load ${video.title}: ${error.message}`);
+                mainPlayer.classList.remove('playing');
             }
 
             document.querySelectorAll('.thumbnail-card').forEach(card => {
@@ -1414,48 +1900,72 @@
             return '';
         }
 
-        function renderThumbnails() {
+        function updateGridLayout() {
             const grid = document.getElementById('thumbnailsGrid');
-            const noResults = document.getElementById('noResults');
+            const visibleCards = document.querySelectorAll('.thumbnail-card:not(.hidden)');
             
-            if (filteredVideos.length === 0) {
-                grid.innerHTML = '';
-                noResults.style.display = 'block';
-                return;
-            }
-            
-            noResults.style.display = 'none';
-            
-            // Check if all videos in current view are vertical
-            const allVertical = filteredVideos.every(video => video.isVertical);
+            // Check if all visible videos are vertical
+            const allVertical = Array.from(visibleCards).every(card => {
+                const videoId = parseInt(card.dataset.videoId);
+                const video = allVideos.find(v => v.id === videoId);
+                return video && video.isVertical;
+            });
             
             // Apply appropriate grid class
-            if (allVertical) {
+            if (allVertical && visibleCards.length > 0) {
                 grid.className = 'thumbnails-grid vertical-layout';
             } else {
                 grid.className = 'thumbnails-grid';
             }
+        }
+
+        function renderThumbnails() {
+            const grid = document.getElementById('thumbnailsGrid');
+            const noResults = document.getElementById('noResults');
             
-            grid.innerHTML = filteredVideos.map(video => `
-                <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
-                    <div class="thumbnail-image">
-                        <video class="thumbnail-video" preload="metadata" muted data-video-id="${video.id}" data-file-path="${video.filePath || ''}">
-                            <!-- Source will be added dynamically when needed -->
-                        </video>
-                        <div class="thumbnail-overlay">▶</div>
-                        ${generateThumbnailActions(video)}
-                        <div class="duration-badge">${video.duration}</div>
-                        ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
+            // Render ALL videos at once, applying current filter state
+            grid.innerHTML = allVideos.map((video, index) => {
+                const isVisible = currentFolder === 'all' || video.folder === currentFolder;
+                return `
+                    <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''} ${!isVisible ? 'hidden' : ''}" 
+                         data-video-id="${video.id}">
+                        <div class="thumbnail-image">
+                            <video class="thumbnail-video" preload="metadata" muted data-video-id="${video.id}" data-file-path="${video.filePath || ''}">
+                                <!-- Source will be added dynamically when needed -->
+                            </video>
+                            <div class="thumbnail-overlay">▶</div>
+                            ${generateThumbnailActions(video)}
+                            <div class="duration-badge">${video.duration}</div>
+                            ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
+                        </div>
+                        <div class="thumbnail-info">
+                            <div class="thumbnail-title">${video.title.replace(/\.[^/.]+$/, '')}</div>
+                        </div>
                     </div>
-                    <div class="thumbnail-info">
-                        <div class="thumbnail-title">${video.title.replace(/\.[^/.]+$/, '')}</div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+            
+            // Update filteredVideos array for consistency
+            if (currentFolder === 'all') {
+                filteredVideos = [...allVideos];
+            } else {
+                filteredVideos = allVideos.filter(video => video.folder === currentFolder);
+            }
+            
+            // Update grid layout
+            updateGridLayout();
+            
+            // Show/hide no results
+            if (filteredVideos.length === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
             
             // Load thumbnail sources when they come into view
             setupThumbnailLazyLoading();
             
+            // Add event listeners to ALL cards (visible and hidden)
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('.action-btn')) {
@@ -1526,25 +2036,23 @@
                         // Only load if not already loaded
                         if (!video.src) {
                             try {
-                                let videoUrl;
-                                
-                                // Get URL from our video data
+                                // Get URL from our video data (should already be cached from duration loading)
                                 const videoObj = allVideos.find(v => v.id === videoId);
-                                if (videoObj) {
-                                    if (videoObj.url) {
-                                        videoUrl = videoObj.url;
-                                    } else if (filePath && DROPBOX_TOKEN) {
-                                        console.log('🖼️ Loading thumbnail for:', filePath);
-                                        videoUrl = await getTemporaryVideoUrl(filePath);
+                                if (videoObj && videoObj.url) {
+                                    // Smart thumbnail timing based on accurate duration
+                                    const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                    video.src = `${videoObj.url}#t=${thumbnailTime}`;
+                                    video.load();
+                                } else if (filePath && DROPBOX_TOKEN) {
+                                    // Fallback: get temporary URL if not cached
+                                    console.log('🖼️ Loading thumbnail for:', filePath);
+                                    const videoUrl = await getTemporaryVideoUrl(filePath);
+                                    if (videoObj) {
                                         videoObj.url = videoUrl; // Cache it
                                     }
-                                    
-                                    if (videoUrl) {
-                                        // Smart thumbnail timing
-                                        const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
-                                        video.src = `${videoUrl}#t=${thumbnailTime}`;
-                                        video.load();
-                                    }
+                                    const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                    video.src = `${videoUrl}#t=${thumbnailTime}`;
+                                    video.load();
                                 }
                                 
                                 // Stop observing this element
@@ -1635,7 +2143,124 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎬 VidShare Gallery Ready with Secure Token Storage!');
+        // Speed control functionality
+        let currentPlaybackSpeed = 1;
+
+        function setupSpeedControl() {
+            const speedBtn = document.getElementById('speedBtnInline');
+            const speedMenu = document.getElementById('speedMenuInline');
+            const speedOptions = document.querySelectorAll('.speed-option-inline');
+            const mainVideo = document.getElementById('mainVideo');
+            const mainPlayer = document.getElementById('mainPlayer');
+
+            // Toggle speed menu
+            speedBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                speedMenu.classList.toggle('show');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', () => {
+                speedMenu.classList.remove('show');
+            });
+
+            // Handle speed selection
+            speedOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const speed = parseFloat(option.dataset.speed);
+                    
+                    // Update video playback rate
+                    mainVideo.playbackRate = speed;
+                    currentPlaybackSpeed = speed;
+                    
+                    // Update button text
+                    speedBtn.textContent = `${speed}×`;
+                    
+                    // Update active state
+                    speedOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    // Close menu
+                    speedMenu.classList.remove('show');
+                });
+            });
+
+            // Show controls class when video controls are shown
+            mainVideo.addEventListener('controlsshown', () => {
+                mainPlayer.classList.add('controls-visible');
+            });
+
+            mainVideo.addEventListener('controlshidden', () => {
+                mainPlayer.classList.remove('controls-visible');
+            });
+
+            // For browsers that don't support these events, use mousemove
+            let controlsTimer;
+            mainPlayer.addEventListener('mousemove', () => {
+                mainPlayer.classList.add('controls-visible');
+                clearTimeout(controlsTimer);
+                controlsTimer = setTimeout(() => {
+                    if (!mainVideo.paused) {
+                        mainPlayer.classList.remove('controls-visible');
+                    }
+                }, 3000);
+            });
+
+            mainPlayer.addEventListener('mouseleave', () => {
+                if (!mainVideo.paused) {
+                    mainPlayer.classList.remove('controls-visible');
+                }
+            });
+        }
+
+        // Setup speed control when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSpeedControl();
+            setupMainPlayerInteractions();
+        });
+
+        // Setup main player interactions
+        function setupMainPlayerInteractions() {
+            const mainPlayer = document.getElementById('mainPlayer');
+            const mainVideo = document.getElementById('mainVideo');
+            const playOverlay = document.getElementById('playOverlay');
+
+            // Handle play/pause events
+            mainVideo.addEventListener('play', () => {
+                mainPlayer.classList.add('playing');
+            });
+
+            mainVideo.addEventListener('pause', () => {
+                mainPlayer.classList.remove('playing');
+            });
+
+            mainVideo.addEventListener('ended', () => {
+                mainPlayer.classList.remove('playing');
+            });
+
+            // Handle click on video or play overlay
+            playOverlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mainVideo.paused) {
+                    mainVideo.play();
+                }
+            });
+
+            // Optional: Click on video to play/pause (common UX pattern)
+            mainVideo.addEventListener('click', (e) => {
+                // Don't interfere with control clicks
+                if (e.target === mainVideo) {
+                    if (mainVideo.paused) {
+                        mainVideo.play();
+                    } else {
+                        mainVideo.pause();
+                    }
+                }
+            });
+        }
+
+        console.log('🎬 VidShare Gallery Ready with Real Vertical Videos!');
     </script>
 </body>
 </html>
