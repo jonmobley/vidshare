@@ -3,13 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropbox Video Gallery</title>
-    <script>
-        // Redirect to /mobley for admin page
-        window.location.replace('/mobley');
-    </script>
+    <title>Vertical Video Gallery</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/controls.css">
 </head>
 <body>
-    <p>Redirecting to admin panel...</p>
+    <div id="gallery-container"></div>
+    
+    <!-- Core Components -->
+    <script type="module" src="js/core/VideoPool.js"></script>
+    <script type="module" src="js/core/VideoRenderer.js"></script>
+    <script type="module" src="js/core/VideoProgressManager.js"></script>
+    <script type="module" src="js/core/VideoPlaybackController.js"></script>
+    <script type="module" src="js/core/AnimationManager.js"></script>
+    <script type="module" src="js/core/VideoStateManager.js"></script>
+    <script type="module" src="js/core/NavigationController.js"></script>
+    <script type="module" src="js/core/ControlsManager.js"></script>
+    <script type="module" src="js/core/GestureHandler.js"></script>
+    
+    <!-- Data -->
+    <script type="module" src="js/data/videoData.js"></script>
+    
+    <!-- Main Application -->
+    <script type="module" src="js/VirtualVideoGallery.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
