@@ -33,5 +33,14 @@ const videoData = {
         { title: "Concert Highlights", description: "Best moments from live shows", id: "music-5" },
         { title: "Behind the Music", description: "Stories behind the songs", id: "music-6" },
         { title: "Music Production", description: "Learn how hits are made", id: "music-7" }
+    ],
+    3: [ // Videos category
+        { title: "Sample Video 1", description: "Vertical format video 1", id: "videos-1", duration: 15 },
+        { title: "Sample Video 2", description: "Vertical format video 2", id: "videos-2", duration: 20 },
+        { title: "Sample Video 3", description: "Vertical format video 3", id: "videos-3", duration: 18 },
+        { title: "Sample Video 4", description: "Vertical format video 4", id: "videos-4", duration: 25 },
+        { title: "Sample Video 5", description: "Vertical format video 5", id: "videos-5", duration: 22 }
     ]
 };
+
+export { videoData };

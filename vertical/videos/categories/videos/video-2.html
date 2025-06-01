@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample Video 2</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #000; 
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        video { 
+            width: 100%; 
+            height: 100vh; 
+            object-fit: cover; 
+        }
+        .pause-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .pause-indicator.show {
+            opacity: 1;
+        }
+        .pause-icon {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 20px 0 20px 30px;
+            border-color: transparent transparent transparent #fff;
+            transition: all 0.3s ease;
+        }
+        .pause-icon.paused {
+            border-width: 30px 10px 0 10px;
+            border-color: #fff transparent transparent transparent;
+        }
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <video playsinline>
+        <source src="https://player.vimeo.com/external/434045526.sd.mp4?s=c27eecc69a27dbc4ff2b87d38afc35f1a9e7c02d&profile_id=164&oauth2_token_id=57447761" type="video/mp4">
+    </video>
+    <div class="pause-indicator">
+        <div class="pause-icon"></div>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    <script>
+        // Listen for messages from parent window
+        window.addEventListener('message', function(event) {
+            const video = document.querySelector('video');
+            const pauseIndicator = document.querySelector('.pause-indicator');
+            const pauseIcon = document.querySelector('.pause-icon');
+            const progressFill = document.querySelector('.progress-fill');
+            
+            if (event.data.type === 'playbackSettings') {
+                const { autoplay, loop, muted } = event.data;
+                video.autoplay = autoplay;
+                video.loop = loop;
+                video.muted = muted;
+                
+                if (autoplay) {
+                    video.play().catch(error => console.error('Error playing video:', error));
+                } else {
+                    video.pause();
+                }
+            }
+            
+            // Update progress bar
+            video.addEventListener('timeupdate', () => {
+                const progress = (video.currentTime / video.duration) * 100;
+                progressFill.style.width = `${progress}%`;
+            });
+        });
+    </script>
+</body>
+</html> 

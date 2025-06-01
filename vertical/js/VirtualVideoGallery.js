@@ -1,23 +1,32 @@
 // js/VirtualVideoGallery.js - Main gallery class that coordinates all components
 
+import VideoRenderer from '/vertical/js/core/VideoRenderer.js';
+import VideoPool from '/vertical/js/core/VideoPool.js';
+import NavigationController from '/vertical/js/core/NavigationController.js';
+import ControlsManager from '/vertical/js/core/ControlsManager.js';
+import GestureHandler from '/vertical/js/core/GestureHandler.js';
+import { videoData } from '/vertical/js/data/videoData.js';
+
 class VirtualVideoGallery {
     constructor() {
         // State
         this.currentSlide = 0;
         this.currentCategory = 0;
-        this.categorySlidePositions = [0, 0, 0];
+        this.categorySlidePositions = new Array(4).fill(0); // Initialize for all categories including Videos
         this.isPlaying = true;
         
-        // Video progress
-        this.videoProgress = 0;
-        this.videoDuration = 15000; // 15 seconds per video
-        this.progressInterval = null;
+        // Settings
+        this.settings = {
+            autoplay: true,
+            muted: true,
+            loop: true
+        };
         
         // Initialize components
         this.videoPool = new VideoPool();
-        this.renderer = new VideoRenderer(this.videoPool);
+        this.renderer = new VideoRenderer(this.videoPool, this);
         this.navigation = new NavigationController(this);
-        this.controls = new ControlsManager(this);
+        this.controlsManager = new ControlsManager(this);
         this.gestures = new GestureHandler(this);
         
         // Initialize
@@ -30,12 +39,11 @@ class VirtualVideoGallery {
         
         this.updateProgressDots();
         this.renderVideos();
-        this.startVideoProgress();
         this.updatePerformanceStats();
         
         // Update UI
-        this.controls.updateCategoryPills(this.currentCategory);
-        this.controls.updateLikeButton();
+        this.controlsManager.updateCategoryPills(this.currentCategory);
+        this.controlsManager.updateLikeButton();
     }
 
     // State management
@@ -55,6 +63,8 @@ class VirtualVideoGallery {
 
     setCurrentCategory(category) {
         this.currentCategory = category;
+        // Restore the last viewed position when switching categories
+        this.restoreCategoryPosition();
     }
 
     saveCategoryPosition() {
@@ -83,12 +93,19 @@ class VirtualVideoGallery {
     }
 
     // Rendering
-    renderVideos() {
+    renderVideos(direction = null) {
+        const currentCategoryData = videoData[this.currentCategory];
+        if (!currentCategoryData) {
+            console.error('No video data found for category:', this.currentCategory);
+            return;
+        }
+
         this.renderer.renderVisibleVideos(
             this.currentSlide,
             this.getTotalSlides(),
-            videoData[this.currentCategory],
-            this.currentCategory
+            currentCategoryData,
+            this.currentCategory,
+            direction
         );
         this.updatePerformanceStats();
     }
@@ -98,8 +115,8 @@ class VirtualVideoGallery {
         const progressIndicator = document.getElementById('progressIndicator');
         const totalSlides = this.getTotalSlides();
         
-        // Hide dots if more than 10 videos
-        if (totalSlides > 10) {
+        // Hide dots if more than 20 videos
+        if (totalSlides > 20) {
             progressIndicator.style.display = 'none';
             return;
         }
@@ -119,11 +136,38 @@ class VirtualVideoGallery {
     }
 
     updateCategoryUI() {
-        this.controls.updateCategoryPills(this.currentCategory);
+        this.controlsManager.updateCategoryPills(this.currentCategory);
     }
 
     updateLikeButton() {
-        this.controls.updateLikeButton();
+        this.controlsManager.updateLikeButton();
+    }
+
+    resetVideoProgress() {
+        const progressBar = document.getElementById('videoProgress');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+        }
+    }
+
+    startVideoProgress() {
+        const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
+        if (!currentElement) return;
+        
+        const video = currentElement.querySelector('video');
+        if (!video) return;
+        
+        const progressBar = document.getElementById('videoProgress');
+        if (!progressBar) return;
+        
+        // Reset progress
+        progressBar.style.width = '0%';
+        
+        // Update progress as video plays
+        video.addEventListener('timeupdate', () => {
+            const progress = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        });
     }
 
     updatePerformanceStats() {
@@ -143,90 +187,44 @@ class VirtualVideoGallery {
     togglePlayPause() {
         this.isPlaying = !this.isPlaying;
         const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
-        if (!currentElement) return;
-        
-        const pauseIndicator = currentElement.querySelector('.pause-indicator');
-        const pauseIcon = currentElement.querySelector('.pause-icon');
-        
-        if (this.isPlaying) {
-            currentElement.classList.remove('paused');
-            pauseIcon.classList.remove('paused');
-            pauseIndicator.classList.remove('show');
-            this.startVideoProgress();
-        } else {
-            currentElement.classList.add('paused');
-            pauseIcon.classList.add('paused');
-            pauseIndicator.classList.add('show');
-            this.pauseVideoProgress();
-            
-            setTimeout(() => {
-                pauseIndicator.classList.remove('show');
-            }, 2000);
-        }
-    }
-
-    // Video progress management
-    startVideoProgress() {
-        if (this.progressInterval) {
-            clearInterval(this.progressInterval);
+        if (!currentElement) {
+            console.warn('No current video element found');
+            return;
         }
         
-        if (!this.isPlaying) return;
-        
-        this.progressInterval = setInterval(() => {
-            if (this.isPlaying && !this.navigation.isTransitioning) {
-                this.videoProgress += 100;
-                const progressPercent = (this.videoProgress / this.videoDuration) * 100;
-                
-                const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
-                if (currentElement) {
-                    const progressFill = currentElement.querySelector('.progress-fill');
-                    if (progressFill) {
-                        progressFill.style.width = `${Math.min(progressPercent, 100)}%`;
-                    }
-                }
-                
-                if (progressPercent >= 100) {
-                    this.videoProgress = 0;
-                    this.handleVideoEnd();
-                }
-            }
-        }, 100);
-    }
-
-    pauseVideoProgress() {
-        if (this.progressInterval) {
-            clearInterval(this.progressInterval);
-            this.progressInterval = null;
-        }
-    }
-
-    resetVideoProgress() {
-        this.videoProgress = 0;
-        const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
-        if (currentElement) {
-            const progressFill = currentElement.querySelector('.progress-fill');
-            if (progressFill) {
-                progressFill.style.width = '0%';
+        const video = currentElement.querySelector('video');
+        if (video) {
+            if (this.isPlaying) {
+                video.play().catch(error => console.error('Error playing video:', error));
+            } else {
+                video.pause();
             }
         }
     }
 
     handleVideoEnd() {
-        switch(this.controls.autoplayMode) {
+        switch(this.controlsManager.autoplayMode) {
             case 'loop':
-                this.resetVideoProgress();
-                if (this.isPlaying) {
-                    this.startVideoProgress();
+                const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
+                if (currentElement) {
+                    const video = currentElement.querySelector('video');
+                    if (video) {
+                        video.currentTime = 0;
+                        if (this.isPlaying) {
+                            video.play().catch(error => console.error('Error playing video:', error));
+                        }
+                    }
                 }
                 break;
                 
             case 'pause':
                 this.isPlaying = false;
-                this.pauseVideoProgress();
-                const currentElement = this.renderer.getCurrentVideoElement(this.currentSlide);
-                if (currentElement) {
-                    currentElement.classList.add('paused');
+                const pauseElement = this.renderer.getCurrentVideoElement(this.currentSlide);
+                if (pauseElement) {
+                    const video = pauseElement.querySelector('video');
+                    if (video) {
+                        video.pause();
+                    }
                 }
                 break;
                 
@@ -236,10 +234,12 @@ class VirtualVideoGallery {
                     this.currentSlide === this.getTotalSlides() - 1) {
                     // At the very end - pause
                     this.isPlaying = false;
-                    this.pauseVideoProgress();
                     const lastElement = this.renderer.getCurrentVideoElement(this.currentSlide);
                     if (lastElement) {
-                        lastElement.classList.add('paused');
+                        const video = lastElement.querySelector('video');
+                        if (video) {
+                            video.pause();
+                        }
                     }
                 } else {
                     // Go to next video
@@ -251,8 +251,28 @@ class VirtualVideoGallery {
 
     // Cleanup
     destroy() {
-        this.pauseVideoProgress();
         this.videoPool.cleanup();
         // Remove event listeners if needed
     }
+
+    setAutoplayMode(mode) {
+        this.settings.autoplay = mode;
+        this.isPlaying = mode;
+        this.controlsManager.setAutoplayMode(mode);
+        this.renderer.updateAllVideoPlaybackSettings();
+    }
+
+    setMuted(muted) {
+        this.settings.muted = muted;
+        this.controlsManager.setMuted(muted);
+        this.renderer.updateAllVideoPlaybackSettings();
+    }
+
+    setLoop(loop) {
+        this.settings.loop = loop;
+        this.controlsManager.setLoop(loop);
+        this.renderer.updateAllVideoPlaybackSettings();
+    }
 }
+
+export default VirtualVideoGallery;

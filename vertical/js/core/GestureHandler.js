@@ -165,11 +165,13 @@ class GestureHandler {
 
     handleDoubleTap(e) {
         // Show heart animation
-        this.gallery.controls.showDoubleTapHeart();
+        this.gallery.controlsManager.showDoubleTapHeart();
         
         // Also like the video
-        if (!this.gallery.controls.likedVideos.has(`${this.gallery.currentCategory}-${this.gallery.currentSlide}`)) {
-            this.gallery.controls.toggleLike();
+        if (!this.gallery.controlsManager.likedVideos.has(`${this.gallery.currentCategory}-${this.gallery.currentSlide}`)) {
+            this.gallery.controlsManager.toggleLike();
         }
     }
 }
+
+export default GestureHandler;

@@ -30,31 +30,10 @@ class VideoPool {
     }
 
     createVideoElement() {
-        const slide = document.createElement('div');
-        slide.className = 'video-slide';
-        slide.dataset.state = 'hidden';
-        
-        slide.innerHTML = `
-            <div class="pause-indicator">
-                <div class="pause-icon"></div>
-            </div>
-            <div class="video-content">
-                <h2 class="video-title"></h2>
-                <p class="video-description"></p>
-                <div class="video-metadata"></div>
-            </div>
-            <div class="floating-shapes">
-                <div class="shape"></div>
-                <div class="shape"></div>
-                <div class="shape"></div>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <div class="loading-indicator">Loading...</div>
-        `;
-        
-        return slide;
+        const container = document.createElement('div');
+        container.className = 'video-slide';
+        container.dataset.state = 'hidden';
+        return container;
     }
 
     getAvailableElement() {
@@ -141,3 +120,5 @@ class VideoPool {
         }
     }
 }
+
+export default VideoPool;

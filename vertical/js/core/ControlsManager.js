@@ -218,4 +218,40 @@ class ControlsManager {
             option.classList.toggle('active', option.dataset.mode === mode);
         });
         
-        const autoplayButton = document.
+        const autoplayButton = document.querySelector('.autoplay-control');
+        autoplayButton.title = `Autoplay: ${mode}`;
+        
+        this.closeAutoplaySettings();
+    }
+
+    togglePerformanceStats() {
+        const stats = document.getElementById('performanceStats');
+        stats.classList.toggle('show');
+    }
+
+    updateCategoryPills(category) {
+        const pills = document.querySelectorAll('.category-pill');
+        pills.forEach(pill => {
+            pill.classList.toggle('active', parseInt(pill.dataset.category) === category);
+        });
+    }
+
+    showDoubleTapHeart() {
+        const currentElement = this.gallery.renderer.getCurrentVideoElement(this.gallery.currentSlide);
+        if (!currentElement) return;
+
+        const heart = document.createElement('div');
+        heart.className = 'double-tap-heart';
+        heart.innerHTML = '❤️';
+        
+        currentElement.appendChild(heart);
+        
+        setTimeout(() => {
+            if (heart.parentNode) {
+                heart.remove();
+            }
+        }, 800);
+    }
+}
+
+export default ControlsManager;

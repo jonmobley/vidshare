@@ -77,6 +77,24 @@
     transform: scale(1.3);
 }
 
+/* Video Progress Bar */
+.video-progress-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 100;
+}
+
+.video-progress-bar {
+    height: 100%;
+    width: 0;
+    background: white;
+    transition: width 0.1s linear;
+}
+
 /* Controls Container */
 .controls-container {
     position: fixed;
