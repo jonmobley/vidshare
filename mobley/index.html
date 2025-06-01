@@ -46,16 +46,74 @@
             font-size: 1.1rem;
         }
 
+        .admin-tabs {
+            display: flex;
+            background: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 18px 24px;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            margin: 0;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #f8f9fa;
+            color: #495057;
+            transform: translateY(-1px);
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .tab-button.active::before {
+            background: #667eea;
+        }
+
         .admin-content {
             padding: 40px;
         }
 
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .form-section {
-            margin-bottom: 40px;
-            padding: 30px;
             background: #f8f9fa;
             border-radius: 12px;
             border: 1px solid #e9ecef;
+            padding: 30px;
         }
 
         .section-title {
@@ -63,13 +121,6 @@
             font-weight: 600;
             margin-bottom: 20px;
             color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-icon {
-            font-size: 1.5rem;
         }
 
         .form-group {
@@ -97,11 +148,6 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .checkbox-group {
@@ -151,6 +197,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
         }
 
         .btn:hover {
@@ -171,6 +218,15 @@
 
         .btn-secondary:hover {
             background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
         .loading-spinner {
@@ -261,11 +317,16 @@
             border: 1px solid #bee5eb;
         }
 
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
         .galleries-list {
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            margin-top: 20px;
         }
 
         .gallery-item {
@@ -274,10 +335,39 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            min-height: 80px;
         }
 
         .gallery-item:last-child {
             border-bottom: none;
+        }
+
+        .gallery-item.deleting {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+
+        .gallery-item.deleting .gallery-info,
+        .gallery-item.deleting .gallery-actions {
+            opacity: 0.3;
+        }
+
+        .delete-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
         }
 
         .gallery-info {
@@ -311,6 +401,25 @@
             font-size: 0.85rem;
         }
 
+        .delete-confirmation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .delete-confirmation.show {
+            display: block;
+        }
+
+        .confirmation-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
         @media (max-width: 768px) {
             .admin-content {
                 padding: 20px;
@@ -333,6 +442,12 @@
             .gallery-actions {
                 align-self: stretch;
                 justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                font-size: 1rem;
+                padding: 15px;
             }
         }
     </style>
@@ -340,99 +455,116 @@
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <div class="admin-title">🎬 VidShare Admin</div>
+            <div class="admin-title">VidShare Admin</div>
             <div class="admin-subtitle">Create and manage video galleries</div>
         </div>
 
+        <div class="admin-tabs">
+            <button class="tab-button active" onclick="switchTab('create')">Create New</button>
+            <button class="tab-button" onclick="switchTab('manage')">Galleries</button>
+        </div>
+
         <div class="admin-content">
-            <!-- Gallery Creation Form -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <span class="section-icon">🆕</span>
-                    Create New Gallery
-                </h2>
-
-                <form id="galleryForm">
-                    <div class="form-group">
-                        <label class="form-label" for="galleryName">Gallery Name (Optional)</label>
-                        <input type="text" id="galleryName" class="form-input" placeholder="My Awesome Videos">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="customUrl">Custom Short URL (Optional)</label>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="color: #666; font-size: 0.9rem; white-space: nowrap;">/g/</span>
-                            <input type="text" id="customUrl" class="form-input" placeholder="my-gallery" pattern="[a-z0-9\-]+" maxlength="20" style="flex: 1;">
+            <!-- Create Gallery Tab -->
+            <div id="createTab" class="tab-content active">
+                <div class="form-section">
+                    <form id="galleryForm">
+                        <!-- Step 1: Dropbox URL -->
+                        <div class="form-group">
+                            <label class="form-label" for="dropboxUrl">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display: inline-block; margin-right: 6px; vertical-align: text-bottom;">
+                                    <path d="M6 2L12 6L6 10L0 6L6 2Z" fill="#0061FF"/>
+                                    <path d="M18 2L24 6L18 10L12 6L18 2Z" fill="#0061FF"/>
+                                    <path d="M0 14L6 10L12 14L6 18L0 14Z" fill="#0061FF"/>
+                                    <path d="M12 14L18 10L24 14L18 18L12 14Z" fill="#0061FF"/>
+                                    <path d="M6 20L12 16L18 20L12 24L6 20Z" fill="#0061FF"/>
+                                </svg>
+                                Dropbox Folder Share Link
+                            </label>
+                            <input type="url" id="dropboxUrl" class="form-input" placeholder="Paste Here" required>
+                            <small style="color: #666; margin-top: 5px; display: block;">
+                                Copy the public share link from your Dropbox folder
+                            </small>
                         </div>
-                        <small style="color: #666; margin-top: 5px; display: block;">
-                            🔗 Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.
-                        </small>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="dropboxUrl">Dropbox Folder Share URL *</label>
-                        <input type="url" id="dropboxUrl" class="form-input" placeholder="https://www.dropbox.com/scl/fo/..." required>
-                        <small style="color: #666; margin-top: 5px; display: block;">
-                            📁 Copy the public share link from your Dropbox folder
-                        </small>
-                    </div>
+                        <!-- Validation feedback -->
+                        <div id="urlValidation" class="alert" style="display: none; margin-bottom: 20px;">
+                            <span id="validationMessage"></span>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Gallery Settings</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="allowDownloads" checked>
-                                <div>
-                                    <div class="checkbox-label">Allow Downloads</div>
-                                    <div class="checkbox-description">Users can download individual videos</div>
+                        <!-- Step 2: Additional fields (hidden initially) -->
+                        <div id="additionalFields" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label" for="galleryName">Gallery Name</label>
+                                <input type="text" id="galleryName" class="form-input" placeholder="My Awesome Videos" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="customUrl">Custom Short URL (Optional)</label>
+                                <input type="text" id="customUrl" class="form-input" placeholder="my-gallery" pattern="[a-z0-9\-]+" maxlength="20">
+                                <small id="urlAvailability" style="color: #666; margin-top: 5px; display: block;">
+                                    Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Gallery Settings</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="allowDownloads" checked>
+                                        <div>
+                                            <div class="checkbox-label">Allow Downloads</div>
+                                            <div class="checkbox-description">Users can download individual videos</div>
+                                        </div>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="allowSharing" checked>
+                                        <div>
+                                            <div class="checkbox-label">Allow Individual Sharing</div>
+                                            <div class="checkbox-description">Users can open videos in new windows</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="allowSharing" checked>
-                                <div>
-                                    <div class="checkbox-label">Allow Individual Sharing</div>
-                                    <div class="checkbox-description">Users can open videos in new windows</div>
-                                </div>
+
+                            <!-- Important note -->
+                            <div class="alert alert-info" style="margin-bottom: 20px;">
+                                <strong>Note:</strong> Any changes you make to the Dropbox folder will affect your Gallery, including adding or removing videos. Folders within the folder are shown as Gallery Categories.
+                            </div>
+
+                            <button type="submit" class="btn" id="createBtn">
+                                <span id="createBtnText">Create Gallery</span>
+                                <span id="createBtnSpinner" class="loading-spinner" style="display: none;"></span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Result Display -->
+                    <div id="resultSection" style="display: none;">
+                        <div class="result-section">
+                            <div class="result-title">Gallery Created Successfully!</div>
+                            <div class="result-url">
+                                <span id="galleryUrl"></span>
+                                <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+                            </div>
+                            <div class="result-actions">
+                                <a class="btn btn-secondary" id="previewGalleryLink" href="#" target="_blank">Preview Gallery</a>
+                                <button class="btn" onclick="resetForm()">Create Another</button>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn" id="createBtn">
-                        <span id="createBtnText">🚀 Create Gallery</span>
-                        <span id="createBtnSpinner" class="loading-spinner" style="display: none;"></span>
-                    </button>
-                </form>
-
-                <!-- Result Display -->
-                <div id="resultSection" style="display: none;">
-                    <div class="result-section">
-                        <div class="result-title">✅ Gallery Created Successfully!</div>
-                        <div class="result-url">
-                            <span id="galleryUrl"></span>
-                            <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+                    <!-- Error Display -->
+                    <div id="errorSection" style="display: none;">
+                        <div class="alert alert-error">
+                            <strong>Error:</strong> <span id="errorMessage"></span>
                         </div>
-                        <div class="result-actions">
-                            <button class="btn btn-secondary" onclick="openGallery()">👀 Preview Gallery</button>
-                            <button class="btn" onclick="resetForm()">➕ Create Another</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Error Display -->
-                <div id="errorSection" style="display: none;">
-                    <div class="alert alert-error">
-                        <strong>Error:</strong> <span id="errorMessage"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Existing Galleries -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <span class="section-icon">📚</span>
-                    Your Galleries
-                </h2>
-                
+            <!-- Manage Galleries Tab -->
+            <div id="manageTab" class="tab-content">
                 <div id="galleriesLoading" style="text-align: center; padding: 20px; color: #666;">
                     Loading galleries...
                 </div>
@@ -442,7 +574,22 @@
                 </div>
                 
                 <div id="noGalleries" style="display: none; text-align: center; padding: 20px; color: #666;">
-                    No galleries created yet. Create your first one above! 
+                    No galleries created yet.
+                </div>
+
+                <!-- Delete Confirmation -->
+                <div id="deleteConfirmation" class="delete-confirmation">
+                    <strong>Are you sure you want to delete this gallery?</strong>
+                    <p id="deleteGalleryInfo"></p>
+                    <div class="confirmation-actions">
+                        <button class="btn btn-danger" onclick="confirmDelete()">Yes, Delete Gallery</button>
+                        <button class="btn btn-secondary" onclick="cancelDelete()">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Delete Success Message -->
+                <div id="deleteSuccess" class="alert alert-success" style="display: none;">
+                    Gallery deleted successfully!
                 </div>
             </div>
         </div>
@@ -455,6 +602,298 @@
         
         let currentGalleryUrl = '';
         let allGalleries = [];
+        let galleryToDelete = null;
+        let dropboxToken = null;
+        let validationTimeout = null;
+
+        // Get Dropbox token securely from Supabase
+        async function getDropboxToken() {
+            if (dropboxToken) return dropboxToken;
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token fetch failed: ${response.status}`);
+                }
+
+                const token = await response.text();
+                dropboxToken = token.replace(/^"|"$/g, '');
+                return dropboxToken;
+
+            } catch (error) {
+                console.error('Error fetching Dropbox token:', error);
+                throw error;
+            }
+        }
+
+        // Validate Dropbox URL and scan for videos
+        async function validateDropboxUrl(url) {
+            const validationDiv = document.getElementById('urlValidation');
+            const messageSpan = document.getElementById('validationMessage');
+            
+            if (!url || !url.includes('dropbox.com')) {
+                hideValidation();
+                return false;
+            }
+
+            try {
+                showValidation('info', 'Validating folder and scanning for videos...');
+                
+                const token = await getDropboxToken();
+                
+                // Get folder metadata
+                const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (!metadataResponse.ok) {
+                    throw new Error('Cannot access folder. Please check the URL and make sure it\'s publicly shared.');
+                }
+
+                const metadata = await metadataResponse.json();
+                
+                // Scan for videos
+                const videoCount = await scanFolderForVideos(metadata.path_lower, token);
+                
+                if (videoCount === 0) {
+                    showValidation('warning', 'No video files found in this folder.');
+                    return false;
+                }
+
+                showValidation('success', `Found ${videoCount} video${videoCount === 1 ? '' : 's'} in this folder!`);
+                
+                // Auto-fill gallery name and suggest URL
+                const folderName = metadata.name;
+                populateSmartFields(folderName);
+                
+                // Show additional fields
+                document.getElementById('additionalFields').style.display = 'block';
+                
+                return true;
+
+            } catch (error) {
+                console.error('Validation error:', error);
+                showValidation('error', error.message);
+                return false;
+            }
+        }
+
+        // Scan folder for videos
+        async function scanFolderForVideos(folderPath, token) {
+            let videoCount = 0;
+            let cursor = null;
+            let hasMore = true;
+            
+            while (hasMore) {
+                const endpoint = cursor ? 
+                    'https://api.dropboxapi.com/2/files/list_folder/continue' :
+                    'https://api.dropboxapi.com/2/files/list_folder';
+                
+                const body = cursor ? 
+                    JSON.stringify({ cursor }) :
+                    JSON.stringify({
+                        path: folderPath || '',
+                        recursive: true,
+                        include_deleted: false
+                    });
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: body
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to scan folder contents');
+                }
+
+                const data = await response.json();
+                
+                // Count video files
+                const videoFiles = data.entries.filter(entry => 
+                    entry['.tag'] === 'file' && 
+                    isVideoFile(entry.name) &&
+                    entry.size > 0
+                );
+                
+                videoCount += videoFiles.length;
+                
+                hasMore = data.has_more;
+                cursor = data.cursor;
+            }
+            
+            return videoCount;
+        }
+
+        // Check if file is a video
+        function isVideoFile(filename) {
+            const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.wmv', '.flv'];
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            return videoExtensions.includes(ext);
+        }
+
+        // Populate smart fields based on folder name
+        function populateSmartFields(folderName) {
+            // Set gallery name
+            document.getElementById('galleryName').value = folderName;
+            
+            // Generate and check custom URL suggestion
+            const suggestedUrl = generateSuggestedUrl(folderName);
+            checkUrlAvailabilityAndSet(suggestedUrl);
+        }
+
+        // Generate suggested URL from folder name
+        function generateSuggestedUrl(folderName) {
+            return folderName
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single
+                .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+                .substring(0, 20); // Limit length
+        }
+
+        // Check URL availability and set suggestion
+        async function checkUrlAvailabilityAndSet(suggestedUrl) {
+            if (!suggestedUrl || suggestedUrl.length < 3) {
+                document.getElementById('customUrl').placeholder = 'my-gallery';
+                updateUrlAvailability('neutral', 'Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.');
+                return;
+            }
+
+            const isAvailable = !allGalleries.find(g => g.short_code === suggestedUrl);
+            
+            if (isAvailable) {
+                document.getElementById('customUrl').value = suggestedUrl;
+                updateUrlAvailability('success', `"/g/${suggestedUrl}" is available and suggested for you!`);
+            } else {
+                // Try variations
+                for (let i = 2; i <= 10; i++) {
+                    const variation = `${suggestedUrl}-${i}`;
+                    if (!allGalleries.find(g => g.short_code === variation)) {
+                        document.getElementById('customUrl').value = variation;
+                        updateUrlAvailability('success', `"/g/${variation}" is available and suggested for you!`);
+                        return;
+                    }
+                }
+                
+                // If no variations work, leave empty
+                document.getElementById('customUrl').placeholder = suggestedUrl + '-taken';
+                updateUrlAvailability('warning', `"${suggestedUrl}" is taken. Leave empty for random URL or choose a different one.`);
+            }
+        }
+
+        // Show validation message
+        function showValidation(type, message) {
+            const validationDiv = document.getElementById('urlValidation');
+            const messageSpan = document.getElementById('validationMessage');
+            
+            validationDiv.className = `alert alert-${type}`;
+            messageSpan.textContent = message;
+            validationDiv.style.display = 'block';
+        }
+
+        // Hide validation message
+        function hideValidation() {
+            document.getElementById('urlValidation').style.display = 'none';
+            document.getElementById('additionalFields').style.display = 'none';
+        }
+
+        // Update URL availability message
+        function updateUrlAvailability(type, message) {
+            const availabilityDiv = document.getElementById('urlAvailability');
+            availabilityDiv.style.color = type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#666';
+            availabilityDiv.textContent = message;
+        }
+
+        // Setup URL validation on input
+        function setupUrlValidation() {
+            const dropboxInput = document.getElementById('dropboxUrl');
+            const customUrlInput = document.getElementById('customUrl');
+            
+            dropboxInput.addEventListener('input', function() {
+                clearTimeout(validationTimeout);
+                const url = this.value.trim();
+                
+                if (!url) {
+                    hideValidation();
+                    return;
+                }
+                
+                // Debounce validation
+                validationTimeout = setTimeout(() => {
+                    validateDropboxUrl(url);
+                }, 1000);
+            });
+
+            // Real-time custom URL availability checking
+            customUrlInput.addEventListener('input', function() {
+                const customUrl = this.value.trim().toLowerCase();
+                
+                if (!customUrl) {
+                    updateUrlAvailability('neutral', 'Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.');
+                    return;
+                }
+
+                if (!/^[a-z0-9\-]+$/.test(customUrl)) {
+                    updateUrlAvailability('warning', 'Only lowercase letters, numbers, and hyphens allowed.');
+                    return;
+                }
+
+                if (customUrl.length < 3) {
+                    updateUrlAvailability('warning', 'Must be at least 3 characters long.');
+                    return;
+                }
+
+                const isAvailable = !allGalleries.find(g => g.short_code === customUrl);
+                if (isAvailable) {
+                    updateUrlAvailability('success', `"/g/${customUrl}" is available!`);
+                } else {
+                    updateUrlAvailability('warning', `"/g/${customUrl}" is already taken.`);
+                }
+            });
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            if (tabName === 'create') {
+                document.getElementById('createTab').classList.add('active');
+            } else if (tabName === 'manage') {
+                document.getElementById('manageTab').classList.add('active');
+                // Load galleries when switching to manage tab
+                loadExistingGalleries();
+            }
+        }
 
         // Generate random short code
         function generateShortCode() {
@@ -471,6 +910,23 @@
             try {
                 console.log('💾 Saving gallery to Supabase:', { shortCode, folderUrl, config, name });
                 
+                // Get video count for storage
+                const token = await getDropboxToken();
+                const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: folderUrl })
+                });
+                
+                let videoCount = 0;
+                if (metadataResponse.ok) {
+                    const metadata = await metadataResponse.json();
+                    videoCount = await scanFolderForVideos(metadata.path_lower, token);
+                }
+                
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_gallery`, {
                     method: 'POST',
                     headers: {
@@ -482,7 +938,8 @@
                         p_short_code: shortCode,
                         p_folder_url: folderUrl,
                         p_config: config,
-                        p_name: name || null
+                        p_name: name || null,
+                        p_video_count: videoCount
                     })
                 });
 
@@ -497,6 +954,34 @@
 
             } catch (error) {
                 console.error('❌ Error saving gallery to Supabase:', error);
+                throw error;
+            }
+        }
+
+        // Delete gallery from Supabase
+        async function deleteGalleryFromSupabase(shortCode) {
+            try {
+                console.log('🗑️ Deleting gallery from Supabase:', shortCode);
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/galleries?short_code=eq.${shortCode}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to delete gallery: ${response.status} - ${errorText}`);
+                }
+
+                console.log('✅ Gallery deleted from Supabase:', shortCode);
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error deleting gallery from Supabase:', error);
                 throw error;
             }
         }
@@ -568,10 +1053,13 @@
         // Initialize the admin panel
         async function init() {
             try {
+                // Setup URL validation
+                setupUrlValidation();
+                
                 // Try to migrate any existing localStorage galleries
                 await migrateLocalStorageGalleries();
                 
-                // Load galleries from Supabase
+                // Load galleries from Supabase initially
                 await loadExistingGalleries();
                 
             } catch (error) {
@@ -585,6 +1073,9 @@
             const loadingEl = document.getElementById('galleriesLoading');
             const listEl = document.getElementById('galleriesList');
             const noGalleriesEl = document.getElementById('noGalleries');
+            
+            // Remember scroll position
+            const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
             
             try {
                 loadingEl.style.display = 'block';
@@ -604,9 +1095,19 @@
                 loadingEl.style.display = 'none';
                 listEl.style.display = 'block';
                 
+                // Restore scroll position
+                setTimeout(() => {
+                    window.scrollTo(0, scrollPosition);
+                }, 0);
+                
             } catch (error) {
                 console.error('❌ Error loading galleries:', error);
                 loadingEl.innerHTML = 'Error loading galleries. Please refresh the page.';
+                
+                // Restore scroll position even on error
+                setTimeout(() => {
+                    window.scrollTo(0, scrollPosition);
+                }, 0);
             }
         }
 
@@ -624,22 +1125,152 @@
                     minute: '2-digit'
                 });
                 
+                // Get video count from gallery metadata if available
+                const videoCount = gallery.video_count || 0;
+                const videoText = videoCount === 1 ? '1 Video' : `${videoCount} Videos`;
+                
                 return `
-                    <div class="gallery-item">
+                    <div class="gallery-item" id="gallery-${gallery.short_code}">
                         <div class="gallery-info">
                             <div class="gallery-name">${gallery.name || 'Unnamed Gallery'}</div>
-                            <div class="gallery-code">/g/${gallery.short_code}</div>
+                            <div class="gallery-code">${videoText}</div>
                             <div class="gallery-date">Created: ${createdDate}</div>
                         </div>
                         <div class="gallery-actions">
-                            <button class="btn btn-small btn-secondary" onclick="copyGalleryUrl('${galleryUrl}')">📋 Copy Link</button>
-                            <button class="btn btn-small" onclick="openGalleryUrl('${galleryUrl}')">👀 View</button>
+                            <a class="btn btn-small btn-secondary" href="${galleryUrl}" onclick="copyGalleryUrl('${galleryUrl}'); event.preventDefault();">Copy Link</a>
+                            <a class="btn btn-small" href="${galleryUrl}" target="_blank">View</a>
+                            <button class="btn btn-small btn-danger" onclick="deleteGallery('${gallery.short_code}', '${gallery.name || 'Unnamed Gallery'}')">Delete</button>
                         </div>
                     </div>
                 `;
             }).join('');
             
             listEl.innerHTML = galleriesHTML;
+        }
+
+        // Delete gallery functions
+        function deleteGallery(shortCode, galleryName) {
+            galleryToDelete = { shortCode, galleryName };
+            
+            const galleryItem = document.getElementById(`gallery-${shortCode}`);
+            if (!galleryItem) return;
+            
+            // Create overlay
+            const deleteOverlay = document.createElement('div');
+            deleteOverlay.className = 'delete-overlay';
+            deleteOverlay.innerHTML = `
+                <strong style="margin-bottom: 10px;">Delete "${galleryName}"?</strong>
+                <p style="margin-bottom: 15px; text-align: center; color: #856404;">This action cannot be undone.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-danger btn-small" onclick="confirmDelete()">Yes, Delete</button>
+                    <button class="btn btn-secondary btn-small" onclick="cancelDelete()">Cancel</button>
+                </div>
+            `;
+            
+            // Add overlay to gallery item
+            galleryItem.style.position = 'relative';
+            galleryItem.appendChild(deleteOverlay);
+            galleryItem.classList.add('deleting');
+        }
+
+        function cancelDelete() {
+            if (!galleryToDelete) return;
+            
+            const galleryItem = document.getElementById(`gallery-${galleryToDelete.shortCode}`);
+            if (galleryItem) {
+                const overlay = galleryItem.querySelector('.delete-overlay');
+                if (overlay) {
+                    galleryItem.removeChild(overlay);
+                }
+                galleryItem.classList.remove('deleting');
+            }
+            
+            galleryToDelete = null;
+        }
+
+        async function confirmDelete() {
+            if (!galleryToDelete) return;
+            
+            const galleryItem = document.getElementById(`gallery-${galleryToDelete.shortCode}`);
+            const overlay = galleryItem ? galleryItem.querySelector('.delete-overlay') : null;
+            
+            // Show loading state in overlay
+            if (overlay) {
+                overlay.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="loading-spinner" style="width: 20px; height: 20px;"></div>
+                        <span>Deleting gallery...</span>
+                    </div>
+                `;
+            }
+            
+            try {
+                await deleteGalleryFromSupabase(galleryToDelete.shortCode);
+                
+                // Show success message briefly
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div style="color: #28a745; font-weight: 600;">
+                            Gallery deleted successfully!
+                        </div>
+                    `;
+                }
+                
+                // Smoothly remove the gallery item with enhanced easing
+                setTimeout(() => {
+                    if (galleryItem) {
+                        // Get current height for smooth transition
+                        const currentHeight = galleryItem.offsetHeight;
+                        
+                        // Phase 1: Fade out with subtle slide
+                        galleryItem.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                        galleryItem.style.opacity = '0';
+                        galleryItem.style.transform = 'translateX(-8px) scale(0.98)';
+                        
+                        // Phase 2: Collapse height smoothly after fade
+                        setTimeout(() => {
+                            galleryItem.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-width 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                            galleryItem.style.height = '0px';
+                            galleryItem.style.paddingTop = '0px';
+                            galleryItem.style.paddingBottom = '0px';
+                            galleryItem.style.marginTop = '0px';
+                            galleryItem.style.marginBottom = '0px';
+                            galleryItem.style.borderBottomWidth = '0px';
+                            galleryItem.style.overflow = 'hidden';
+                            
+                            // Clean up after animation completes
+                            setTimeout(() => {
+                                // Remove from allGalleries array
+                                allGalleries = allGalleries.filter(g => g.short_code !== galleryToDelete.shortCode);
+                                
+                                // Remove from DOM
+                                if (galleryItem.parentNode) {
+                                    galleryItem.parentNode.removeChild(galleryItem);
+                                }
+                                
+                                // Check if no galleries left
+                                if (allGalleries.length === 0) {
+                                    document.getElementById('galleriesList').style.display = 'none';
+                                    document.getElementById('noGalleries').style.display = 'block';
+                                }
+                                
+                                galleryToDelete = null;
+                            }, 500);
+                        }, 400);
+                    }
+                }, 700);
+                
+            } catch (error) {
+                console.error('❌ Error deleting gallery:', error);
+                
+                // Show error in overlay
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div style="color: #dc3545; margin-bottom: 10px;">Failed to delete gallery</div>
+                        <button class="btn btn-secondary btn-small" onclick="cancelDelete()">Close</button>
+                    `;
+                }
+            }
         }
 
         // Form submission
@@ -658,6 +1289,12 @@
             const dropboxUrl = document.getElementById('dropboxUrl').value.trim();
             const allowDownloads = document.getElementById('allowDownloads').checked;
             const allowSharing = document.getElementById('allowSharing').checked;
+            
+            // Validate gallery name (now required)
+            if (!galleryName) {
+                showError('Gallery name is required');
+                return;
+            }
             
             // Validate custom URL if provided
             if (customUrl) {
@@ -705,7 +1342,7 @@
                     allowSharing
                 };
                 
-                console.log('🎬 Creating gallery:', { shortCode, dropboxUrl, config, galleryName, isCustomUrl: !!customUrl });
+                console.log('Creating gallery:', { shortCode, dropboxUrl, config, galleryName, isCustomUrl: !!customUrl });
                 
                 // Save to Supabase
                 await saveGalleryToSupabase(shortCode, dropboxUrl, config, galleryName);
@@ -715,15 +1352,16 @@
                 
                 // Show success
                 document.getElementById('galleryUrl').textContent = currentGalleryUrl;
+                document.getElementById('previewGalleryLink').href = currentGalleryUrl;
                 resultSection.style.display = 'block';
                 
-                // Reload galleries list
+                // Reload galleries list for the manage tab
                 await loadExistingGalleries();
                 
-                console.log('✅ Gallery created successfully:', currentGalleryUrl);
+                console.log('Gallery created successfully:', currentGalleryUrl);
                 
             } catch (error) {
-                console.error('❌ Error creating gallery:', error);
+                console.error('Error creating gallery:', error);
                 showError(`Failed to create gallery: ${error.message}`);
             } finally {
                 // Reset button state
@@ -758,19 +1396,11 @@
             navigator.clipboard.writeText(url).then(() => {
                 const btn = event.target;
                 const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
+                btn.textContent = 'Copied!';
                 setTimeout(() => {
                     btn.textContent = originalText;
                 }, 2000);
             });
-        }
-
-        function openGallery() {
-            window.open(currentGalleryUrl, '_blank');
-        }
-
-        function openGalleryUrl(url) {
-            window.open(url, '_blank');
         }
 
         function resetForm() {
@@ -778,18 +1408,23 @@
             document.getElementById('resultSection').style.display = 'none';
             document.getElementById('errorSection').style.display = 'none';
             
+            // Hide additional fields and validation
+            document.getElementById('additionalFields').style.display = 'none';
+            hideValidation();
+            
             // Reset checkboxes to default (checked)
             document.getElementById('allowDownloads').checked = true;
             document.getElementById('allowSharing').checked = true;
             
             // Clear custom URL
             document.getElementById('customUrl').value = '';
+            updateUrlAvailability('neutral', 'Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.');
         }
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎛️ VidShare Admin Panel Ready with Supabase Storage!');
+        console.log('VidShare Admin Panel Ready with Supabase Storage!');
     </script>
 </body>
 </html>
