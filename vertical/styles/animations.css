@@ -1,0 +1,235 @@
+/* styles/animations.css - All animation-related styles */
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+@keyframes heartPop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(1.1); }
+    75% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+@keyframes likeBurst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    60% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1) rotate(15deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8) rotate(-5deg) translateY(-20px);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* Animation classes */
+.video-slide {
+    animation: gradientShift 8s ease infinite;
+}
+
+.video-slide.paused {
+    animation-play-state: paused;
+}
+
+.video-slide.paused .floating-shapes .shape {
+    animation-play-state: paused;
+}
+
+/* Rubberband effects */
+.video-slide.rubberband-up {
+    transform: translateY(-50px) !important;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+.video-slide.rubberband-down {
+    transform: translateY(50px) !important;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+.video-slide.rubberband-left {
+    transform: translateX(-50px) !important;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+.video-slide.rubberband-right {
+    transform: translateX(50px) !important;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+/* Category switching animations */
+.video-slide.category-exit-left {
+    opacity: 1;
+    transform: translateX(-100vw);
+    z-index: 8;
+}
+
+.video-slide.category-exit-right {
+    opacity: 1;
+    transform: translateX(100vw);
+    z-index: 8;
+}
+
+.video-slide.category-enter-left {
+    opacity: 1;
+    transform: translateX(0);
+    z-index: 10;
+}
+
+.video-slide.category-enter-right {
+    opacity: 1;
+    transform: translateX(0);
+    z-index: 10;
+}
+
+/* Pause indicator animation */
+.pause-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.pause-indicator.show {
+    opacity: 1;
+}
+
+.pause-icon {
+    width: 0;
+    height: 0;
+    border-left: 20px solid white;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    margin-left: 5px;
+}
+
+.pause-icon.paused {
+    border: none;
+    width: 6px;
+    height: 30px;
+    background: white;
+    margin: 0;
+    box-shadow: 12px 0 0 white;
+}
+
+/* Double tap heart */
+.double-tap-heart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: #ff3040;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 15;
+    animation: heartPop 1s ease-out;
+}
+
+/* Like burst effect */
+.like-burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: #ff3040;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 15;
+    animation: likeBurst 0.8s ease-out;
+}
+
+/* Floating shapes */
+.floating-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    opacity: 0.1;
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    animation-delay: 0s;
+}
+
+.shape:nth-child(2) {
+    top: 60%;
+    right: 15%;
+    width: 40px;
+    height: 40px;
+    background: white;
+    transform: rotate(45deg);
+    animation-delay: 2s;
+}
+
+.shape:nth-child(3) {
+    bottom: 30%;
+    left: 20%;
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 43px solid white;
+    animation-delay: 4s;
+}
