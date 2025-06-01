@@ -663,12 +663,31 @@
                     const shortCode = shortCodeMatch[1];
                     console.log('🔗 Short code detected:', shortCode);
                     
-                    const galleries = JSON.parse(localStorage.getItem('vidshare_galleries') || '{}');
-                    
-                    if (galleries[shortCode]) {
-                        console.log('✅ Found gallery for short code:', galleries[shortCode]);
-                        const galleryData = galleries[shortCode];
-                        const folderUrl = galleryData.folderUrl;
+                    // Look up gallery directly from Supabase
+                    try {
+                        console.log('🔍 Looking up gallery in Supabase...');
+                        const response = await fetch(`${SUPABASE_URL}/rest/v1/galleries?short_code=eq.${shortCode}&select=*`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Gallery lookup failed: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('📊 Supabase response:', data);
+                        
+                        if (!data || data.length === 0) {
+                            throw new Error('Gallery not found in database');
+                        }
+                        
+                        const galleryData = data[0]; // Get first result
+                        console.log('✅ Found gallery in Supabase:', galleryData);
                         
                         // Load gallery configuration
                         if (galleryData.config) {
@@ -680,10 +699,11 @@
                         
                         // Get token securely before loading folder
                         DROPBOX_TOKEN = await getDropboxToken();
-                        await loadFolderContents(folderUrl);
+                        await loadFolderContents(galleryData.folder_url);
                         return;
-                    } else {
-                        console.error('❌ Short code not found:', shortCode);
+                        
+                    } catch (error) {
+                        console.error('❌ Error looking up gallery:', error);
                         showStatusMessage('error', `Gallery not found for code: ${shortCode}. The link may be expired or invalid.`);
                         await loadSampleVideos(); // Fallback to demo
                         return;
