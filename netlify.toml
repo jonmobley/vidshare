@@ -16,5 +16,10 @@
   to = "/gallery/index.html"
   status = 200
 
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
 [build.environment]
   NODE_VERSION = "18"

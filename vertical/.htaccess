@@ -1,0 +1,11 @@
+# Set correct MIME type for JavaScript modules
+AddType application/javascript .js
+
+# Enable CORS for module loading
+Header set Access-Control-Allow-Origin "*"
+
+# Enable directory listing for debugging
+Options +Indexes
+
+# Set default character set
+AddDefaultCharset UTF-8 
