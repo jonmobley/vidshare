@@ -587,8 +587,11 @@
     </div>
 
     <script>
-        // Configuration - ADD YOUR DROPBOX TOKEN HERE
-        const DROPBOX_TOKEN = '';
+        // SECURE CONFIGURATION - Your Supabase details
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        let DROPBOX_TOKEN = null; // Will be fetched securely
         
         let allVideos = [];
         let filteredVideos = [];
@@ -601,9 +604,54 @@
             allowSharing: false
         };
 
+        // Secure token fetching from Supabase
+        async function getDropboxToken() {
+            try {
+                console.log('🔐 Fetching Dropbox token securely...');
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token fetch failed: ${response.status}`);
+                }
+
+                const token = await response.text();
+                // Remove quotes if the response is JSON-wrapped
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                if (!cleanToken || cleanToken === 'null') {
+                    throw new Error('No token found in configuration');
+                }
+
+                console.log('✅ Token fetched securely');
+                return cleanToken;
+
+            } catch (error) {
+                console.error('❌ Error fetching token:', error);
+                throw new Error(`Failed to get Dropbox token: ${error.message}`);
+            }
+        }
+
         // Initialize the app
         async function init() {
             try {
+                // Check if Supabase is configured
+                if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_PROJECT_URL') {
+                    console.log('📺 Supabase not configured, loading demo videos');
+                    await loadSampleVideos();
+                    return;
+                }
+
                 // Check if this is a short code URL first
                 const path = window.location.pathname;
                 const shortCodeMatch = path.match(/\/g\/([a-z0-9]{7})/);
@@ -627,6 +675,9 @@
                         }
                         
                         hideDemoNotice();
+                        
+                        // Get token securely before loading folder
+                        DROPBOX_TOKEN = await getDropboxToken();
                         await loadFolderContents(folderUrl);
                         return;
                     } else {
@@ -647,19 +698,22 @@
                     return;
                 }
                 
-                if (!DROPBOX_TOKEN) {
-                    showStatusMessage('error', 'Dropbox token not configured. Please add your token to use real folders.');
-                    await loadSampleVideos(); // Fallback to demo
-                    return;
-                }
-                
                 console.log('🔍 Loading gallery for folder:', folderUrl);
                 hideDemoNotice();
+                
+                // Get token securely before loading folder
+                DROPBOX_TOKEN = await getDropboxToken();
                 await loadFolderContents(folderUrl);
                 
             } catch (error) {
                 console.error('❌ Error initializing gallery:', error);
-                showStatusMessage('error', 'Error loading gallery. Using demo videos instead.');
+                
+                if (error.message.includes('token')) {
+                    showStatusMessage('error', 'Gallery configuration error. Please check setup and try again.');
+                } else {
+                    showStatusMessage('error', 'Error loading gallery. Using demo videos instead.');
+                }
+                
                 await loadSampleVideos(); // Fallback to sample videos
             }
         }
@@ -1069,72 +1123,6 @@
                     date: "2024-03-18",
                     dateDisplay: "Mar 18, 2024",
                     isVertical: false
-                },
-                {
-                    id: 7,
-                    title: "Vertical Story 1.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    duration: "00:30",
-                    durationSeconds: 30,
-                    date: "2024-03-22",
-                    dateDisplay: "Mar 22, 2024",
-                    isVertical: true
-                },
-                {
-                    id: 8,
-                    title: "Vertical Story 2.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                    duration: "00:45",
-                    durationSeconds: 45,
-                    date: "2024-03-23",
-                    dateDisplay: "Mar 23, 2024",
-                    isVertical: true
-                },
-                {
-                    id: 9,
-                    title: "Vertical Story 3.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                    duration: "00:25",
-                    durationSeconds: 25,
-                    date: "2024-03-24",
-                    dateDisplay: "Mar 24, 2024",
-                    isVertical: true
-                },
-                {
-                    id: 10,
-                    title: "Vertical Story 4.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                    duration: "00:20",
-                    durationSeconds: 20,
-                    date: "2024-03-25",
-                    dateDisplay: "Mar 25, 2024",
-                    isVertical: true
-                },
-                {
-                    id: 11,
-                    title: "Vertical Story 5.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-                    duration: "00:35",
-                    durationSeconds: 35,
-                    date: "2024-03-26",
-                    dateDisplay: "Mar 26, 2024",
-                    isVertical: true
-                },
-                {
-                    id: 12,
-                    title: "Vertical Story 6.mp4",
-                    folder: "Vertical",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                    duration: "00:40",
-                    durationSeconds: 40,
-                    date: "2024-03-27",
-                    dateDisplay: "Mar 27, 2024",
-                    isVertical: true
                 }
             ];
 
@@ -1280,8 +1268,6 @@
             const mainVideoSource = document.getElementById('mainVideoSource');
             const currentVideoTitle = document.getElementById('currentVideoTitle');
             const mainPlayerActions = document.getElementById('mainPlayerActions');
-            const mainDownloadBtn = document.getElementById('mainDownloadBtn');
-            const mainExternalBtn = document.getElementById('mainExternalBtn');
 
             // Show loading state
             currentVideoTitle.textContent = `Loading ${video.title}...`;
@@ -1627,7 +1613,7 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', init);
 
-        console.log('🎬 VidShare Gallery Ready!');
+        console.log('🎬 VidShare Gallery Ready with Secure Token Storage!');
     </script>
 </body>
 </html>
