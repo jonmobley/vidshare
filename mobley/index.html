@@ -359,6 +359,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="customUrl">Custom Short URL (Optional)</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #666; font-size: 0.9rem; white-space: nowrap;">/g/</span>
+                            <input type="text" id="customUrl" class="form-input" placeholder="my-gallery" pattern="[a-z0-9\-]+" maxlength="20" style="flex: 1;">
+                        </div>
+                        <small style="color: #666; margin-top: 5px; display: block;">
+                            🔗 Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="dropboxUrl">Dropbox Folder Share URL *</label>
                         <input type="url" id="dropboxUrl" class="form-input" placeholder="https://www.dropbox.com/scl/fo/..." required>
                         <small style="color: #666; margin-top: 5px; display: block;">
@@ -643,9 +654,33 @@
             
             // Get form values
             const galleryName = document.getElementById('galleryName').value.trim();
+            const customUrl = document.getElementById('customUrl').value.trim().toLowerCase();
             const dropboxUrl = document.getElementById('dropboxUrl').value.trim();
             const allowDownloads = document.getElementById('allowDownloads').checked;
             const allowSharing = document.getElementById('allowSharing').checked;
+            
+            // Validate custom URL if provided
+            if (customUrl) {
+                if (!/^[a-z0-9\-]+$/.test(customUrl)) {
+                    showError('Custom URL can only contain lowercase letters, numbers, and hyphens');
+                    return;
+                }
+                if (customUrl.length < 3) {
+                    showError('Custom URL must be at least 3 characters long');
+                    return;
+                }
+                
+                // Check if custom URL already exists
+                try {
+                    const existingGallery = allGalleries.find(g => g.short_code === customUrl);
+                    if (existingGallery) {
+                        showError(`URL "/g/${customUrl}" is already taken. Please choose a different one.`);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Could not check existing galleries:', error);
+                }
+            }
             
             // Validate Dropbox URL
             if (!dropboxUrl || !dropboxUrl.includes('dropbox.com')) {
@@ -661,8 +696,8 @@
             errorSection.style.display = 'none';
             
             try {
-                // Generate short code
-                const shortCode = generateShortCode();
+                // Generate or use custom short code
+                const shortCode = customUrl || generateShortCode();
                 
                 // Build configuration
                 const config = {
@@ -670,7 +705,7 @@
                     allowSharing
                 };
                 
-                console.log('🎬 Creating gallery:', { shortCode, dropboxUrl, config, galleryName });
+                console.log('🎬 Creating gallery:', { shortCode, dropboxUrl, config, galleryName, isCustomUrl: !!customUrl });
                 
                 // Save to Supabase
                 await saveGalleryToSupabase(shortCode, dropboxUrl, config, galleryName);
@@ -746,6 +781,9 @@
             // Reset checkboxes to default (checked)
             document.getElementById('allowDownloads').checked = true;
             document.getElementById('allowSharing').checked = true;
+            
+            // Clear custom URL
+            document.getElementById('customUrl').value = '';
         }
 
         // Initialize when page loads
