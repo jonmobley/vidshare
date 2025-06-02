@@ -2033,6 +2033,10 @@
                         const videoId = parseInt(video.dataset.videoId);
                         const filePath = video.dataset.filePath;
                         
+                        // Add loading state
+                        video.style.opacity = '0';
+                        video.style.transition = 'opacity 0.3s ease';
+                        
                         // Only load if not already loaded
                         if (!video.src) {
                             try {
@@ -2042,6 +2046,19 @@
                                     // Smart thumbnail timing based on accurate duration
                                     const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
                                     video.src = `${videoObj.url}#t=${thumbnailTime}`;
+                                    
+                                    // Handle successful load
+                                    video.addEventListener('loadeddata', () => {
+                                        video.style.opacity = '1';
+                                    });
+                                    
+                                    // Handle errors
+                                    video.addEventListener('error', (e) => {
+                                        console.error('❌ Error loading thumbnail:', e);
+                                        video.style.opacity = '1';
+                                        video.style.background = '#e9ecef';
+                                    });
+                                    
                                     video.load();
                                 } else if (filePath && DROPBOX_TOKEN) {
                                     // Fallback: get temporary URL if not cached
@@ -2052,6 +2069,19 @@
                                     }
                                     const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
                                     video.src = `${videoUrl}#t=${thumbnailTime}`;
+                                    
+                                    // Handle successful load
+                                    video.addEventListener('loadeddata', () => {
+                                        video.style.opacity = '1';
+                                    });
+                                    
+                                    // Handle errors
+                                    video.addEventListener('error', (e) => {
+                                        console.error('❌ Error loading thumbnail:', e);
+                                        video.style.opacity = '1';
+                                        video.style.background = '#e9ecef';
+                                    });
+                                    
                                     video.load();
                                 }
                                 
@@ -2060,6 +2090,8 @@
                                 
                             } catch (error) {
                                 console.error('❌ Error loading thumbnail:', error);
+                                video.style.opacity = '1';
+                                video.style.background = '#e9ecef';
                                 // Stop observing failed elements too
                                 thumbnailObserver.unobserve(video);
                             }
