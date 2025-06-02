@@ -973,7 +973,7 @@
                 return `
                 <div class="thumbnail-card ${video.id === currentVideoId ? 'active' : ''}" data-video-id="${video.id}">
                     <div class="thumbnail-image">
-                        <video class="thumbnail-video" preload="metadata" muted>
+                        <video class="thumbnail-video" preload="metadata" muted playsinline>
                             <source src="${video.url}#t=${thumbnailTime}" type="video/mp4">
                         </video>
                         <div class="thumbnail-overlay">▶</div>
@@ -993,6 +993,7 @@
                 </div>
             `}).join('');
             
+            // Add event listeners for thumbnail cards
             document.querySelectorAll('.thumbnail-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('.action-btn')) {
@@ -1003,6 +1004,7 @@
                 });
             });
 
+            // Add event listeners for action buttons
             document.querySelectorAll('.download-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1018,6 +1020,29 @@
                     const videoUrl = btn.dataset.videoUrl;
                     openInNewWindow(videoUrl);
                 });
+            });
+
+            // Setup thumbnail video loading
+            document.querySelectorAll('.thumbnail-video').forEach(video => {
+                // Add loading state
+                video.style.opacity = '0';
+                video.style.transition = 'opacity 0.3s ease';
+
+                // Handle successful load
+                video.addEventListener('loadeddata', () => {
+                    video.style.opacity = '1';
+                });
+
+                // Handle errors
+                video.addEventListener('error', (e) => {
+                    console.error('Error loading thumbnail:', e);
+                    // Show a fallback image or retry
+                    video.style.opacity = '1';
+                    video.style.background = '#e9ecef';
+                });
+
+                // Force load the video
+                video.load();
             });
         }
 
