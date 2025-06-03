@@ -35,10 +35,12 @@ class VideoRenderer {
                 // Render all categories in sequence for seamless scrolling
                 Object.keys(videoData).forEach(categoryIndex => {
                     const categoryData = videoData[categoryIndex];
+                    console.log(`Rendering category ${categoryIndex} with ${categoryData.length} videos`);
                     categoryData.forEach((videoInfo, localIndex) => {
                         const element = this.createVideoElement(videoInfo, globalIndex, categoryIndex, localIndex);
                         container.appendChild(element);
                         this.renderedVideos.set(globalIndex, element);
+                        console.log(`Created video element: global ${globalIndex}, category ${categoryIndex}, local ${localIndex}, title: ${videoInfo.title}`);
                         globalIndex++;
                     });
                 });

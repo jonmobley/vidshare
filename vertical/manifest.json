@@ -4,7 +4,7 @@
   "description": "Immersive TikTok-style vertical video gallery experience",
   "start_url": "/vertical/",
   "display": "fullscreen",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "theme_color": "#000000",
   "background_color": "#000000",
   "scope": "/vertical/",

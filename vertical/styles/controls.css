@@ -26,12 +26,15 @@
     display: flex;
     gap: 15px;
     overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    /* Hide all scrollbars completely */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
 .category-pills::-webkit-scrollbar {
-    display: none;
+    display: none; /* WebKit */
+    width: 0;
+    height: 0;
 }
 
 .category-pill {
@@ -45,7 +48,7 @@
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
+    /* Remove backdrop-filter to eliminate white glow */
 }
 
 .category-pill.active {

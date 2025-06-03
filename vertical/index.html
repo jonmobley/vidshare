@@ -219,6 +219,31 @@
 
         // Expose install function globally
         window.installVidShareApp = installApp;
+
+        // Lock orientation to portrait when possible
+        function lockOrientation() {
+            if (screen && screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait-primary').catch((err) => {
+                    console.log('🔒 Screen orientation lock not supported or failed:', err.message);
+                });
+            } else if (screen && screen.lockOrientation) {
+                // Older API
+                screen.lockOrientation('portrait-primary');
+            } else {
+                console.log('📱 Screen orientation lock not supported');
+            }
+        }
+
+        // Lock orientation when app becomes fullscreen/standalone
+        if (window.matchMedia('(display-mode: fullscreen)').matches || 
+            window.matchMedia('(display-mode: standalone)').matches) {
+            lockOrientation();
+        }
+
+        // Also try to lock when page loads
+        window.addEventListener('load', () => {
+            setTimeout(lockOrientation, 100);
+        });
     </script>
 </body>
 </html>

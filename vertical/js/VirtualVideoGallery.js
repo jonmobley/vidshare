@@ -12,6 +12,7 @@ class VirtualVideoGallery {
         // State
         this.currentSlide = 0;
         this.currentCategory = 0;
+        this.globalVideoIndex = 0; // Track global position across all categories
         this.categorySlidePositions = new Array(4).fill(0); // Initialize for all categories including Videos
         this.isPlaying = true;
         
@@ -128,10 +129,10 @@ class VirtualVideoGallery {
     // UI Updates
     updateProgressDots() {
         const progressIndicator = document.getElementById('progressIndicator');
-        const totalSlides = this.getTotalSlides();
+        const totalGlobalSlides = this.getTotalGlobalSlides();
         
-        // Hide dots if more than 20 videos
-        if (totalSlides > 20) {
+        // Hide dots if more than 20 videos total
+        if (totalGlobalSlides > 20) {
             progressIndicator.style.display = 'none';
             return;
         }
@@ -139,11 +140,11 @@ class VirtualVideoGallery {
         progressIndicator.style.display = 'flex';
         progressIndicator.innerHTML = '';
         
-        // Create dots
-        for (let i = 0; i < totalSlides; i++) {
+        // Create dots for all videos across all categories
+        for (let i = 0; i < totalGlobalSlides; i++) {
             const dot = document.createElement('div');
             dot.className = 'progress-dot';
-            if (i === this.currentSlide) {
+            if (i === this.globalVideoIndex) {
                 dot.classList.add('active');
             }
             progressIndicator.appendChild(dot);
@@ -189,8 +190,8 @@ class VirtualVideoGallery {
         const poolStatus = this.videoPool.getPoolStatus();
         
         document.getElementById('renderedCount').textContent = this.renderer.getRenderedCount();
-        document.getElementById('totalCount').textContent = this.getTotalSlides();
-        document.getElementById('currentIndex').textContent = this.currentSlide + 1;
+        document.getElementById('totalCount').textContent = this.getTotalGlobalSlides();
+        document.getElementById('currentIndex').textContent = `${this.globalVideoIndex + 1} (${this.currentSlide + 1} in cat ${this.currentCategory})`;
         document.getElementById('poolStatus').textContent = `${poolStatus.available}/${poolStatus.total}`;
         
         const estimatedMemoryPerVideo = 0.1; // MB

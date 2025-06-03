@@ -172,8 +172,9 @@ class GestureHandler {
             }
             
             // Update current slide if it changed
-            if (localIndex !== this.gallery.currentSlide) {
+            if (localIndex !== this.gallery.currentSlide || globalVideoIndex !== this.gallery.globalVideoIndex) {
                 this.gallery.currentSlide = localIndex;
+                this.gallery.globalVideoIndex = globalVideoIndex; // Track global position
                 this.gallery.categorySlidePositions[category] = localIndex;
                 this.gallery.updateProgressDots();
                 this.gallery.updateLikeButton();

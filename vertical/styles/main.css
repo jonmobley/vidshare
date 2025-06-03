@@ -12,6 +12,15 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* Global scrollbar hiding */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* WebKit */
+    width: 0;
+    height: 0;
 }
 
 body {
@@ -313,6 +322,7 @@ body {
     50% { opacity: 1; }
 }
 
+/* Orientation and mobile optimizations */
 @media (max-width: 480px) {
     .video-title {
         font-size: 1.3rem;
@@ -320,5 +330,37 @@ body {
     
     .video-description {
         font-size: 0.9rem;
+    }
+}
+
+/* Discourage landscape mode */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        pointer-events: none;
+    }
+    
+    body::after {
+        content: "📱 Please rotate your device to portrait mode for the best experience";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        font-size: 1.2rem;
+        z-index: 10001;
+        pointer-events: none;
+        padding: 20px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        max-width: 80%;
     }
 }
