@@ -676,9 +676,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        url: apiUrl,
-                        include_media_info: false,
-                        direct_only: true
+                        url: apiUrl
                     })
                 });
 
@@ -1533,7 +1531,8 @@ Error: ${error.message}`);
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({})
                 });
 
                 if (response.status === 401) {
