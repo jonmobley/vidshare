@@ -1,5 +1,13 @@
 /* styles/controls.css - Controls and UI element styles */
 
+/* Import safe area variables */
+:root {
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+}
+
 /* Category Navigation */
 .category-navigation {
     position: fixed;
@@ -8,7 +16,9 @@
     right: 0;
     z-index: 20;
     background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-    padding: 20px 20px 20px;
+    padding: calc(20px + var(--sat)) 20px 20px;
+    padding-left: calc(20px + var(--sal));
+    padding-right: calc(20px + var(--sar));
     backdrop-filter: blur(10px);
 }
 
@@ -55,7 +65,7 @@
 /* Progress Indicator */
 .progress-indicator {
     position: fixed;
-    left: 10px;
+    left: calc(10px + var(--sal));
     top: 50%;
     transform: translateY(-50%);
     z-index: 100;
@@ -98,8 +108,8 @@
 /* Controls Container */
 .controls-container {
     position: fixed;
-    bottom: 20px;
-    right: 10px;
+    bottom: calc(20px + var(--sab));
+    right: calc(10px + var(--sar));
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -150,8 +160,8 @@
 /* Autoplay Settings Panel */
 .autoplay-settings-panel {
     position: fixed;
-    right: 70px;
-    bottom: 20px;
+    right: calc(70px + var(--sar));
+    bottom: calc(20px + var(--sab));
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(15px);
     border-radius: 12px;
@@ -213,8 +223,8 @@
 /* Performance Stats */
 .performance-stats {
     position: fixed;
-    top: 100px;
-    left: 10px;
+    top: calc(100px + var(--sat));
+    left: calc(10px + var(--sal));
     background: rgba(0,0,0,0.7);
     color: white;
     padding: 10px;
