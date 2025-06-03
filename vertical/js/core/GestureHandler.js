@@ -11,7 +11,8 @@ class GestureHandler {
         this.currentX = 0;
         this.isDragging = false;
         this.dragDirection = null;
-        this.threshold = 50;
+        this.threshold = 80; // Increase threshold for more intentional swipes
+        this.categorySwipeThreshold = 60; // Separate threshold for category swipes
         
         // Double tap detection
         this.lastTap = 0;
@@ -31,6 +32,27 @@ class GestureHandler {
         container.addEventListener('scroll', (e) => {
             this.handleScroll(e);
         }, { passive: true });
+        
+        // Add horizontal scroll support at the document level for trackpads
+        let horizontalScrollTimeout = null;
+        container.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
+                e.preventDefault();
+                
+                // Debounce horizontal scroll
+                if (horizontalScrollTimeout) {
+                    clearTimeout(horizontalScrollTimeout);
+                }
+                
+                horizontalScrollTimeout = setTimeout(() => {
+                    if (e.deltaX > 0) {
+                        this.gallery.navigation.goToNextCategory();
+                    } else {
+                        this.gallery.navigation.goToPreviousCategory();
+                    }
+                }, 100);
+            }
+        }, { passive: false });
         
         // Touch events (for horizontal swipes between categories)
         container.addEventListener('touchstart', (e) => {
@@ -58,15 +80,6 @@ class GestureHandler {
         
         container.addEventListener('mouseup', (e) => this.handleEnd(e));
         container.addEventListener('mouseleave', () => this.handleEnd());
-        
-        // Wheel events (allow vertical scrolling, handle horizontal for categories)
-        container.addEventListener('wheel', (e) => {
-            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-                e.preventDefault();
-                this.handleWheel(e);
-            }
-            // Let vertical wheel events pass through for natural scrolling
-        }, { passive: false });
     }
 
     handleStart(clientY, clientX, e) {
@@ -157,7 +170,7 @@ class GestureHandler {
         const deltaX = this.currentX - this.startX;
         
         // Only handle horizontal swipes for category changes
-        if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.threshold) {
+        if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.categorySwipeThreshold) {
             if (deltaX > 0) {
                 this.gallery.navigation.goToPreviousCategory();
             } else {

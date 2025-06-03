@@ -114,10 +114,18 @@ class VideoRenderer {
         const videoElement = this.renderedVideos.get(videoIndex);
         
         if (container && videoElement) {
+            const targetScrollTop = videoIndex * window.innerHeight;
             container.scrollTo({
-                top: videoIndex * window.innerHeight,
+                top: targetScrollTop,
                 behavior: 'smooth'
             });
+            
+            // Ensure precise positioning after a short delay
+            setTimeout(() => {
+                if (Math.abs(container.scrollTop - targetScrollTop) > 5) {
+                    container.scrollTop = targetScrollTop;
+                }
+            }, 350);
         }
     }
 
