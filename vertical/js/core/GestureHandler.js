@@ -62,9 +62,9 @@ class GestureHandler {
             this.handleWheel(e);
         }, { passive: false });
         
-        // Prevent default touch behaviors
+        // Prevent default touch behaviors only when we have a clear drag direction
         document.addEventListener('touchmove', (e) => {
-            if (this.isDragging) {
+            if (this.isDragging && this.dragDirection) {
                 e.preventDefault();
             }
         }, { passive: false });
@@ -77,7 +77,7 @@ class GestureHandler {
         this.startX = clientX;
         this.currentY = clientY;
         this.currentX = clientX;
-        this.isDragging = true;
+        this.isDragging = false; // Don't set to true until we detect movement
         this.dragDirection = null;
         
         // Double tap detection
@@ -101,18 +101,25 @@ class GestureHandler {
     }
 
     handleMove(clientY, clientX) {
-        if (!this.isDragging || this.gallery.navigation.isTransitioning) return;
-        
-        // Clear tap timeout if we're moving
-        if (this.tapTimeout) {
-            clearTimeout(this.tapTimeout);
-            this.tapTimeout = null;
-        }
+        if (this.gallery.navigation.isTransitioning) return;
         
         this.currentY = clientY;
         this.currentX = clientX;
         const deltaY = this.currentY - this.startY;
         const deltaX = this.currentX - this.startX;
+        
+        // Only start dragging if we've moved enough
+        if (!this.isDragging && (Math.abs(deltaY) > 5 || Math.abs(deltaX) > 5)) {
+            this.isDragging = true;
+            
+            // Clear tap timeout if we're moving
+            if (this.tapTimeout) {
+                clearTimeout(this.tapTimeout);
+                this.tapTimeout = null;
+            }
+        }
+        
+        if (!this.isDragging) return;
         
         // Determine drag direction
         if (!this.dragDirection && (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10)) {

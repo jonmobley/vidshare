@@ -9,7 +9,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #000;
-    overflow: hidden;
+    overflow: auto;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
