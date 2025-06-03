@@ -41,6 +41,9 @@ class VirtualVideoGallery {
         // Initialize seamless rendering
         this.renderer.renderAllCategories();
         
+        // Initialize global video index
+        this.updateGlobalVideoIndex();
+        
         this.updateProgressDots();
         this.updatePerformanceStats();
         
@@ -65,12 +68,14 @@ class VirtualVideoGallery {
     setCurrentSlide(slide) {
         this.currentSlide = slide;
         this.categorySlidePositions[this.currentCategory] = slide;
+        this.updateGlobalVideoIndex();
     }
 
     setCurrentCategory(category) {
         this.currentCategory = category;
         // Restore the last viewed position when switching categories
         this.restoreCategoryPosition();
+        this.updateGlobalVideoIndex();
     }
 
     saveCategoryPosition() {
@@ -79,6 +84,16 @@ class VirtualVideoGallery {
 
     restoreCategoryPosition() {
         this.currentSlide = this.categorySlidePositions[this.currentCategory];
+    }
+
+    updateGlobalVideoIndex() {
+        // Calculate global video index based on current category and slide
+        let globalIndex = 0;
+        for (let i = 0; i < this.currentCategory; i++) {
+            globalIndex += this.getCategoryLength(i);
+        }
+        globalIndex += this.currentSlide;
+        this.globalVideoIndex = globalIndex;
     }
 
     // Data access
@@ -131,9 +146,10 @@ class VirtualVideoGallery {
         const progressIndicator = document.getElementById('progressIndicator');
         const totalGlobalSlides = this.getTotalGlobalSlides();
         
-        // Hide dots if more than 20 videos total
-        if (totalGlobalSlides > 20) {
-            progressIndicator.style.display = 'none';
+        // Always show dots, but limit to reasonable number for UI
+        // If more than 50 videos, show a condensed version
+        if (totalGlobalSlides > 50) {
+            this.updateCondensedProgressDots(progressIndicator, totalGlobalSlides);
             return;
         }
         
@@ -149,6 +165,48 @@ class VirtualVideoGallery {
             }
             progressIndicator.appendChild(dot);
         }
+    }
+
+    updateCondensedProgressDots(progressIndicator, totalGlobalSlides) {
+        progressIndicator.style.display = 'flex';
+        progressIndicator.innerHTML = '';
+        
+        // Show progress as a bar instead of individual dots for many videos
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar-vertical';
+        progressBar.style.cssText = `
+            width: 4px;
+            height: 200px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        `;
+        
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill-vertical';
+        const progressPercent = ((this.globalVideoIndex + 1) / totalGlobalSlides) * 100;
+        progressFill.style.cssText = `
+            width: 100%;
+            height: ${progressPercent}%;
+            background: white;
+            border-radius: 2px;
+            transition: height 0.3s ease;
+        `;
+        
+        progressBar.appendChild(progressFill);
+        progressIndicator.appendChild(progressBar);
+        
+        // Add text indicator
+        const textIndicator = document.createElement('div');
+        textIndicator.style.cssText = `
+            color: white;
+            font-size: 10px;
+            margin-top: 8px;
+            text-align: center;
+        `;
+        textIndicator.textContent = `${this.globalVideoIndex + 1}/${totalGlobalSlides}`;
+        progressIndicator.appendChild(textIndicator);
     }
 
     updateCategoryUI() {

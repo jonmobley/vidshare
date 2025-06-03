@@ -73,6 +73,9 @@ class ControlsManager {
             });
         });
 
+        // Initialize category pills fade effect
+        this.initializeCategoryPillsFade();
+
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
             this.handleKeyboard(e);
@@ -229,11 +232,75 @@ class ControlsManager {
         stats.classList.toggle('show');
     }
 
+    initializeCategoryPillsFade() {
+        const categoryPillsContainer = document.getElementById('categoryPillsContainer');
+        const categoryPills = document.getElementById('categoryPills');
+        
+        if (!categoryPillsContainer || !categoryPills) return;
+
+        // Function to update fade state based on scroll position
+        const updateFadeState = () => {
+            const scrollLeft = categoryPills.scrollLeft;
+            const maxScrollLeft = categoryPills.scrollWidth - categoryPills.clientWidth;
+            
+            // Show left fade if scrolled from left edge
+            if (scrollLeft > 10) {
+                categoryPillsContainer.classList.add('scrolled-left');
+            } else {
+                categoryPillsContainer.classList.remove('scrolled-left');
+            }
+            
+            // Hide right fade if scrolled to right edge
+            if (scrollLeft >= maxScrollLeft - 10) {
+                categoryPillsContainer.classList.add('scrolled-right');
+            } else {
+                categoryPillsContainer.classList.remove('scrolled-right');
+            }
+        };
+
+        // Listen for scroll events on the pills container
+        categoryPills.addEventListener('scroll', updateFadeState);
+        
+        // Initial check
+        setTimeout(updateFadeState, 100);
+        
+        // Check again on window resize
+        window.addEventListener('resize', () => {
+            setTimeout(updateFadeState, 100);
+        });
+    }
+
     updateCategoryPills(category) {
         const pills = document.querySelectorAll('.category-pill');
         pills.forEach(pill => {
             pill.classList.toggle('active', parseInt(pill.dataset.category) === category);
         });
+
+        // Scroll active pill into view with smooth animation
+        this.scrollActivePillIntoView(category);
+    }
+
+    scrollActivePillIntoView(category) {
+        const categoryPills = document.getElementById('categoryPills');
+        const activePill = document.querySelector(`.category-pill[data-category="${category}"]`);
+        
+        if (!categoryPills || !activePill) return;
+
+        const pillsRect = categoryPills.getBoundingClientRect();
+        const activePillRect = activePill.getBoundingClientRect();
+        
+        // Calculate if the active pill is outside the visible area
+        const isOutsideLeft = activePillRect.left < pillsRect.left;
+        const isOutsideRight = activePillRect.right > pillsRect.right;
+        
+        if (isOutsideLeft || isOutsideRight) {
+            // Scroll to center the active pill
+            const scrollLeft = activePill.offsetLeft - (categoryPills.clientWidth / 2) + (activePill.clientWidth / 2);
+            categoryPills.scrollTo({
+                left: scrollLeft,
+                behavior: 'smooth'
+            });
+        }
     }
 
     showDoubleTapHeart() {
