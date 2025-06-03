@@ -1168,21 +1168,35 @@
                 right: 0;
                 z-index: 100;
                 max-height: 50vh;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            .skeleton-video-title {
+                position: fixed;
+                top: 50vh;
+                left: 0;
+                right: 0;
+                z-index: 99;
+                background: white;
+                padding: 12px 15px;
+                border-bottom: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
 
             .skeleton-navigation {
                 position: fixed;
-                top: calc(50vh + 80px);
+                top: calc(50vh + 65px);
                 left: 0;
                 right: 0;
                 z-index: 98;
-                padding: 15px;
-                gap: 15px;
+                padding: 12px 15px;
+                gap: 12px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-bottom: 1px solid #e9ecef;
             }
 
             .skeleton-grid {
-                margin-top: calc(50vh + 175px);
+                margin-top: calc(50vh + 130px);
                 padding: 15px;
             }
 
@@ -1200,14 +1214,22 @@
         }
 
         @media (max-width: 480px) {
+            .skeleton-main-player {
+                min-height: 180px !important;
+            }
+            
+            .skeleton-video-title {
+                padding: 10px 12px !important;
+            }
+            
             .skeleton-navigation {
-                padding: 15px;
-                gap: 10px;
+                padding: 10px 12px !important;
+                gap: 8px !important;
+                top: calc(50vh + 55px) !important;
             }
 
-
-
             .skeleton-grid {
+                margin-top: calc(50vh + 115px) !important;
                 padding: 15px;
                 gap: 10px;
             }
@@ -1228,7 +1250,12 @@
         /* Mobile Optimizations */
         @media (max-width: 600px) {
             body {
-                padding-top: calc(50vh + 175px); /* Space for fixed player + title + nav */
+                padding-top: calc(50vh + 130px); /* Adjusted space for fixed player + title + nav */
+                min-height: 100vh;
+            }
+            
+            .main-container {
+                box-shadow: none; /* Remove shadow on mobile for cleaner look */
             }
             
             .main-player {
@@ -1240,6 +1267,8 @@
                 background: white;
                 aspect-ratio: 16/9;
                 max-height: 50vh;
+                min-height: 200px; /* Ensure minimum height */
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             }
 
             .video-title-section {
@@ -1250,26 +1279,30 @@
                 z-index: 99;
                 background: white;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                padding: 15px;
+                padding: 12px 15px;
+                border-bottom: 1px solid #e9ecef;
             }
 
             .video-title {
                 font-size: 1.1rem;
+                line-height: 1.2;
+                margin: 0;
             }
             
             .navigation-toolbar {
                 position: fixed;
-                top: calc(50vh + 80px);
+                top: calc(50vh + 65px);
                 left: 0;
                 right: 0;
                 z-index: 98;
                 background: white;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                padding: 15px;
+                padding: 12px 15px;
                 flex-direction: row;
-                gap: 15px;
+                gap: 12px;
                 align-items: center;
                 flex-wrap: nowrap;
+                border-bottom: 1px solid #e9ecef;
             }
 
             .folder-pills-container {
@@ -1315,19 +1348,41 @@
         }
 
         @media (max-width: 480px) {
-            .thumbnails-section {
-                padding: 15px;
+            body {
+                padding-top: calc(50vh + 125px) !important; /* Slightly less space on very small screens */
+            }
+            
+            .main-player {
+                min-height: 180px !important; /* Smaller minimum height for very small screens */
+            }
+            
+            .video-title-section {
+                padding: 10px 12px !important;
+            }
+            
+            .video-title {
+                font-size: 1rem !important;
+            }
+            
+            .navigation-toolbar {
+                padding: 10px 12px !important;
+                gap: 8px !important; /* Smaller gap on very small screens */
+                flex-wrap: nowrap;
+                top: calc(50vh + 55px) !important;
             }
 
-            .navigation-toolbar {
-                padding: 15px;
-                gap: 10px; /* Smaller gap on very small screens */
-                flex-wrap: nowrap;
+            .folder-pill {
+                font-size: 0.75rem !important;
+                padding: 4px 8px !important;
             }
 
             .folder-pills-container {
                 flex: 1 1 auto;
                 min-width: 0;
+            }
+            
+            .thumbnails-section {
+                padding: 15px;
             }
 
 
