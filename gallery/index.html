@@ -53,22 +53,20 @@
                 transition: opacity 0.3s ease;
             }
 
-            .main-player:hover .main-video::-webkit-media-controls {
+            .main-player:hover .main-video::-webkit-media-controls,
+            .main-video:focus::-webkit-media-controls {
                 opacity: 1;
             }
         }
 
-        /* Custom play overlay */
+        /* Custom play overlay - bottom gradient for controls */
         .play-overlay {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.3);
+            height: 80px; /* Only cover bottom portion */
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
@@ -78,23 +76,53 @@
             opacity: 1;
         }
 
+        .main-player.playing .play-overlay {
+            pointer-events: none !important;
+        }
+
+        /* Separate play button overlay - centered on entire video */
+        .play-button-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .main-player:not(.playing):hover .play-button-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .main-player.playing .play-button-overlay {
+            pointer-events: none !important;
+        }
+
         .play-overlay-button {
-            width: 80px;
-            height: 80px;
-            background: rgba(0,0,0,0.7);
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.9);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 32px;
+            color: #333;
+            font-size: 24px;
             backdrop-filter: blur(10px);
             transform: scale(1);
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .main-player:not(.playing):hover .play-overlay-button {
             transform: scale(1.1);
+            background: rgba(255,255,255,1);
         }
 
         .main-video::-webkit-media-controls-start-playback-button {
@@ -443,8 +471,8 @@
         }
 
         .thumbnail-card.active {
-            border-color: transparent;
-            box-shadow: 0 0 0 4px #667eea;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px #667eea;
             transform: translateY(-2px);
         }
 
@@ -527,6 +555,11 @@
             background: #667eea;
         }
 
+        /* Hide play overlay when video is playing */
+        .thumbnail-card:hover .thumbnail-video:not([paused]) + .thumbnail-overlay {
+            opacity: 0 !important;
+        }
+
         .thumbnail-info {
             padding: 12px;
             flex-grow: 1;
@@ -603,20 +636,27 @@
             transform: scale(1.1);
         }
 
-        .audio-toggle-btn.muted::before {
-            content: '×';
-            font-size: 16px;
-            font-weight: bold;
+        .audio-toggle-btn.muted {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 14px 14px;
         }
 
+        .audio-toggle-btn.unmuted {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 14px 14px;
+        }
+
+        .audio-toggle-btn.muted::before,
         .audio-toggle-btn.unmuted::before {
-            content: '▶';
-            font-size: 14px;
-            font-weight: bold;
+            content: '';
         }
 
         /* Hide audio toggle on mobile */
-        @media (max-width: 768px), (hover: none) {
+        @media (max-width: 768px) {
             .audio-toggle-btn {
                 display: none !important;
             }
@@ -625,6 +665,317 @@
         /* Hide audio toggle when main video is playing */
         .main-video-playing .audio-toggle-btn {
             display: none !important;
+        }
+
+        /* Thumbnail Editor */
+        .thumbnail-edit-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            z-index: 16;
+        }
+
+        .thumbnail-card:hover .thumbnail-edit-btn {
+            opacity: 1;
+        }
+
+        .thumbnail-edit-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
+        }
+
+        .thumbnail-edit-btn {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 14px 14px;
+        }
+
+        .thumbnail-edit-btn::before {
+            content: '';
+        }
+
+        /* Video Editor Modal */
+        .thumbnail-editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail-editor-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .thumbnail-editor-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 80vw;
+            max-height: 85vh;
+            width: 650px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .thumbnail-editor-modal.show .thumbnail-editor-content {
+            transform: scale(1);
+        }
+
+        .thumbnail-editor-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .thumbnail-editor-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .thumbnail-editor-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail-editor-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .title-input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .title-input-container {
+            flex: 1;
+        }
+
+        .video-source-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .video-source-link:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .video-source-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* YouTube brand color */
+        .video-source-link[data-source="youtube"] {
+            color: #FF0000;
+            border-color: #FF0000;
+        }
+
+        .video-source-link[data-source="youtube"]:hover {
+            background: #FF0000;
+            color: white;
+        }
+
+        /* Vimeo brand color */
+        .video-source-link[data-source="vimeo"] {
+            color: #1AB7EA;
+            border-color: #1AB7EA;
+        }
+
+        .video-source-link[data-source="vimeo"]:hover {
+            background: #1AB7EA;
+            color: white;
+        }
+
+        /* Video Title Editor */
+        .video-title-editor {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .video-title-editor label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .video-title-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        .video-title-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .title-hint {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .thumbnail-editor-video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+        }
+
+        .thumbnail-editor-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .thumbnail-editor-controls {
+            padding: 20px;
+        }
+
+        .thumbnail-timeline {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .thumbnail-timeline-progress {
+            height: 100%;
+            background: #667eea;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .thumbnail-timeline-thumb {
+            position: absolute;
+            top: -6px;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translateX(-50%);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .thumbnail-timeline-thumb:hover {
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        .thumbnail-time-display {
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .thumbnail-editor-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .thumbnail-editor-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail-editor-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .thumbnail-editor-btn.primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .thumbnail-editor-btn.secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #e9ecef;
+        }
+
+        .thumbnail-editor-btn.secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* Hide thumbnail edit button on mobile */
+        @media (max-width: 768px) {
+            .thumbnail-edit-btn {
+                display: none !important;
+            }
         }
 
         .action-btn {
@@ -1043,7 +1394,7 @@
             flex-wrap: wrap;
         }
 
-        .footer-main span {
+        .footer-main .footer-brand {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-size: 200% 100%;
             -webkit-background-clip: text;
@@ -1052,6 +1403,13 @@
             animation: shimmer-text 8s ease-in-out infinite;
             font-size: 0.95rem;
             font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .footer-main .footer-brand:hover {
+            transform: translateY(-1px);
         }
 
         @keyframes shimmer-text {
@@ -1066,11 +1424,41 @@
         .footer-copyright {
             color: #999;
             font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-stats {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .counter-number {
+            display: inline-block;
+            min-width: 1ch;
         }
 
         /* Hide footer button initially (show only when demo) */
         .footer-main .create-own-btn {
             display: none;
+        }
+
+        @keyframes countUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .counter-animating .counter-number {
+            animation: countUp 0.3s ease-out;
         }
 
         @media (max-width: 480px) {
@@ -1096,12 +1484,13 @@
 
 
         <!-- Main Video Player -->
-        <div class="main-player" id="mainPlayer" style="display: none !important; opacity: 0 !important;">
+        <div class="main-player" id="mainPlayer" style="display: none;">
             <video class="main-video" id="mainVideo" controls preload="metadata" playsinline webkit-playsinline oncontextmenu="return false;">
                 <source id="mainVideoSource" src="" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            <div class="play-overlay" id="playOverlay">
+            <div class="play-overlay" id="playOverlay"></div>
+            <div class="play-button-overlay" id="playButtonOverlay">
                 <div class="play-overlay-button">▶</div>
             </div>
             <div class="main-player-actions" id="mainPlayerActions" style="display: none;">
@@ -1111,13 +1500,13 @@
         </div>
 
         <!-- Video Title Section -->
-        <div class="video-title-section" id="videoTitleSection" style="display: none !important; opacity: 0 !important;">
+        <div class="video-title-section" id="videoTitleSection" style="display: none;">
             <h1 class="video-title" id="videoTitle">Select a video to play</h1>
             <div class="video-meta" id="videoMeta"></div>
         </div>
 
         <!-- Compact Navigation Toolbar -->
-        <div class="navigation-toolbar" id="navigationToolbar" style="display: none !important; opacity: 0 !important;">
+        <div class="navigation-toolbar" id="navigationToolbar" style="display: none;">
             <div class="folder-pills-container" id="folderPillsContainer">
                 <div class="folder-pills" id="folderPills">
                     <!-- Folder pills will be populated here -->
@@ -1206,11 +1595,51 @@
         <div class="footer">
             <div class="footer-content">
                 <div class="footer-main">
-                    <span>Powered By VidShare</span>
-                    <a href="#" class="create-own-btn" id="footerCreateBtn">Share Your Videos</a>
+                    <a href="https://vidshare.co" target="_blank" rel="noopener noreferrer" class="footer-brand">Powered By VidShare</a>
+                    <a href="https://vidshare.co" target="_blank" rel="noopener noreferrer" class="create-own-btn" id="footerCreateBtn">Share Your Videos</a>
                 </div>
                 <div class="footer-copyright">
-                    Copyright 2025 VidShare
+                    <span>Copyright © 2025 VidShare</span>
+                    <span>|</span>
+                    <span class="footer-stats">Over <span id="videosSharedCounter" class="counter-number">345,123</span> videos shared!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Editor Modal -->
+        <div class="thumbnail-editor-modal" id="thumbnailEditorModal">
+            <div class="thumbnail-editor-content">
+                <div class="thumbnail-editor-header">
+                    <h3 class="thumbnail-editor-title" id="thumbnailEditorTitle">Edit Video</h3>
+                    <button class="thumbnail-editor-close" id="thumbnailEditorClose">×</button>
+                </div>
+                <div class="video-title-editor">
+                    <div class="title-input-row">
+                        <div class="title-input-container">
+                            <label for="videoTitleInput">Display Title</label>
+                            <input type="text" id="videoTitleInput" class="video-title-input" placeholder="Enter a custom title...">
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="video-source-link" id="videoSourceLink" title="Open video source">
+                            <!-- Icon will be populated by JavaScript -->
+                        </a>
+                    </div>
+                    <div class="title-hint">This only changes how the title is displayed, not the actual file name.</div>
+                </div>
+                <div class="thumbnail-editor-video-container">
+                    <video class="thumbnail-editor-video" id="thumbnailEditorVideo" muted>
+                        <source id="thumbnailEditorVideoSource" src="" type="video/mp4">
+                    </video>
+                </div>
+                <div class="thumbnail-editor-controls">
+                    <div class="thumbnail-time-display" id="thumbnailTimeDisplay">0:00 / 0:00</div>
+                    <div class="thumbnail-timeline" id="thumbnailTimeline">
+                        <div class="thumbnail-timeline-progress" id="thumbnailTimelineProgress"></div>
+                        <div class="thumbnail-timeline-thumb" id="thumbnailTimelineThumb"></div>
+                    </div>
+                    <div class="thumbnail-editor-actions">
+                        <button class="thumbnail-editor-btn secondary" id="thumbnailEditorCancel">Cancel</button>
+                        <button class="thumbnail-editor-btn primary" id="thumbnailEditorSave">Save Changes</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1234,6 +1663,9 @@
             allowSharing: false
         };
         let thumbnailAudioEnabled = false; // Global mute state for thumbnails
+        let customThumbnails = new Map(); // Store custom thumbnail timestamps
+        let customTitles = new Map(); // Store custom video titles
+        let currentEditingVideo = null; // Currently editing video
 
         // Secure token fetching from Supabase
         async function getDropboxToken() {
@@ -1320,17 +1752,20 @@
                         const galleryData = data[0]; // Get first result
                         console.log('✅ Found gallery in Supabase:', galleryData);
                         
-                        // Load gallery configuration
-                        if (galleryData.config) {
-                            galleryConfig = galleryData.config;
-                            console.log('🎛️ Gallery config loaded:', galleryConfig);
-                        }
-                        
-                        hideDemoFooterButton();
-                        
-                        // Get token securely before loading folder
-                        DROPBOX_TOKEN = await getDropboxToken();
-                        await loadFolderContents(galleryData.folder_url);
+                                        // Load gallery configuration
+                if (galleryData.config) {
+                    galleryConfig = galleryData.config;
+                    console.log('🎛️ Gallery config loaded:', galleryConfig);
+                }
+                
+                hideDemoFooterButton();
+                
+                // Load custom thumbnails for this gallery
+                await loadCustomThumbnails(galleryData.id);
+                
+                // Get token securely before loading folder
+                DROPBOX_TOKEN = await getDropboxToken();
+                await loadFolderContents(galleryData.folder_url);
                         return;
                         
                     } catch (error) {
@@ -1353,6 +1788,10 @@
                 
                 console.log('🔍 Loading gallery for folder:', folderUrl);
                 hideDemoFooterButton();
+                
+                // Create a simple gallery ID from folder URL for custom thumbnails
+                const galleryId = btoa(folderUrl).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                await loadCustomThumbnails(galleryId);
                 
                 // Get token securely before loading folder
                 DROPBOX_TOKEN = await getDropboxToken();
@@ -1541,12 +1980,18 @@
                 // Process batch concurrently
                 const batchPromises = batch.map(async (video) => {
                     try {
-                        // Get temporary URL for this video
-                        const videoUrl = await getTemporaryVideoUrl(video.filePath);
-                        video.url = videoUrl; // Cache the URL
+                        // Get temporary URL for this video (only for Dropbox videos)
+                        let videoUrl = video.url;
+                        if (!videoUrl && video.filePath) {
+                            videoUrl = await getTemporaryVideoUrl(video.filePath);
+                            video.url = videoUrl; // Cache the URL
+                        }
                         
-                        // Get accurate duration by loading video metadata
-                        const accurateDuration = await getAccurateVideoDuration(videoUrl);
+                        // Get accurate duration by loading video metadata (only if we have a URL)
+                        let accurateDuration = 0;
+                        if (videoUrl) {
+                            accurateDuration = await getAccurateVideoDuration(videoUrl);
+                        }
                         
                         if (accurateDuration > 0) {
                             video.durationSeconds = Math.floor(accurateDuration);
@@ -1957,6 +2402,9 @@
             // Show skeleton during loading
             showLoadingSkeleton();
             
+            // Load demo thumbnails from localStorage
+            loadDemoThumbnails();
+            
             // Simulate loading delay for better UX
             await new Promise(resolve => setTimeout(resolve, 1000));
             
@@ -1967,6 +2415,7 @@
                     title: "Big Buck Bunny.mp4",
                     folder: "Animation",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    filePath: null,
                     duration: "9:56",
                     durationSeconds: 596,
                     date: "2024-03-15",
@@ -1978,6 +2427,7 @@
                     title: "Elephants Dream.mp4",
                     folder: "Animation",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                    filePath: null,
                     duration: "10:53",
                     durationSeconds: 653,
                     date: "2024-03-20",
@@ -1989,6 +2439,7 @@
                     title: "For Bigger Blazes.mp4",
                     folder: "Advertising",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    filePath: null,
                     duration: "00:15",
                     durationSeconds: 15,
                     date: "2024-03-10",
@@ -2000,6 +2451,7 @@
                     title: "For Bigger Escapes.mp4",
                     folder: "Advertising",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                    filePath: null,
                     duration: "00:15",
                     durationSeconds: 15,
                     date: "2024-03-25",
@@ -2011,6 +2463,7 @@
                     title: "For Bigger Fun.mp4",
                     folder: "Demos",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                    filePath: null,
                     duration: "00:15",
                     durationSeconds: 15,
                     date: "2024-03-12",
@@ -2022,6 +2475,7 @@
                     title: "For Bigger Joyrides.mp4",
                     folder: "Demos",
                     url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                    filePath: null,
                     duration: "00:15",
                     durationSeconds: 15,
                     date: "2024-03-18",
@@ -2033,6 +2487,7 @@
                     title: "Buzz Leasing Training Tip 1.mov",
                     folder: "Training",
                     url: "https://vidshare.b-cdn.net/Buzz%20Leasing%20Training%20Tip%201.mov",
+                    filePath: null,
                     duration: "00:30",
                     durationSeconds: 30,
                     date: "2024-03-22",
@@ -2044,6 +2499,7 @@
                     title: "Buzz Leasing Training Tip 2.mov",
                     folder: "Training",
                     url: "https://vidshare.b-cdn.net/Buzz%20Leasing%20Training%20Tip%202.mov",
+                    filePath: null,
                     duration: "00:30",
                     durationSeconds: 30,
                     date: "2024-03-23",
@@ -2055,6 +2511,7 @@
                     title: "Buzz Leasing Training Tip 3.mov",
                     folder: "Training",
                     url: "https://vidshare.b-cdn.net/Buzz%20Leasing%20Training%20Tip%203.mov",
+                    filePath: null,
                     duration: "00:30",
                     durationSeconds: 30,
                     date: "2024-03-24",
@@ -2066,6 +2523,7 @@
                     title: "Buzz Leasing Training Tip 4.mov",
                     folder: "Training",
                     url: "https://vidshare.b-cdn.net/Buzz%20Leasing%20Training%20Tip%204.mov",
+                    filePath: null,
                     duration: "00:30",
                     durationSeconds: 30,
                     date: "2024-03-25",
@@ -2077,6 +2535,7 @@
                     title: "Buzz Leasing Training Tip 5.mov",
                     folder: "Training",
                     url: "https://vidshare.b-cdn.net/Buzz%20Leasing%20Training%20Tip%205.mov",
+                    filePath: null,
                     duration: "00:30",
                     durationSeconds: 30,
                     date: "2024-03-26",
@@ -2227,8 +2686,9 @@
             // Remove playing class
             mainPlayer.classList.remove('playing');
 
-            // Calculate thumbnail time (10% of duration, between 2-30 seconds)
-            const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+            // Check for custom thumbnail first, then fall back to default calculation
+            const customTime = getCustomThumbnailTime(video.filePath, video.id);
+            const thumbnailTime = customTime !== null ? customTime : Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
 
             // Load video into main player with thumbnail timestamp
             if (video.url) {
@@ -2274,6 +2734,9 @@
 
             currentVideoId = videoId;
             
+            // Update video title section
+            updateVideoTitleSection(video);
+            
             // Only scroll to top on desktop - mobile has fixed player
             if (window.innerWidth > 768) {
                 window.scrollTo({ top: 0, behavior: 'instant' });
@@ -2297,8 +2760,9 @@
                     video.url = videoUrl; // Cache the URL
                 }
                 
-                // Calculate thumbnail time for initial load
-                const thumbnailTime = Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
+                // Check for custom thumbnail first, then fall back to default calculation
+                const customTime = getCustomThumbnailTime(video.filePath, video.id);
+                const thumbnailTime = customTime !== null ? customTime : Math.min(Math.max(video.durationSeconds * 0.1, 2), 30);
                 
                 mainVideoSource.src = `${videoUrl}#t=${thumbnailTime}`;
                 mainVideo.load();
@@ -2345,9 +2809,10 @@
             // Show the title section
             videoTitleSection.style.display = 'block';
             
-            // Update title (remove file extension)
-            const cleanTitle = video.title.replace(/\.[^/.]+$/, '');
-            videoTitle.textContent = cleanTitle;
+            // Update title - use custom title if available, otherwise clean filename
+            const customTitle = getCustomVideoTitle(video.filePath, video.id);
+            const displayTitle = customTitle || video.title.replace(/\.[^/.]+$/, '');
+            videoTitle.textContent = displayTitle;
             
             // Update meta information
             let metaInfo = [];
@@ -2390,15 +2855,47 @@
         function setupWatchTracking(videoElement, videoId) {
             videoElement.removeEventListener('timeupdate', videoElement._watchTracker);
             
-            const watchTracker = function() {
-                if (videoElement.currentTime > 5 && !watchedVideos.has(videoId)) {
-                    watchedVideos.add(videoId);
-                    updateWatchedStatus(videoId);
+            let userHasPlayed = false;
+            let watchStartTime = 0;
+            let totalWatchTime = 0;
+            
+            // Track when user actually starts playing
+            const playHandler = function() {
+                userHasPlayed = true;
+                watchStartTime = videoElement.currentTime;
+            };
+            
+            // Track pause to accumulate watch time
+            const pauseHandler = function() {
+                if (userHasPlayed && watchStartTime !== null) {
+                    totalWatchTime += videoElement.currentTime - watchStartTime;
+                    watchStartTime = null;
                 }
             };
             
+            // Track watch progress only when actually playing
+            const watchTracker = function() {
+                if (userHasPlayed && !videoElement.paused && !watchedVideos.has(videoId)) {
+                    const currentWatchTime = totalWatchTime + (videoElement.currentTime - (watchStartTime || videoElement.currentTime));
+                    if (currentWatchTime > 5) {
+                        watchedVideos.add(videoId);
+                        updateWatchedStatus(videoId);
+                    }
+                }
+            };
+            
+            // Clean up existing listeners
+            videoElement.removeEventListener('play', videoElement._playTracker);
+            videoElement.removeEventListener('pause', videoElement._pauseTracker);
+            
+            // Set up new tracking
             videoElement._watchTracker = watchTracker;
+            videoElement._playTracker = playHandler;
+            videoElement._pauseTracker = pauseHandler;
+            
             videoElement.addEventListener('timeupdate', watchTracker);
+            videoElement.addEventListener('play', playHandler);
+            videoElement.addEventListener('pause', pauseHandler);
         }
 
         function updateWatchedStatus(videoId) {
@@ -2470,12 +2967,13 @@
                             </video>
                             <div class="thumbnail-overlay">▶</div>
                             <button class="audio-toggle-btn muted" data-video-id="${video.id}"></button>
+                            <button class="thumbnail-edit-btn" data-video-id="${video.id}" title="Edit thumbnail"></button>
                             ${generateThumbnailActions(video)}
                             ${video.duration ? `<div class="duration-badge">${video.duration}</div>` : ''}
                             ${watchedVideos.has(video.id) ? '<div class="watched-badge">Watched</div>' : ''}
                         </div>
                         <div class="thumbnail-info">
-                            <div class="thumbnail-title">${video.title.replace(/\.[^/.]+$/, '')}</div>
+                            <div class="thumbnail-title">${getCustomVideoTitle(video.filePath, video.id) || video.title.replace(/\.[^/.]+$/, '')}</div>
                         </div>
                     </div>
                 `;
@@ -2554,6 +3052,18 @@
                     });
                 });
             }
+
+            // Add event listeners for thumbnail edit buttons
+            document.querySelectorAll('.thumbnail-edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const videoId = parseInt(btn.dataset.videoId);
+                    const video = allVideos.find(v => v.id === videoId);
+                    if (video) {
+                        openThumbnailEditor(video);
+                    }
+                });
+            });
         }
 
         function setupThumbnailHoverPlay() {
@@ -2578,11 +3088,21 @@
                         }
                     });
 
-                    // Mouse leave - pause and reset
+                    // Mouse leave - pause and reset to thumbnail time
                     card.addEventListener('mouseleave', () => {
                         if (video.src) {
                             video.pause();
-                            video.currentTime = 0;
+                            
+                            // Reset to thumbnail time instead of first frame
+                            const videoId = parseInt(video.dataset.videoId);
+                            const videoObj = allVideos.find(v => v.id === videoId);
+                            if (videoObj) {
+                                const customTime = getCustomThumbnailTime(videoObj.filePath, videoObj.id);
+                                const thumbnailTime = customTime !== null ? customTime : Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                video.currentTime = thumbnailTime;
+                            } else {
+                                video.currentTime = 0; // Fallback if video not found
+                            }
                         }
                     });
 
@@ -2626,8 +3146,9 @@
                                 // Get URL from our video data (should already be cached from duration loading)
                                 const videoObj = allVideos.find(v => v.id === videoId);
                                 if (videoObj && videoObj.url) {
-                                    // Smart thumbnail timing based on accurate duration
-                                    const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                    // Check for custom thumbnail first, then fall back to smart timing
+                                    const customTime = getCustomThumbnailTime(videoObj.filePath, videoObj.id);
+                                    const thumbnailTime = customTime !== null ? customTime : Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
                                     video.src = `${videoObj.url}#t=${thumbnailTime}`;
                                     
                                     // Handle successful load
@@ -2654,7 +3175,9 @@
                                     if (videoObj) {
                                         videoObj.url = videoUrl; // Cache it
                                     }
-                                    const thumbnailTime = Math.min(Math.max(videoObj.durationSeconds * 0.1, 2), 30);
+                                    // Check for custom thumbnail first
+                                    const customTime = getCustomThumbnailTime(filePath, videoObj ? videoObj.id : null);
+                                    const thumbnailTime = customTime !== null ? customTime : Math.min(Math.max(videoObj ? videoObj.durationSeconds : 30, 2), 30);
                                     video.src = `${videoUrl}#t=${thumbnailTime}`;
                                     
                                     // Handle successful load
@@ -2773,13 +3296,549 @@
             }, 3000);
         }
 
+        // Video Source Detection Functions
+        function detectVideoSource(videoUrl) {
+            if (!videoUrl) return { type: 'unknown', icon: '', name: 'Unknown' };
+            
+            const url = videoUrl.toLowerCase();
+            
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return {
+                    type: 'youtube',
+                    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+                    name: 'YouTube'
+                };
+            }
+            
+            if (url.includes('vimeo.com')) {
+                return {
+                    type: 'vimeo',
+                    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.011 7.522c-.179 0-.806.378-1.881 1.132L0 7.197c1.185-1.044 2.351-2.084 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.493 4.797l-.013.01z"/></svg>',
+                    name: 'Vimeo'
+                };
+            }
+            
+            // Default for all other sources (including Dropbox) - use external link icon
+            return {
+                type: 'other',
+                icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15,3 21,3 21,9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>',
+                name: 'External Source'
+            };
+        }
+
+        function populateVideoSourceInfo(videoUrl) {
+            const sourceInfo = detectVideoSource(videoUrl);
+            const linkEl = document.getElementById('videoSourceLink');
+            
+            // Set icon directly in the link button
+            linkEl.innerHTML = sourceInfo.icon;
+            
+            // Set link URL
+            linkEl.href = videoUrl;
+            
+            // Set data attribute for styling
+            linkEl.setAttribute('data-source', sourceInfo.type);
+            
+            // Update tooltip with source type
+            linkEl.title = `Open in ${sourceInfo.name}`;
+            
+            console.log('📺 Video source detected:', sourceInfo.name, 'for URL:', videoUrl);
+        }
+
+        // Custom Thumbnail Functions
+        async function loadCustomThumbnails(galleryId) {
+            if (!SUPABASE_URL || !galleryId) {
+                console.log('📸 No Supabase or gallery ID, skipping custom thumbnails');
+                return;
+            }
+
+            try {
+                console.log('📸 Loading custom thumbnails for gallery:', galleryId);
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/video_thumbnails?gallery_id=eq.${galleryId}&select=*`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load custom thumbnails: ${response.status}`);
+                }
+
+                const thumbnails = await response.json();
+                
+                // Store in our map for quick lookup
+                customThumbnails.clear();
+                thumbnails.forEach(thumb => {
+                    customThumbnails.set(thumb.video_file_path, thumb.custom_timestamp);
+                });
+                
+                console.log(`📸 Loaded ${thumbnails.length} custom thumbnails`);
+                
+            } catch (error) {
+                console.error('❌ Error loading custom thumbnails:', error);
+                // Don't show error to user - just continue without custom thumbnails
+            }
+        }
+
+        async function saveCustomThumbnail(galleryId, videoFilePath, timestamp) {
+            if (!SUPABASE_URL || !galleryId) {
+                throw new Error('Supabase not configured');
+            }
+
+            try {
+                console.log('💾 Saving custom thumbnail:', { galleryId, videoFilePath, timestamp });
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/video_thumbnails`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        gallery_id: galleryId,
+                        video_file_path: videoFilePath,
+                        custom_timestamp: timestamp,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to save custom thumbnail: ${response.status}`);
+                }
+
+                // Update our local cache
+                customThumbnails.set(videoFilePath, timestamp);
+                
+                console.log('✅ Custom thumbnail saved successfully');
+                
+            } catch (error) {
+                console.error('❌ Error saving custom thumbnail:', error);
+                throw error;
+            }
+        }
+
+        async function saveCustomVideoTitle(galleryId, videoFilePath, customTitle) {
+            if (!SUPABASE_URL || !galleryId) {
+                throw new Error('Supabase not configured');
+            }
+
+            try {
+                console.log('💾 Saving custom video title:', { galleryId, videoFilePath, customTitle });
+                
+                if (!customTitle || customTitle.trim() === '') {
+                    // Remove custom title if empty
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/video_titles?gallery_id=eq.${galleryId}&video_file_path=eq.${videoFilePath}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    });
+                    
+                    customTitles.delete(videoFilePath);
+                    console.log('✅ Custom title removed successfully');
+                    return;
+                }
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/video_titles`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        gallery_id: galleryId,
+                        video_file_path: videoFilePath,
+                        custom_title: customTitle,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to save custom title: ${response.status}`);
+                }
+
+                // Update our local cache
+                customTitles.set(videoFilePath, customTitle);
+                
+                console.log('✅ Custom title saved successfully');
+                
+            } catch (error) {
+                console.error('❌ Error saving custom title:', error);
+                throw error;
+            }
+        }
+
+        function getCustomThumbnailTime(videoFilePath, videoId = null) {
+            // For demo videos, use demo ID pattern
+            if (!videoFilePath && videoId) {
+                return customThumbnails.get(`demo-${videoId}`) || null;
+            }
+            return customThumbnails.get(videoFilePath) || null;
+        }
+
+        function getCustomVideoTitle(videoFilePath, videoId = null) {
+            // For demo videos, use demo ID pattern
+            if (!videoFilePath && videoId) {
+                return customTitles.get(`demo-${videoId}`) || null;
+            }
+            return customTitles.get(videoFilePath) || null;
+        }
+
+        function loadDemoThumbnails() {
+            // Load demo thumbnails and titles from localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('demo-thumbnail-')) {
+                    const videoId = key.replace('demo-thumbnail-', '');
+                    const timestamp = parseFloat(localStorage.getItem(key));
+                    if (!isNaN(timestamp)) {
+                        customThumbnails.set(`demo-${videoId}`, timestamp);
+                        console.log(`📱 Demo: Loaded thumbnail for video ${videoId} at ${timestamp}s`);
+                    }
+                } else if (key && key.startsWith('demo-title-')) {
+                    const videoId = key.replace('demo-title-', '');
+                    const title = localStorage.getItem(key);
+                    if (title) {
+                        customTitles.set(`demo-${videoId}`, title);
+                        console.log(`📱 Demo: Loaded custom title for video ${videoId}: ${title}`);
+                    }
+                }
+            }
+        }
+
+        async function openThumbnailEditor(video) {
+            currentEditingVideo = video;
+            
+            const modal = document.getElementById('thumbnailEditorModal');
+            const title = document.getElementById('thumbnailEditorTitle');
+            const editorVideo = document.getElementById('thumbnailEditorVideo');
+            const editorVideoSource = document.getElementById('thumbnailEditorVideoSource');
+            const timelineProgress = document.getElementById('thumbnailTimelineProgress');
+            const timelineThumb = document.getElementById('thumbnailTimelineThumb');
+            const timeDisplay = document.getElementById('thumbnailTimeDisplay');
+            const titleInput = document.getElementById('videoTitleInput');
+            
+            // Set modal title
+            title.textContent = `Edit Video - ${video.title.replace(/\.[^/.]+$/, '')}`;
+            
+            // Load current custom title or use default
+            const customTitle = getCustomVideoTitle(video.filePath, video.id);
+            titleInput.value = customTitle || video.title.replace(/\.[^/.]+$/, '');
+            
+            try {
+                // Get video URL
+                let videoUrl = video.url;
+                if (!videoUrl && video.filePath) {
+                    videoUrl = await getTemporaryVideoUrl(video.filePath);
+                    video.url = videoUrl; // Cache it
+                }
+                
+                // Populate video source information
+                populateVideoSourceInfo(videoUrl);
+                
+                // Load video in editor
+                editorVideoSource.src = videoUrl;
+                editorVideo.load();
+                
+                // Show modal
+                modal.classList.add('show');
+                
+                // Wait for video to load
+                editorVideo.addEventListener('loadedmetadata', () => {
+                    const duration = editorVideo.duration;
+                    
+                    // Get current custom time or default to 10% position
+                    const customTime = getCustomThumbnailTime(video.filePath, video.id);
+                    const currentTime = customTime !== null ? customTime : Math.min(Math.max(duration * 0.1, 2), Math.min(duration - 2, 30));
+                    
+                    editorVideo.currentTime = currentTime;
+                    updateTimelineDisplay();
+                    
+                    // Update displays
+                    const progress = (currentTime / duration) * 100;
+                    timelineProgress.style.width = `${progress}%`;
+                    timelineThumb.style.left = `${progress}%`;
+                    timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+                    
+                }, { once: true });
+                
+            } catch (error) {
+                console.error('Error opening thumbnail editor:', error);
+                showToast('Failed to load video in editor');
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimelineDisplay() {
+            const editorVideo = document.getElementById('thumbnailEditorVideo');
+            const timelineProgress = document.getElementById('thumbnailTimelineProgress');
+            const timelineThumb = document.getElementById('thumbnailTimelineThumb');
+            const timeDisplay = document.getElementById('thumbnailTimeDisplay');
+            
+            if (editorVideo.duration) {
+                const progress = (editorVideo.currentTime / editorVideo.duration) * 100;
+                timelineProgress.style.width = `${progress}%`;
+                timelineThumb.style.left = `${progress}%`;
+                timeDisplay.textContent = `${formatTime(editorVideo.currentTime)} / ${formatTime(editorVideo.duration)}`;
+            }
+        }
+
+        async function saveThumbnailTimestamp() {
+            if (!currentEditingVideo) return;
+            
+            const editorVideo = document.getElementById('thumbnailEditorVideo');
+            const titleInput = document.getElementById('videoTitleInput');
+            const timestamp = editorVideo.currentTime;
+            const newTitle = titleInput.value.trim();
+            
+            try {
+                // Create gallery ID from current context
+                const urlParams = new URLSearchParams(window.location.search);
+                const folderUrl = urlParams.get('folder');
+                let galleryId;
+                
+                if (folderUrl) {
+                    galleryId = btoa(folderUrl).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                } else {
+                    // Try to get from path (short code)
+                    const shortCodeMatch = window.location.pathname.match(/\/g\/([a-zA-Z0-9\-]+)/);
+                    if (shortCodeMatch) {
+                        galleryId = shortCodeMatch[1];
+                    } else {
+                        // Demo mode - use temporary session storage
+                        galleryId = 'demo-session';
+                        console.log('💡 Demo mode: Using temporary changes (will reset on refresh)');
+                    }
+                }
+                
+                // Save changes (to database for real galleries, or local storage for demo)
+                if (galleryId === 'demo-session') {
+                    // Demo mode - save to local storage temporarily
+                    const demoThumbnailKey = `demo-thumbnail-${currentEditingVideo.id}`;
+                    const demoTitleKey = `demo-title-${currentEditingVideo.id}`;
+                    
+                    localStorage.setItem(demoThumbnailKey, timestamp.toString());
+                    customThumbnails.set(currentEditingVideo.filePath || `demo-${currentEditingVideo.id}`, timestamp);
+                    
+                    if (newTitle && newTitle !== currentEditingVideo.title.replace(/\.[^/.]+$/, '')) {
+                        localStorage.setItem(demoTitleKey, newTitle);
+                        customTitles.set(currentEditingVideo.filePath || `demo-${currentEditingVideo.id}`, newTitle);
+                    } else {
+                        // Remove custom title if it's back to default
+                        localStorage.removeItem(demoTitleKey);
+                        customTitles.delete(currentEditingVideo.filePath || `demo-${currentEditingVideo.id}`);
+                    }
+                    
+                    console.log(`💾 Demo: Saved changes for ${currentEditingVideo.title}`);
+                } else {
+                    // Real gallery - save to Supabase
+                    await saveCustomThumbnail(galleryId, currentEditingVideo.filePath, timestamp);
+                    await saveCustomVideoTitle(galleryId, currentEditingVideo.filePath, newTitle);
+                }
+                
+                // Update the thumbnail immediately
+                const thumbnailCard = document.querySelector(`[data-video-id="${currentEditingVideo.id}"]`);
+                if (thumbnailCard) {
+                    const thumbnailVideo = thumbnailCard.querySelector('.thumbnail-video');
+                    if (thumbnailVideo && thumbnailVideo.src) {
+                        // Update the thumbnail with new timestamp
+                        const baseUrl = thumbnailVideo.src.split('#')[0];
+                        thumbnailVideo.src = `${baseUrl}#t=${timestamp}`;
+                        thumbnailVideo.load();
+                    }
+                    
+                    // Update the title in the thumbnail
+                    const titleElement = thumbnailCard.querySelector('.thumbnail-title');
+                    if (titleElement) {
+                        titleElement.textContent = newTitle || currentEditingVideo.title.replace(/\.[^/.]+$/, '');
+                    }
+                }
+                
+                // Update main player if this is the current video
+                if (currentVideoId === currentEditingVideo.id) {
+                    const mainVideo = document.getElementById('mainVideo');
+                    const mainVideoSource = document.getElementById('mainVideoSource');
+                    const mainPlayer = document.getElementById('mainPlayer');
+                    
+                    if (mainVideoSource.src) {
+                        // Store current playing state
+                        const wasPlaying = !mainVideo.paused;
+                        const currentPlayTime = mainVideo.currentTime;
+                        
+                        // Update video source with new thumbnail timestamp
+                        const baseUrl = mainVideoSource.src.split('#')[0];
+                        mainVideoSource.src = `${baseUrl}#t=${timestamp}`;
+                        
+                        // Handle video reload
+                        mainVideo.addEventListener('loadeddata', function onVideoReload() {
+                            // Remove this event listener after use
+                            mainVideo.removeEventListener('loadeddata', onVideoReload);
+                            
+                            // Restore playing state and time if video was playing
+                            if (wasPlaying && currentPlayTime > 0) {
+                                mainVideo.currentTime = currentPlayTime;
+                                mainVideo.play().catch(e => {
+                                    console.log('Auto-resume prevented:', e);
+                                    mainPlayer.classList.remove('playing');
+                                });
+                            } else {
+                                // Reset to beginning with new thumbnail time if not playing
+                                mainVideo.currentTime = 0;
+                                mainPlayer.classList.remove('playing');
+                            }
+                            
+                            // Re-setup watch tracking with fresh state
+                            setupWatchTracking(mainVideo, currentEditingVideo.id);
+                        });
+                        
+                        mainVideo.load();
+                    }
+                    
+                    // Update the main video title (force refresh the cached data)
+                    updateVideoTitleSection(currentEditingVideo);
+                }
+                
+                closeThumbnailEditor();
+                
+                if (galleryId === 'demo-session') {
+                    showToast('Demo: Changes saved! (Resets on page refresh)');
+                } else {
+                    showToast('Changes saved successfully!');
+                }
+                
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                showToast('Failed to save changes');
+            }
+        }
+
+        function closeThumbnailEditor() {
+            const modal = document.getElementById('thumbnailEditorModal');
+            const editorVideo = document.getElementById('thumbnailEditorVideo');
+            
+            modal.classList.remove('show');
+            editorVideo.pause();
+            editorVideo.currentTime = 0;
+            currentEditingVideo = null;
+        }
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             // Show loading skeleton immediately to prevent content flash
             showLoadingSkeleton();
             // Then initialize the app
             init();
+            
+            // Setup thumbnail editor modal interactions
+            setupThumbnailEditorInteractions();
+            
+            // Setup counter animation observer
+            setupCounterObserver();
         });
+
+        function setupThumbnailEditorInteractions() {
+            const modal = document.getElementById('thumbnailEditorModal');
+            const closeBtn = document.getElementById('thumbnailEditorClose');
+            const cancelBtn = document.getElementById('thumbnailEditorCancel');
+            const saveBtn = document.getElementById('thumbnailEditorSave');
+            const timeline = document.getElementById('thumbnailTimeline');
+            const timelineThumb = document.getElementById('thumbnailTimelineThumb');
+            const editorVideo = document.getElementById('thumbnailEditorVideo');
+            
+            // Close button
+            closeBtn.addEventListener('click', closeThumbnailEditor);
+            cancelBtn.addEventListener('click', closeThumbnailEditor);
+            
+            // Save button
+            saveBtn.addEventListener('click', saveThumbnailTimestamp);
+            
+            // Click outside modal to close
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeThumbnailEditor();
+                }
+            });
+            
+            // Timeline interaction
+            let isDragging = false;
+            
+            function updateVideoTime(e) {
+                if (!editorVideo.duration) return;
+                
+                const rect = timeline.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const percentage = x / rect.width;
+                const newTime = percentage * editorVideo.duration;
+                
+                editorVideo.currentTime = newTime;
+                updateTimelineDisplay();
+            }
+            
+            timeline.addEventListener('click', updateVideoTime);
+            
+            // Dragging functionality
+            timelineThumb.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateVideoTime(e);
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            // Update timeline as video plays (if user plays the video)
+            editorVideo.addEventListener('timeupdate', () => {
+                if (!isDragging) {
+                    updateTimelineDisplay();
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (!modal.classList.contains('show')) return;
+                
+                if (e.key === 'Escape') {
+                    closeThumbnailEditor();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveThumbnailTimestamp();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    if (editorVideo.paused) {
+                        editorVideo.play();
+                    } else {
+                        editorVideo.pause();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    editorVideo.currentTime = Math.max(0, editorVideo.currentTime - 1);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    editorVideo.currentTime = Math.min(editorVideo.duration, editorVideo.currentTime + 1);
+                }
+            });
+        }
 
         // Keyboard navigation for categories
         document.addEventListener('keydown', (e) => {
@@ -2820,7 +3879,7 @@
         function setupMainPlayerInteractions() {
             const mainPlayer = document.getElementById('mainPlayer');
             const mainVideo = document.getElementById('mainVideo');
-            const playOverlay = document.getElementById('playOverlay');
+            const playButtonOverlay = document.getElementById('playButtonOverlay');
 
             // Handle play/pause events
             mainVideo.addEventListener('play', () => {
@@ -2838,8 +3897,8 @@
                 document.body.classList.remove('main-video-playing');
             });
 
-            // Handle click on video or play overlay
-            playOverlay.addEventListener('click', (e) => {
+            // Handle click on play button overlay
+            playButtonOverlay.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (mainVideo.paused) {
                     mainVideo.play();
@@ -2848,8 +3907,9 @@
 
             // Optional: Click on video to play/pause (common UX pattern)
             mainVideo.addEventListener('click', (e) => {
-                // Don't interfere with control clicks
-                if (e.target === mainVideo) {
+                // Only handle clicks directly on the video element
+                if (e.target === mainVideo && !e.defaultPrevented) {
+                    e.preventDefault();
                     if (mainVideo.paused) {
                         mainVideo.play();
                     } else {
@@ -2857,6 +3917,57 @@
                     }
                 }
             });
+        }
+
+        // Animated Counter for Footer Stats
+        function animateCounter() {
+            const counter = document.getElementById('videosSharedCounter');
+            const targetNumber = 345123;
+            const duration = 2000; // 2 seconds
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for smooth animation
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentNumber = Math.floor(easeOutQuart * targetNumber);
+                
+                // Format number with commas
+                counter.textContent = currentNumber.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    // Ensure final number is exact
+                    counter.textContent = targetNumber.toLocaleString();
+                    counter.parentElement.classList.remove('counter-animating');
+                }
+            }
+            
+            counter.parentElement.classList.add('counter-animating');
+            requestAnimationFrame(updateCounter);
+        }
+
+        // Setup Intersection Observer for counter animation
+        function setupCounterObserver() {
+            const footer = document.querySelector('.footer');
+            if (!footer) return;
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Start animation when footer comes into view
+                        setTimeout(animateCounter, 300); // Small delay for better effect
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, {
+                rootMargin: '0px 0px -100px 0px' // Trigger when footer is 100px from bottom of viewport
+            });
+            
+            observer.observe(footer);
         }
 
         console.log('🎬 VidShare Gallery Ready with Real Vertical Videos!');
