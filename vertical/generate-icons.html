@@ -12,7 +12,7 @@
 </head>
 <body>
     <h1>🎯 VidShare PWA Icon Generator</h1>
-    <p>Generate basic app icons for your VidShare PWA. Click "Generate All Icons" and then right-click each canvas to save as PNG.</p>
+    <p>Generate professional app icons with a sophisticated navy-to-silver gradient for your VidShare PWA. Perfect for business and professional environments. Click "Generate All Icons" and then right-click each canvas to save as PNG.</p>
     
     <button onclick="generateAllIcons()">Generate All Icons</button>
     <button onclick="downloadAll()">Download All Icons</button>
@@ -28,12 +28,13 @@
             canvas.height = size;
             const ctx = canvas.getContext('2d');
             
-            // Background gradient
+            // Background gradient - Professional Dark Blue to Silver
             const gradient = ctx.createLinearGradient(0, 0, size, size);
-            gradient.addColorStop(0, '#FF6B6B');
-            gradient.addColorStop(0.3, '#4ECDC4');
-            gradient.addColorStop(0.7, '#45B7D1');
-            gradient.addColorStop(1, '#96CEB4');
+            gradient.addColorStop(0, '#1e3c72');     // Professional Navy
+            gradient.addColorStop(0.3, '#2a5298');   // Deep Blue
+            gradient.addColorStop(0.6, '#4a90e2');   // Corporate Blue
+            gradient.addColorStop(0.85, '#7bb3f0');  // Light Blue
+            gradient.addColorStop(1, '#b8daf0');     // Silver Blue
             
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, size, size);
