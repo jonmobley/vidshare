@@ -44,6 +44,9 @@ class VirtualVideoGallery {
         // Update UI
         this.controlsManager.updateCategoryPills(this.currentCategory);
         this.controlsManager.updateLikeButton();
+        
+        // Set up keyboard navigation
+        this.setupKeyboardControls();
     }
 
     // State management
@@ -249,10 +252,44 @@ class VirtualVideoGallery {
         }
     }
 
+    // Keyboard controls
+    setupKeyboardControls() {
+        this.keydownHandler = (event) => {
+            // Prevent default behavior for navigation keys
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+                event.preventDefault();
+            }
+            
+            switch (event.key) {
+                case 'ArrowUp':
+                    this.navigation.goToPrevious();
+                    break;
+                case 'ArrowDown':
+                    this.navigation.goToNext();
+                    break;
+                case 'ArrowLeft':
+                    this.navigation.goToPreviousCategory();
+                    break;
+                case 'ArrowRight':
+                    this.navigation.goToNextCategory();
+                    break;
+                case ' ': // Spacebar
+                    this.togglePlayPause();
+                    break;
+            }
+        };
+        
+        document.addEventListener('keydown', this.keydownHandler);
+        console.log('🎮 Keyboard controls enabled: ↑↓ for videos, ←→ for categories, spacebar for play/pause');
+    }
+
     // Cleanup
     destroy() {
         this.videoPool.cleanup();
         // Remove event listeners if needed
+        if (this.keydownHandler) {
+            document.removeEventListener('keydown', this.keydownHandler);
+        }
     }
 
     setAutoplayMode(mode) {
