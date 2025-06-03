@@ -60,8 +60,8 @@ class GestureHandler {
         }, { passive: false });
         
         container.addEventListener('touchmove', (e) => {
-            this.handleMove(e.touches[0].clientY, e.touches[0].clientX);
-        }, { passive: true });
+            this.handleMove(e.touches[0].clientY, e.touches[0].clientX, e);
+        }, { passive: false });
         
         container.addEventListener('touchend', (e) => {
             this.handleEnd(e);
@@ -74,7 +74,7 @@ class GestureHandler {
         
         container.addEventListener('mousemove', (e) => {
             if (this.isDragging) {
-                this.handleMove(e.clientY, e.clientX);
+                this.handleMove(e.clientY, e.clientX, e);
             }
         });
         
@@ -112,7 +112,7 @@ class GestureHandler {
         this.lastTap = currentTime;
     }
 
-    handleMove(clientY, clientX) {
+    handleMove(clientY, clientX, e = null) {
         if (this.gallery.navigation.isTransitioning) return;
         
         this.currentY = clientY;
@@ -136,6 +136,17 @@ class GestureHandler {
         // Determine drag direction
         if (!this.dragDirection && (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10)) {
             this.dragDirection = Math.abs(deltaX) > Math.abs(deltaY) ? 'horizontal' : 'vertical';
+            
+            // Prevent default for horizontal swipes to avoid interfering with scroll
+            if (this.dragDirection === 'horizontal' && e) {
+                e.preventDefault();
+                console.log('Horizontal swipe detected, preventing default');
+            }
+        }
+        
+        // Continue preventing default for horizontal movement
+        if (this.dragDirection === 'horizontal' && e) {
+            e.preventDefault();
         }
     }
 
@@ -169,8 +180,16 @@ class GestureHandler {
         const deltaY = this.currentY - this.startY;
         const deltaX = this.currentX - this.startX;
         
+        console.log('Gesture end:', {
+            dragDirection: this.dragDirection,
+            deltaX: deltaX,
+            deltaY: deltaY,
+            threshold: this.categorySwipeThreshold
+        });
+        
         // Only handle horizontal swipes for category changes
         if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.categorySwipeThreshold) {
+            console.log('Category swipe triggered:', deltaX > 0 ? 'Previous' : 'Next');
             if (deltaX > 0) {
                 this.gallery.navigation.goToPreviousCategory();
             } else {
