@@ -156,18 +156,33 @@ class GestureHandler {
         const container = e.target;
         const scrollTop = container.scrollTop;
         const videoHeight = window.innerHeight;
-        const currentVideoIndex = Math.round(scrollTop / videoHeight);
+        const globalVideoIndex = Math.round(scrollTop / videoHeight);
         
-        // Update current slide if it changed
-        if (currentVideoIndex !== this.gallery.currentSlide) {
-            this.gallery.setCurrentSlide(currentVideoIndex);
-            this.gallery.updateProgressDots();
-            this.gallery.updateLikeButton();
-            this.gallery.resetVideoProgress();
-            this.gallery.renderer.updateActiveVideo(currentVideoIndex);
+        // Get current category from global index
+        const categoryInfo = this.gallery.renderer.getCurrentCategoryFromGlobalIndex(globalVideoIndex);
+        
+        if (categoryInfo) {
+            const { category, localIndex } = categoryInfo;
             
-            if (this.gallery.isPlaying) {
-                this.gallery.startVideoProgress();
+            // Update category if it changed
+            if (category !== this.gallery.currentCategory) {
+                console.log(`Seamless category change: ${this.gallery.currentCategory} → ${category}`);
+                this.gallery.currentCategory = category;
+                this.gallery.updateCategoryUI();
+            }
+            
+            // Update current slide if it changed
+            if (localIndex !== this.gallery.currentSlide) {
+                this.gallery.currentSlide = localIndex;
+                this.gallery.categorySlidePositions[category] = localIndex;
+                this.gallery.updateProgressDots();
+                this.gallery.updateLikeButton();
+                this.gallery.resetVideoProgress();
+                this.gallery.renderer.updateActiveVideo(globalVideoIndex);
+                
+                if (this.gallery.isPlaying) {
+                    this.gallery.startVideoProgress();
+                }
             }
         }
     }
@@ -180,22 +195,8 @@ class GestureHandler {
         const deltaY = this.currentY - this.startY;
         const deltaX = this.currentX - this.startX;
         
-        console.log('Gesture end:', {
-            dragDirection: this.dragDirection,
-            deltaX: deltaX,
-            deltaY: deltaY,
-            threshold: this.categorySwipeThreshold
-        });
-        
-        // Only handle horizontal swipes for category changes
-        if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.categorySwipeThreshold) {
-            console.log('Category swipe triggered:', deltaX > 0 ? 'Previous' : 'Next');
-            if (deltaX > 0) {
-                this.gallery.navigation.goToPreviousCategory();
-            } else {
-                this.gallery.navigation.goToNextCategory();
-            }
-        }
+        // For seamless scrolling, we let natural scroll handle category changes
+        // No need for manual horizontal swipe category switching
         
         // Clear tap timeout
         if (this.tapTimeout) {

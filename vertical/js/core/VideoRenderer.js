@@ -15,37 +15,84 @@ class VideoRenderer {
         this.stateManager = new VideoStateManager();
     }
 
-    renderVisibleVideos(currentSlide, totalSlides, videoData, currentCategory, direction = null) {
+    renderAllCategories() {
         const container = document.getElementById('videoWrapper');
         if (!container) {
             console.error('Video container not found');
             return;
         }
 
-        // Only re-render if category changed (preserve scroll position)
-        if (container.children.length === 0 || container.dataset.category !== currentCategory.toString()) {
-            // Clear existing videos
+        // Only render once - create seamless scroll experience
+        if (container.children.length === 0) {
             container.innerHTML = '';
             this.renderedVideos.clear();
-            container.dataset.category = currentCategory.toString();
-
-            // Render all videos for TikTok-style scrolling
-            videoData.forEach((videoInfo, index) => {
-                const element = this.createVideoElement(videoInfo, index, currentCategory);
-                container.appendChild(element);
-                this.renderedVideos.set(index, element);
+            
+            // Import video data
+            import('/vertical/js/data/videoData.js').then(module => {
+                const videoData = module.videoData;
+                let globalIndex = 0;
+                
+                // Render all categories in sequence for seamless scrolling
+                Object.keys(videoData).forEach(categoryIndex => {
+                    const categoryData = videoData[categoryIndex];
+                    categoryData.forEach((videoInfo, localIndex) => {
+                        const element = this.createVideoElement(videoInfo, globalIndex, categoryIndex, localIndex);
+                        container.appendChild(element);
+                        this.renderedVideos.set(globalIndex, element);
+                        globalIndex++;
+                    });
+                });
+                
+                // Store category boundaries for scroll detection
+                this.calculateCategoryBoundaries(videoData);
             });
         }
+    }
 
+    calculateCategoryBoundaries(videoData) {
+        this.categoryBoundaries = [];
+        let globalIndex = 0;
+        
+        Object.keys(videoData).forEach(categoryIndex => {
+            const categoryData = videoData[categoryIndex];
+            this.categoryBoundaries.push({
+                category: parseInt(categoryIndex),
+                startIndex: globalIndex,
+                endIndex: globalIndex + categoryData.length - 1,
+                length: categoryData.length
+            });
+            globalIndex += categoryData.length;
+        });
+        
+        console.log('Category boundaries:', this.categoryBoundaries);
+    }
+
+    getCurrentCategoryFromGlobalIndex(globalIndex) {
+        for (const boundary of this.categoryBoundaries) {
+            if (globalIndex >= boundary.startIndex && globalIndex <= boundary.endIndex) {
+                return {
+                    category: boundary.category,
+                    localIndex: globalIndex - boundary.startIndex
+                };
+            }
+        }
+        return { category: 0, localIndex: 0 };
+    }
+
+    renderVisibleVideos(currentSlide, totalSlides, videoData, currentCategory, direction = null) {
+        // Use the new seamless rendering approach
+        this.renderAllCategories();
+        
         // Update active states
         this.updateActiveVideo(currentSlide);
     }
 
-    createVideoElement(videoInfo, index, currentCategory) {
+    createVideoElement(videoInfo, globalIndex, categoryIndex, localIndex) {
         const slide = document.createElement('div');
         slide.className = 'video-slide';
-        slide.dataset.index = index;
-        slide.dataset.category = currentCategory;
+        slide.dataset.globalIndex = globalIndex;
+        slide.dataset.category = categoryIndex;
+        slide.dataset.localIndex = localIndex;
 
         // Create iframe to load the HTML video content
         const iframe = document.createElement('iframe');

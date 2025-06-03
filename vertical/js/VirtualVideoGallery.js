@@ -37,8 +37,10 @@ class VirtualVideoGallery {
         const videoWrapper = document.getElementById('videoWrapper');
         this.videoPool.initialize(videoWrapper);
         
+        // Initialize seamless rendering
+        this.renderer.renderAllCategories();
+        
         this.updateProgressDots();
-        this.renderVideos();
         this.updatePerformanceStats();
         
         // Update UI
@@ -84,7 +86,17 @@ class VirtualVideoGallery {
     }
 
     getTotalSlides() {
-        return videoData[this.currentCategory].length;
+        // For seamless scrolling, return total for current category only for UI purposes
+        return videoData[this.currentCategory] ? videoData[this.currentCategory].length : 0;
+    }
+
+    getTotalGlobalSlides() {
+        // Total across all categories for seamless scrolling
+        let total = 0;
+        Object.keys(videoData).forEach(categoryIndex => {
+            total += videoData[categoryIndex].length;
+        });
+        return total;
     }
 
     getTotalCategories() {
