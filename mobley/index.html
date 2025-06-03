@@ -481,7 +481,7 @@
                                 </svg>
                                 Dropbox Folder Share Link
                             </label>
-                            <input type="url" id="dropboxUrl" class="form-input" placeholder="Paste Here" required>
+                            <input type="url" id="dropboxUrl" name="dropboxUrl" class="form-input" placeholder="Paste Here" required>
                             <small style="color: #666; margin-top: 5px; display: block;">
                                 Copy the public share link from your Dropbox folder
                             </small>
@@ -496,12 +496,12 @@
                         <div id="additionalFields" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label" for="galleryName">Gallery Name</label>
-                                <input type="text" id="galleryName" class="form-input" placeholder="My Awesome Videos" required>
+                                <input type="text" id="galleryName" name="galleryName" class="form-input" placeholder="My Awesome Videos" required>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="customUrl">Custom Short URL (Optional)</label>
-                                <input type="text" id="customUrl" class="form-input" placeholder="my-gallery" pattern="[a-z0-9\-]+" maxlength="20">
+                                <input type="text" id="customUrl" name="customUrl" class="form-input" placeholder="my-gallery" pattern="[a-z0-9\-]+" maxlength="20">
                                 <small id="urlAvailability" style="color: #666; margin-top: 5px; display: block;">
                                     Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.
                                 </small>
@@ -511,14 +511,14 @@
                                 <label class="form-label">Gallery Settings</label>
                                 <div class="checkbox-group">
                                     <div class="checkbox-item">
-                                        <input type="checkbox" id="allowDownloads" checked>
+                                        <input type="checkbox" id="allowDownloads" name="allowDownloads" checked>
                                         <div>
                                             <div class="checkbox-label">Allow Downloads</div>
                                             <div class="checkbox-description">Users can download individual videos</div>
                                         </div>
                                     </div>
                                     <div class="checkbox-item">
-                                        <input type="checkbox" id="allowSharing" checked>
+                                        <input type="checkbox" id="allowSharing" name="allowSharing" checked>
                                         <div>
                                             <div class="checkbox-label">Allow Individual Sharing</div>
                                             <div class="checkbox-description">Users can open videos in new windows</div>
@@ -686,6 +686,15 @@
                     const errorText = await metadataResponse.text();
                     console.error('Dropbox API Error:', metadataResponse.status, errorText);
                     
+                    // Handle expired token specifically
+                    if (metadataResponse.status === 401) {
+                        const errorData = JSON.parse(errorText);
+                        if (errorData.error && errorData.error['.tag'] === 'expired_access_token') {
+                            showValidation('error', '🔑 Dropbox access token has expired. Please contact the administrator to refresh the token.');
+                            return false;
+                        }
+                    }
+                    
                     // Try alternative approach for new link format
                     if (url.includes('/scl/fo/')) {
                         showValidation('error', 'This link format may not be supported. Please try creating a legacy share link: Go to Dropbox → Right-click folder → Share → Copy link (use the older format if available)');
@@ -753,6 +762,9 @@
                 });
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Dropbox access token has expired. Please contact the administrator to refresh the token.');
+                    }
                     throw new Error('Failed to scan folder contents');
                 }
 
@@ -1506,8 +1518,41 @@ Error: ${error.message}`);
             updateUrlAvailability('neutral', 'Leave empty for random URL. Use only lowercase letters, numbers, and hyphens.');
         }
 
+        // Validate Dropbox token on startup
+        async function validateDropboxTokenOnStartup() {
+            try {
+                const token = await getDropboxToken();
+                if (!token) {
+                    console.warn('⚠️ No Dropbox token found');
+                    return;
+                }
+                
+                // Test token with a simple API call
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    console.error('🔑 Dropbox access token has expired - galleries may not work properly');
+                } else if (response.ok) {
+                    console.log('✅ Dropbox token is valid');
+                } else {
+                    console.warn('⚠️ Could not validate Dropbox token:', response.status);
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not validate Dropbox token:', error.message);
+            }
+        }
+
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            validateDropboxTokenOnStartup();
+        });
 
         console.log('VidShare Admin Panel Ready with Supabase Storage!');
     </script>
