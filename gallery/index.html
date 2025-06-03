@@ -336,50 +336,7 @@
             opacity: 1;
         }
 
-        /* Sort dropdown */
-        .sort-dropdown {
-            position: relative;
-            flex: 0 0 140px; /* Fixed flex-basis to prevent wrapping */
-            min-width: 140px; /* Ensure minimum width for dropdown */
-            width: 140px; /* Fixed width to prevent layout shifts */
-        }
 
-        .sort-select {
-            width: 100%;
-            padding: 8px 32px 8px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 20px;
-            background: #f8f9fa;
-            color: #666;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            appearance: none;
-            transition: all 0.3s ease;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .sort-select:hover {
-            background: #e9ecef;
-            transform: translateY(-1px);
-        }
-
-        .sort-select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-        }
-
-        .sort-dropdown::after {
-            content: '▼';
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 10px;
-            color: #666;
-            pointer-events: none;
-        }
 
         /* Thumbnails Section */
         .thumbnails-section {
@@ -406,16 +363,16 @@
         }
 
         /* Responsive grid - 2 per row for medium screens */
-        @media (max-width: 900px) and (min-width: 769px) {
+        @media (max-width: 1023px) and (min-width: 769px) {
             .thumbnails-grid .thumbnail-card {
                 flex: 0 0 calc(50% - 7.5px);
                 max-width: calc(50% - 7.5px);
             }
 
-            /* Keep vertical videos at 4 per row even on medium screens when there's space */
+            /* Force ALL videos to 2 per row on medium/narrow screens for better readability */
             .thumbnail-card.vertical {
-                flex: 0 0 calc(25% - 12px) !important;
-                max-width: calc(25% - 12px) !important;
+                flex: 0 0 calc(50% - 7.5px) !important;
+                max-width: calc(50% - 7.5px) !important;
             }
         }
 
@@ -801,13 +758,7 @@
         .skeleton-pill:nth-child(3) { width: 90px; }
         .skeleton-pill:nth-child(4) { width: 110px; }
 
-        .skeleton-sort {
-            width: 140px;
-            height: 32px;
-            border-radius: 20px;
-            background: #f0f0f0;
-            flex-shrink: 0;
-        }
+
 
         /* Grid Skeleton */
         .skeleton-grid {
@@ -851,7 +802,7 @@
         .skeleton-thumbnail-title:nth-child(2) { width: 60%; }
 
         /* Responsive skeleton adjustments */
-        @media (max-width: 900px) and (min-width: 769px) {
+        @media (max-width: 1023px) and (min-width: 769px) {
             .skeleton-thumbnail {
                 flex: 0 0 calc(50% - 7.5px);
                 max-width: calc(50% - 7.5px);
@@ -903,9 +854,7 @@
                 gap: 10px;
             }
 
-            .skeleton-sort {
-                width: 120px;
-            }
+
 
             .skeleton-grid {
                 padding: 15px;
@@ -1030,16 +979,9 @@
                 min-width: 0;
             }
 
-            .sort-dropdown {
-                flex: 0 0 120px; /* Fixed flex-basis for smaller mobile */
-                min-width: 120px; /* Slightly smaller on mobile */
-                width: 120px;
-            }
 
-            .sort-select {
-                padding: 6px 24px 6px 8px;
-                font-size: 0.8rem;
-            }
+
+
 
             .thumbnails-grid {
                 gap: 10px;
@@ -1069,6 +1011,12 @@
             .thumbnails-grid .thumbnail-card {
                 flex: 0 0 calc(33.333% - 13.33px);
                 max-width: calc(33.333% - 13.33px);
+            }
+
+            /* Vertical videos: 4 per row with 20px gaps on desktop */
+            .thumbnail-card.vertical {
+                flex: 0 0 calc(25% - 15px) !important;
+                max-width: calc(25% - 15px) !important;
             }
         }
 
@@ -1102,7 +1050,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: shimmer-text 8s ease-in-out infinite;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
         }
 
@@ -1175,16 +1123,7 @@
                     <!-- Folder pills will be populated here -->
                 </div>
             </div>
-            <div class="sort-dropdown">
-                <select class="sort-select" id="sortSelect">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="name-asc">Name A-Z</option>
-                    <option value="name-desc">Name Z-A</option>
-                    <option value="duration-long">Longest First</option>
-                    <option value="duration-short">Shortest First</option>
-                </select>
-            </div>
+
         </div>
 
         <!-- Loading Skeleton -->
@@ -1200,7 +1139,7 @@
                     <div class="skeleton-pill shimmer"></div>
                     <div class="skeleton-pill shimmer"></div>
                 </div>
-                <div class="skeleton-sort shimmer"></div>
+
             </div>
             
             <!-- Skeleton Grid -->
@@ -2201,11 +2140,7 @@
                 });
             });
 
-            // Add sort change listener
-            const sortSelect = document.getElementById('sortSelect');
-            sortSelect.addEventListener('change', () => {
-                applyFilters();
-            });
+
 
             checkOverflow();
             folderPills.addEventListener('scroll', checkOverflow);
@@ -2250,53 +2185,27 @@
         }
 
         function applyFilters() {
-            // Get filtered videos first
+            // Get filtered videos by folder
             if (currentFolder === 'all') {
                 filteredVideos = [...allVideos];
             } else {
                 filteredVideos = allVideos.filter(video => video.folder === currentFolder);
             }
             
-            // Apply current sort
-            applySorting();
-            
-            // Re-render with sorted and filtered videos
-            renderThumbnails();
-        }
-
-        function applySorting() {
-            const sortValue = document.getElementById('sortSelect').value;
-            
-            // Separate videos by aspect ratio first
+            // Apply default sorting (horizontal videos first, then vertical)
             const horizontalVideos = filteredVideos.filter(video => !video.isVertical);
             const verticalVideos = filteredVideos.filter(video => video.isVertical);
             
-            // Sort function for both groups
-            const sortFunction = (a, b) => {
-                switch (sortValue) {
-                    case 'newest':
-                        return new Date(b.date) - new Date(a.date);
-                    case 'oldest':
-                        return new Date(a.date) - new Date(b.date);
-                    case 'name-asc':
-                        return a.title.localeCompare(b.title);
-                    case 'name-desc':
-                        return b.title.localeCompare(a.title);
-                    case 'duration-long':
-                        return b.durationSeconds - a.durationSeconds;
-                    case 'duration-short':
-                        return a.durationSeconds - b.durationSeconds;
-                    default:
-                        return 0;
-                }
-            };
-            
-            // Sort each group separately
-            horizontalVideos.sort(sortFunction);
-            verticalVideos.sort(sortFunction);
+            // Default sort by newest first for each group
+            const sortByNewest = (a, b) => new Date(b.date) - new Date(a.date);
+            horizontalVideos.sort(sortByNewest);
+            verticalVideos.sort(sortByNewest);
             
             // Combine with horizontal videos first, then vertical videos
             filteredVideos = [...horizontalVideos, ...verticalVideos];
+            
+            // Re-render with filtered videos
+            renderThumbnails();
         }
 
         function setActiveVideo(videoId) {
