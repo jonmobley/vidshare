@@ -91,11 +91,8 @@ class NavigationController {
             // Update slide index
             this.gallery.setCurrentSlide(newSlide);
             
-            // Determine direction for vertical scrolling
-            const direction = newSlide > this.gallery.currentSlide ? 'down' : 'up';
-            
-            // Render if needed
-            this.gallery.renderVideos(direction);
+            // Scroll to the video
+            this.gallery.renderer.scrollToVideo(newSlide);
             
             // Update UI
             this.gallery.updateProgressDots();
@@ -138,6 +135,9 @@ class NavigationController {
         
         // Render new videos immediately
         this.gallery.renderVideos(direction);
+        
+        // Scroll to the correct position
+        this.gallery.renderer.scrollToVideo(this.gallery.currentSlide);
         
         // Update UI
         this.gallery.updateCategoryUI();

@@ -27,7 +27,12 @@ class GestureHandler {
     bindEvents() {
         const container = document.getElementById('videoContainer');
         
-        // Touch events
+        // Scroll events for TikTok-style scrolling
+        container.addEventListener('scroll', (e) => {
+            this.handleScroll(e);
+        }, { passive: true });
+        
+        // Touch events (for horizontal swipes between categories)
         container.addEventListener('touchstart', (e) => {
             this.handleStart(e.touches[0].clientY, e.touches[0].clientX, e);
         }, { passive: false });
@@ -40,15 +45,13 @@ class GestureHandler {
             this.handleEnd(e);
         }, { passive: false });
         
-        // Mouse events
+        // Mouse events (for horizontal swipes between categories)
         container.addEventListener('mousedown', (e) => {
-            e.preventDefault();
             this.handleStart(e.clientY, e.clientX, e);
         });
         
         container.addEventListener('mousemove', (e) => {
             if (this.isDragging) {
-                e.preventDefault();
                 this.handleMove(e.clientY, e.clientX);
             }
         });
@@ -56,17 +59,13 @@ class GestureHandler {
         container.addEventListener('mouseup', (e) => this.handleEnd(e));
         container.addEventListener('mouseleave', () => this.handleEnd());
         
-        // Wheel events
+        // Wheel events (allow vertical scrolling, handle horizontal for categories)
         container.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            this.handleWheel(e);
-        }, { passive: false });
-        
-        // Prevent default touch behaviors only when we have a clear drag direction
-        document.addEventListener('touchmove', (e) => {
-            if (this.isDragging && this.dragDirection) {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
                 e.preventDefault();
+                this.handleWheel(e);
             }
+            // Let vertical wheel events pass through for natural scrolling
         }, { passive: false });
     }
 
@@ -127,6 +126,28 @@ class GestureHandler {
         }
     }
 
+    handleScroll(e) {
+        if (this.gallery.navigation.isTransitioning) return;
+        
+        const container = e.target;
+        const scrollTop = container.scrollTop;
+        const videoHeight = window.innerHeight;
+        const currentVideoIndex = Math.round(scrollTop / videoHeight);
+        
+        // Update current slide if it changed
+        if (currentVideoIndex !== this.gallery.currentSlide) {
+            this.gallery.setCurrentSlide(currentVideoIndex);
+            this.gallery.updateProgressDots();
+            this.gallery.updateLikeButton();
+            this.gallery.resetVideoProgress();
+            this.gallery.renderer.updateActiveVideo(currentVideoIndex);
+            
+            if (this.gallery.isPlaying) {
+                this.gallery.startVideoProgress();
+            }
+        }
+    }
+
     handleEnd(e) {
         if (!this.isDragging) return;
         
@@ -135,14 +156,8 @@ class GestureHandler {
         const deltaY = this.currentY - this.startY;
         const deltaX = this.currentX - this.startX;
         
-        // Handle swipe based on direction
-        if (this.dragDirection === 'vertical' && Math.abs(deltaY) > this.threshold) {
-            if (deltaY > 0) {
-                this.gallery.navigation.goToPrevious();
-            } else {
-                this.gallery.navigation.goToNext();
-            }
-        } else if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.threshold) {
+        // Only handle horizontal swipes for category changes
+        if (this.dragDirection === 'horizontal' && Math.abs(deltaX) > this.threshold) {
             if (deltaX > 0) {
                 this.gallery.navigation.goToPreviousCategory();
             } else {

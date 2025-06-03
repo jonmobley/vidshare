@@ -22,26 +22,23 @@ class VideoRenderer {
             return;
         }
 
-        // Clear existing videos
-        container.innerHTML = '';
-        this.renderedVideos.clear();
+        // Only re-render if category changed (preserve scroll position)
+        if (container.children.length === 0 || container.dataset.category !== currentCategory.toString()) {
+            // Clear existing videos
+            container.innerHTML = '';
+            this.renderedVideos.clear();
+            container.dataset.category = currentCategory.toString();
 
-        // Render current video and adjacent ones for smooth scrolling
-        const videosToRender = [
-            currentSlide - 1,
-            currentSlide,
-            currentSlide + 1
-        ].filter(index => index >= 0 && index < totalSlides);
+            // Render all videos for TikTok-style scrolling
+            videoData.forEach((videoInfo, index) => {
+                const element = this.createVideoElement(videoInfo, index, currentCategory);
+                container.appendChild(element);
+                this.renderedVideos.set(index, element);
+            });
+        }
 
-        videosToRender.forEach(index => {
-            const videoInfo = videoData[index];
-            const element = this.createVideoElement(videoInfo, index, currentCategory);
-            container.appendChild(element);
-            this.renderedVideos.set(index, element);
-        });
-
-        // Position videos
-        this.positionVideos(currentSlide, direction);
+        // Update active states
+        this.updateActiveVideo(currentSlide);
     }
 
     createVideoElement(videoInfo, index, currentCategory) {
@@ -102,19 +99,26 @@ class VideoRenderer {
         }
     }
 
-    positionVideos(currentSlide, direction = null) {
+    updateActiveVideo(currentSlide) {
         this.renderedVideos.forEach((element, index) => {
-            const offset = (index - currentSlide) * 100;
-            element.style.transform = `translateY(${offset}vh)`;
-            
             if (index === currentSlide) {
                 element.classList.add('active');
-                element.style.zIndex = 10;
             } else {
                 element.classList.remove('active');
-                element.style.zIndex = 1;
             }
         });
+    }
+
+    scrollToVideo(videoIndex) {
+        const container = document.getElementById('videoContainer');
+        const videoElement = this.renderedVideos.get(videoIndex);
+        
+        if (container && videoElement) {
+            container.scrollTo({
+                top: videoIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
+        }
     }
 
     getCurrentVideoElement(index) {
@@ -126,7 +130,7 @@ class VideoRenderer {
     }
 
     updateVideoStates(currentSlide, direction = null) {
-        this.positionVideos(currentSlide, direction);
+        this.updateActiveVideo(currentSlide);
         
         // Update video playback states via iframe communication
         this.renderedVideos.forEach((element, index) => {
@@ -149,12 +153,17 @@ class VideoRenderer {
         });
     }
 
-    cleanup() {
+    clearAllVideos() {
         this.renderedVideos.clear();
         const container = document.getElementById('videoWrapper');
         if (container) {
             container.innerHTML = '';
+            delete container.dataset.category;
         }
+    }
+
+    cleanup() {
+        this.clearAllVideos();
     }
 }
 
