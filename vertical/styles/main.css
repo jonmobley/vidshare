@@ -21,6 +21,53 @@ body {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    /* PWA Optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+    /* Hide address bar on mobile */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+}
+
+/* PWA Fullscreen optimizations */
+@media (display-mode: fullscreen), 
+       (display-mode: standalone) {
+    body {
+        /* Enhanced fullscreen experience */
+        background: #000;
+        overflow: hidden; /* No scrollbars in app mode */
+    }
+    
+    .video-container {
+        /* Ensure full screen usage in app mode */
+        width: 100vw;
+        height: 100vh;
+        height: -webkit-fill-available;
+    }
+    
+    /* Hide browser chrome elements if any remain */
+    .video-slide {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* iOS PWA specific improvements */
+@supports (-webkit-touch-callout: none) {
+    body {
+        /* iOS specific optimizations */
+        -webkit-appearance: none;
+        -webkit-user-drag: none;
+    }
+    
+    /* Prevent iOS bounce scroll */
+    .video-container {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+    }
 }
 
 .video-container {
