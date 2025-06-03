@@ -6,142 +6,154 @@ import AnimationManager from './AnimationManager.js';
 import VideoStateManager from './VideoStateManager.js';
 
 class VideoRenderer {
-    constructor(gallery) {
+    constructor(videoPool, gallery) {
+        this.videoPool = videoPool;
         this.gallery = gallery;
-        this.renderedVideos = new Map(); // Maps poolId to { video, element, controller }
+        this.renderedVideos = new Map(); // Maps index to element
         this.progressManager = new VideoProgressManager();
         this.animationManager = new AnimationManager();
         this.stateManager = new VideoStateManager();
     }
 
-    renderVideo(poolId, category) {
-        if (this.renderedVideos.has(poolId)) {
-            return this.renderedVideos.get(poolId).element;
+    renderVisibleVideos(currentSlide, totalSlides, videoData, currentCategory, direction = null) {
+        const container = document.getElementById('videoWrapper');
+        if (!container) {
+            console.error('Video container not found');
+            return;
         }
 
-        const element = document.createElement('div');
-        element.className = 'video-container';
-        element.dataset.poolId = poolId;
-        element.dataset.category = category;
+        // Clear existing videos
+        container.innerHTML = '';
+        this.renderedVideos.clear();
 
-        const video = document.createElement('video');
-        video.playsInline = true;
-        video.muted = this.gallery.settings.muted;
-        video.loop = this.gallery.settings.loop;
-        video.autoplay = this.gallery.settings.autoplay;
+        // Render current video and adjacent ones for smooth scrolling
+        const videosToRender = [
+            currentSlide - 1,
+            currentSlide,
+            currentSlide + 1
+        ].filter(index => index >= 0 && index < totalSlides);
 
-        const videoContent = document.createElement('div');
-        videoContent.className = 'video-content';
+        videosToRender.forEach(index => {
+            const videoInfo = videoData[index];
+            const element = this.createVideoElement(videoInfo, index, currentCategory);
+            container.appendChild(element);
+            this.renderedVideos.set(index, element);
+        });
+
+        // Position videos
+        this.positionVideos(currentSlide, direction);
+    }
+
+    createVideoElement(videoInfo, index, currentCategory) {
+        const slide = document.createElement('div');
+        slide.className = 'video-slide';
+        slide.dataset.index = index;
+        slide.dataset.category = currentCategory;
+
+        // Create iframe to load the HTML video content
+        const iframe = document.createElement('iframe');
+        iframe.src = videoInfo.videoUrl || '/vertical/videos/categories/videos/video-1.html'; // fallback
+        iframe.className = 'video-iframe';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('frameborder', '0');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+
+        // Create overlay with video info
+        const overlay = document.createElement('div');
+        overlay.className = 'video-overlay';
         
         const title = document.createElement('h2');
         title.className = 'video-title';
-        title.textContent = this.gallery.settings.title || '';
+        title.textContent = videoInfo.title;
         
         const description = document.createElement('p');
         description.className = 'video-description';
-        description.textContent = this.gallery.settings.description || '';
+        description.textContent = videoInfo.description;
         
-        videoContent.appendChild(title);
-        videoContent.appendChild(description);
-        element.appendChild(video);
-        element.appendChild(videoContent);
-
-        // Load video source based on category
-        if (category === 'real') {
-            this.loadRealVideo(video, poolId);
-        } else {
-            this.loadPlaceholderVideo(video, poolId);
-        }
-
-        // Create playback controller
-        const controller = new VideoPlaybackController(video, this.progressManager);
-        controller.setupEventListeners();
-
-        this.renderedVideos.set(poolId, { video, element, controller });
-        return element;
-    }
-
-    loadRealVideo(video, poolId) {
-        const videoUrl = this.gallery.settings.videoUrl;
-        if (videoUrl) {
-            video.src = videoUrl;
-            video.load();
-        }
-    }
-
-    loadPlaceholderVideo(video, poolId) {
-        // Create canvas for placeholder animation
-        const canvas = this.animationManager.createPlaceholderAnimation(poolId);
-        video.appendChild(canvas);
+        overlay.appendChild(title);
+        overlay.appendChild(description);
         
-        // Set fixed duration for placeholder videos
-        Object.defineProperty(video, 'duration', {
-            get: () => 15 // 15 seconds for placeholder videos
+        slide.appendChild(iframe);
+        slide.appendChild(overlay);
+
+        // Setup iframe communication for video control
+        iframe.addEventListener('load', () => {
+            this.setupVideoControl(iframe, videoInfo);
         });
+
+        return slide;
     }
 
-    updateVideoStates(activeElement, direction = null) {
-        const activePoolId = activeElement.dataset.poolId;
-        const activeVideo = this.renderedVideos.get(activePoolId)?.video;
+    setupVideoControl(iframe, videoInfo) {
+        // Send playback settings to the iframe
+        const settings = {
+            type: 'playbackSettings',
+            autoplay: this.gallery.settings.autoplay,
+            loop: this.gallery.settings.loop,
+            muted: this.gallery.settings.muted
+        };
         
-        if (!activeVideo) return;
+        try {
+            iframe.contentWindow.postMessage(settings, '*');
+        } catch (error) {
+            console.warn('Could not communicate with iframe:', error);
+        }
+    }
 
-        // Update states for all videos
-        this.renderedVideos.forEach(({ element, video, controller }, poolId) => {
-            if (element === activeElement) {
-                this.stateManager.setState(element, 'active', direction);
-                controller.setTransitioning(true);
-                video.play();
-            } else if (this.isPreviousVideo(element, activeElement)) {
-                this.stateManager.setState(element, 'prev', direction);
-                controller.setTransitioning(true);
-                video.pause();
-                video.currentTime = 0;
-            } else if (this.isNextVideo(element, activeElement)) {
-                this.stateManager.setState(element, 'next', direction);
-                controller.setTransitioning(true);
-                video.pause();
-                video.currentTime = 0;
+    positionVideos(currentSlide, direction = null) {
+        this.renderedVideos.forEach((element, index) => {
+            const offset = (index - currentSlide) * 100;
+            element.style.transform = `translateY(${offset}vh)`;
+            
+            if (index === currentSlide) {
+                element.classList.add('active');
+                element.style.zIndex = 10;
             } else {
-                element.style.visibility = 'hidden';
-                element.style.opacity = '0';
-                element.style.zIndex = '0';
-                video.pause();
-                video.currentTime = 0;
+                element.classList.remove('active');
+                element.style.zIndex = 1;
             }
         });
-
-        // Reset transitioning state after animation
-        setTimeout(() => {
-            this.renderedVideos.forEach(({ element, controller }) => {
-                controller.setTransitioning(false);
-            });
-        }, 300);
     }
 
-    isPreviousVideo(element, activeElement) {
-        const elementIndex = Array.from(this.gallery.container.children).indexOf(element);
-        const activeIndex = Array.from(this.gallery.container.children).indexOf(activeElement);
-        return elementIndex < activeIndex;
+    getCurrentVideoElement(index) {
+        return this.renderedVideos.get(index);
     }
 
-    isNextVideo(element, activeElement) {
-        const elementIndex = Array.from(this.gallery.container.children).indexOf(element);
-        const activeIndex = Array.from(this.gallery.container.children).indexOf(activeElement);
-        return elementIndex > activeIndex;
+    getRenderedCount() {
+        return this.renderedVideos.size;
     }
 
-    showRubberbandEffect(element, direction) {
-        this.stateManager.showRubberbandEffect(element, direction);
+    updateVideoStates(currentSlide, direction = null) {
+        this.positionVideos(currentSlide, direction);
+        
+        // Update video playback states via iframe communication
+        this.renderedVideos.forEach((element, index) => {
+            const iframe = element.querySelector('.video-iframe');
+            if (iframe && iframe.contentWindow) {
+                const isActive = index === currentSlide;
+                const settings = {
+                    type: 'playbackSettings',
+                    autoplay: isActive && this.gallery.settings.autoplay,
+                    loop: this.gallery.settings.loop,
+                    muted: this.gallery.settings.muted
+                };
+                
+                try {
+                    iframe.contentWindow.postMessage(settings, '*');
+                } catch (error) {
+                    console.warn('Could not communicate with iframe:', error);
+                }
+            }
+        });
     }
 
-    cleanup(poolId) {
-        const videoData = this.renderedVideos.get(poolId);
-        if (videoData) {
-            videoData.controller.cleanup();
-            this.animationManager.cleanup(poolId);
-            this.stateManager.cleanup(videoData.element);
-            this.renderedVideos.delete(poolId);
+    cleanup() {
+        this.renderedVideos.clear();
+        const container = document.getElementById('videoWrapper');
+        if (container) {
+            container.innerHTML = '';
         }
     }
 }

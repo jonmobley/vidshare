@@ -651,6 +651,22 @@
                 showValidation('info', 'Validating folder and scanning for videos...');
                 
                 const token = await getDropboxToken();
+                console.log('Using Dropbox token:', token ? 'Token found' : 'No token');
+                console.log('Validating URL:', url);
+                
+                // Try to convert new scl format to path if needed
+                let apiUrl = url;
+                let folderPath = '';
+                
+                // Handle new scl format
+                if (url.includes('/scl/fo/')) {
+                    // For new format, we'll try a different approach
+                    showValidation('warning', 'New Dropbox link format detected. This may require manual setup.');
+                    console.log('New SCL format detected, may need alternative handling');
+                    
+                    // For now, let's try to use the link as-is and see what happens
+                    // If this fails, we'll need to implement a different strategy
+                }
                 
                 // Get folder metadata
                 const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
@@ -659,14 +675,28 @@
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ url: url })
+                    body: JSON.stringify({ 
+                        url: apiUrl,
+                        include_media_info: false,
+                        direct_only: true
+                    })
                 });
 
                 if (!metadataResponse.ok) {
-                    throw new Error('Cannot access folder. Please check the URL and make sure it\'s publicly shared.');
+                    const errorText = await metadataResponse.text();
+                    console.error('Dropbox API Error:', metadataResponse.status, errorText);
+                    
+                    // Try alternative approach for new link format
+                    if (url.includes('/scl/fo/')) {
+                        showValidation('error', 'This link format may not be supported. Please try creating a legacy share link: Go to Dropbox → Right-click folder → Share → Copy link (use the older format if available)');
+                        return false;
+                    }
+                    
+                    throw new Error(`Cannot access folder (${metadataResponse.status}). Error: ${errorText}. Please check the URL and make sure it's publicly shared.`);
                 }
 
                 const metadata = await metadataResponse.json();
+                console.log('Metadata received:', metadata);
                 
                 // Scan for videos
                 const videoCount = await scanFolderForVideos(metadata.path_lower, token);

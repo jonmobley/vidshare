@@ -82,6 +82,38 @@ body {
     transition-delay: 0.3s;
 }
 
+/* Active slide styling */
+.video-slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    z-index: 10;
+    visibility: visible;
+}
+
+/* Video iframe styling */
+.video-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* Video overlay for title and description */
+.video-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    z-index: 15;
+    pointer-events: none;
+}
+
 /* Dynamic gradient themes per category */
 .video-slide[data-category="0"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -198,48 +230,43 @@ body {
     color: white;
     background: rgba(0, 0, 0, 0.7);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 10px;
     text-align: center;
 }
 
 .video-metadata {
-    font-size: 0.9rem;
-    opacity: 0.7;
-    margin-top: 1rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
 }
 
 .progress-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    z-index: 25;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    flex: 1;
 }
 
 .progress-fill {
     height: 100%;
     background: white;
-    width: 0%;
-    transition: width 0.1s linear;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    transition: width 0.1s ease;
 }
 
 .loading-indicator {
     position: absolute;
-    top: 60%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: rgba(255,255,255,0.8);
-    font-size: 1rem;
-    z-index: 15;
-    background: rgba(0,0,0,0.6);
-    padding: 12px 20px;
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 25;
 }
 
 .swipe-hint {
@@ -247,30 +274,24 @@ body {
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.1rem;
-    animation: fadeInOut 3s ease-in-out infinite;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    z-index: 25;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 12px 24px;
-    border-radius: 25px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    animation: fadeInOut 3s infinite;
+    pointer-events: none;
+    z-index: 20;
 }
 
 @keyframes fadeInOut {
-    0% { opacity: 0.4; }
+    0%, 100% { opacity: 0; }
     50% { opacity: 1; }
-    100% { opacity: 0.4; }
 }
 
 @media (max-width: 480px) {
     .video-title {
-        font-size: 2rem;
+        font-size: 1.3rem;
     }
     
     .video-description {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
 }
