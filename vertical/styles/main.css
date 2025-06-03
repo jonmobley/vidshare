@@ -31,6 +31,13 @@ body {
     overflow-x: hidden;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
+    /* Hide scrollbars */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.video-container::-webkit-scrollbar {
+    display: none; /* WebKit */
 }
 
 .video-wrapper {
