@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Dropbox Token to Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; text-align: center; }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .note {
+            background: #e9f7ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Add Dropbox Token to Supabase</h1>
+        
+        <div class="note">
+            <strong>Before you start:</strong>
+            <ol>
+                <li>Get your new Dropbox token from the Dropbox App Console</li>
+                <li>Make sure it starts with "sl." and is quite long</li>
+                <li>This will update your VidShare app configuration</li>
+            </ol>
+        </div>
+
+        <div class="form-group">
+            <label for="dropboxToken">Your New Dropbox Token:</label>
+            <textarea id="dropboxToken" placeholder="Paste your Dropbox token here (starts with sl.)..."></textarea>
+        </div>
+
+        <button onclick="addTokenToSupabase()" id="addBtn">
+            <span id="btnText">Add Token to Supabase</span>
+            <span id="btnSpinner" style="display: none;">⏳ Adding...</span>
+        </button>
+        
+        <button onclick="testToken()" id="testBtn" style="background: #28a745;">
+            Test Token
+        </button>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Your Supabase configuration (from your existing code)
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+
+        async function addTokenToSupabase() {
+            const token = document.getElementById('dropboxToken').value.trim();
+            const resultDiv = document.getElementById('result');
+            const addBtn = document.getElementById('addBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            if (!token) {
+                showResult('Please enter a Dropbox token!', 'error');
+                return;
+            }
+
+            if (!token.startsWith('sl.')) {
+                showResult('Warning: Token should start with "sl." - are you sure this is correct?', 'warning');
+            }
+
+            // Show loading state
+            addBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline';
+
+            try {
+                console.log('Adding token to Supabase...');
+                
+                // Use upsert to insert or update the token
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        key: 'dropbox_token',
+                        value: token
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to add token: ${response.status} - ${errorText}`);
+                }
+
+                showResult(`✅ SUCCESS! Dropbox token added to Supabase successfully.
+
+Token Details:
+• Length: ${token.length} characters
+• Starts with: ${token.substring(0, 10)}...
+• Added at: ${new Date().toLocaleString()}
+
+Your VidShare app will now use this new token for all Dropbox operations.`, 'success');
+
+            } catch (error) {
+                console.error('Error adding token:', error);
+                showResult(`❌ ERROR: ${error.message}
+
+Common solutions:
+1. Check your Supabase project settings
+2. Verify the config table exists
+3. Make sure RLS policies allow inserts
+4. Try using the Supabase dashboard instead`, 'error');
+            } finally {
+                // Reset button state
+                addBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnSpinner.style.display = 'none';
+            }
+        }
+
+        async function testToken() {
+            const token = document.getElementById('dropboxToken').value.trim();
+            
+            if (!token) {
+                showResult('Please enter a token first!', 'error');
+                return;
+            }
+
+            const testBtn = document.getElementById('testBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Testing...';
+
+            try {
+                // Test the token with Dropbox API
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    showResult(`✅ TOKEN IS VALID!
+
+Account Information:
+• Name: ${userData.name.display_name}
+• Email: ${userData.email}
+• Account Type: ${userData.account_type['.tag']}
+
+🎉 This token is ready to use with your VidShare app!`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    showResult(`❌ TOKEN TEST FAILED: ${response.status}
+
+Error: ${errorText}
+
+This token may be:
+• Expired or invalid
+• From the wrong Dropbox app
+• Missing required permissions`, 'error');
+                }
+
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = 'Test Token';
+            }
+        }
+
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html> 
