@@ -202,7 +202,7 @@ const videoData = {
             title: "${v.title}", 
             description: "${v.description}", 
             id: "foryou-${i + 1}",
-            path: "/vertical/videos/categories/foryou/video-${i + 1}.html"
+            path: "videos/categories/foryou/video-${i + 1}.html"
         }`).join(',\n        ')}
     ],
     1: [ // Gaming category
@@ -210,7 +210,7 @@ const videoData = {
             title: "${v.title}", 
             description: "${v.description}", 
             id: "gaming-${i + 1}",
-            path: "/vertical/videos/categories/gaming/video-${i + 1}.html"
+            path: "videos/categories/gaming/video-${i + 1}.html"
         }`).join(',\n        ')}
     ],
     2: [ // Music category
@@ -218,7 +218,7 @@ const videoData = {
             title: "${v.title}", 
             description: "${v.description}", 
             id: "music-${i + 1}",
-            path: "/vertical/videos/categories/music/video-${i + 1}.html"
+            path: "videos/categories/music/video-${i + 1}.html"
         }`).join(',\n        ')}
     ]
 };`;
