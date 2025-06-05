@@ -1,7 +1,7 @@
 // VidShare PWA Service Worker
-const CACHE_NAME = 'vidshare-v1.0.0';
-const STATIC_CACHE = 'vidshare-static-v1';
-const DYNAMIC_CACHE = 'vidshare-dynamic-v1';
+const CACHE_NAME = 'vidshare-v1.2.0';
+const STATIC_CACHE = 'vidshare-static-v1.2';
+const DYNAMIC_CACHE = 'vidshare-dynamic-v1.2';
 
 // Files to cache immediately
 const STATIC_FILES = [
