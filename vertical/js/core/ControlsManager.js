@@ -128,14 +128,13 @@ class ControlsManager {
                 clearTimeout(wheelTimeout);
             }
             
+            // Determine if this is a trackpad gesture (usually smaller delta values)
+            const deltaX = e.deltaX;
+            const deltaY = e.deltaY;
+            const isTrackpad = Math.abs(deltaX) < 50 && Math.abs(deltaY) < 50;
+            
             // Debounce wheel events to prevent rapid firing
             wheelTimeout = setTimeout(() => {
-                const deltaX = e.deltaX;
-                const deltaY = e.deltaY;
-                
-                // Determine if this is a trackpad gesture (usually smaller delta values)
-                const isTrackpad = Math.abs(deltaX) < 50 && Math.abs(deltaY) < 50;
-                
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
                     // Horizontal scroll - category navigation
                     e.preventDefault();

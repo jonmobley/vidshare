@@ -13,6 +13,7 @@ class VideoRenderer {
         this.progressManager = new VideoProgressManager();
         this.animationManager = new AnimationManager();
         this.stateManager = new VideoStateManager();
+        this.categoryBoundaries = []; // Initialize empty boundaries
     }
 
     renderAllCategories() {
@@ -85,6 +86,12 @@ class VideoRenderer {
     }
 
     getCurrentCategoryFromGlobalIndex(globalIndex) {
+        // Safety check in case boundaries aren't initialized yet
+        if (!this.categoryBoundaries || this.categoryBoundaries.length === 0) {
+            console.warn('Category boundaries not yet initialized, defaulting to category 0');
+            return { category: 0, localIndex: globalIndex };
+        }
+        
         for (const boundary of this.categoryBoundaries) {
             if (globalIndex >= boundary.startIndex && globalIndex <= boundary.endIndex) {
                 return {
@@ -113,7 +120,7 @@ class VideoRenderer {
 
         // Create iframe to load the HTML video content
         const iframe = document.createElement('iframe');
-        iframe.src = videoInfo.videoUrl || '/vertical/videos/categories/videos/video-1.html'; // fallback
+        iframe.src = videoInfo.path || 'videos/categories/foryou/video-1.html'; // fallback
         iframe.className = 'video-iframe';
         iframe.setAttribute('allowfullscreen', '');
         iframe.setAttribute('frameborder', '0');
