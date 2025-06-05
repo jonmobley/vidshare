@@ -168,5 +168,136 @@ const videoData = {
             id: "music-7",
             path: "videos/categories/music/video-7.html"
         }
+    ],
+    3: [ // Videos category
+        { 
+            title: "Viral Videos", 
+            description: "The most shared videos on the internet", 
+            id: "videos-1",
+            path: "videos/categories/videos/video-1.html"
+        },
+        { 
+            title: "Short Films", 
+            description: "Cinematic storytelling in bite-sized format", 
+            id: "videos-2",
+            path: "videos/categories/videos/video-2.html"
+        },
+        { 
+            title: "Educational", 
+            description: "Learn something new in just a few minutes", 
+            id: "videos-3",
+            path: "videos/categories/videos/video-3.html"
+        },
+        { 
+            title: "How-To Guides", 
+            description: "Step-by-step tutorials for everyday tasks", 
+            id: "videos-4",
+            path: "videos/categories/videos/video-4.html"
+        },
+        { 
+            title: "Documentaries", 
+            description: "Real stories, real people, real impact", 
+            id: "videos-5",
+            path: "videos/categories/videos/video-5.html"
+        }
+    ],
+    4: [ // Magic category
+        { 
+            title: "Mind-Bending Illusions", 
+            description: "Prepare to question reality with these incredible magic tricks", 
+            id: "magic-1",
+            path: "videos/categories/magic/video-1.html"
+        },
+        { 
+            title: "Street Magic", 
+            description: "Spontaneous magic performed for unsuspecting audiences", 
+            id: "magic-2",
+            path: "videos/categories/magic/video-2.html"
+        },
+        { 
+            title: "Card Tricks", 
+            description: "Master the art of sleight of hand with playing cards", 
+            id: "magic-3",
+            path: "videos/categories/magic/video-3.html"
+        },
+        { 
+            title: "Stage Illusions", 
+            description: "Grand theatrical magic performances that defy explanation", 
+            id: "magic-4",
+            path: "videos/categories/magic/video-4.html"
+        },
+        { 
+            title: "Close-Up Magic", 
+            description: "Intimate magic tricks performed right before your eyes", 
+            id: "magic-5",
+            path: "videos/categories/magic/video-5.html"
+        }
+    ],
+    5: [ // Puppets category
+        { 
+            title: "Puppet Theater", 
+            description: "Classic storytelling brought to life through puppetry", 
+            id: "puppets-1",
+            path: "videos/categories/puppets/video-1.html"
+        },
+        { 
+            title: "Marionette Shows", 
+            description: "Intricate string puppet performances with graceful movements", 
+            id: "puppets-2",
+            path: "videos/categories/puppets/video-2.html"
+        },
+        { 
+            title: "Hand Puppets", 
+            description: "Charming characters that come alive through skilled manipulation", 
+            id: "puppets-3",
+            path: "videos/categories/puppets/video-3.html"
+        },
+        { 
+            title: "Shadow Puppets", 
+            description: "Ancient art form creating magic with light and shadow", 
+            id: "puppets-4",
+            path: "videos/categories/puppets/video-4.html"
+        },
+        { 
+            title: "Modern Puppetry", 
+            description: "Contemporary puppet art pushing creative boundaries", 
+            id: "puppets-5",
+            path: "videos/categories/puppets/video-5.html"
+        }
+    ],
+    6: [ // Tacos category
+        { 
+            title: "Street Tacos", 
+            description: "Authentic Mexican street food at its finest", 
+            id: "tacos-1",
+            path: "videos/categories/tacos/video-1.html"
+        },
+        { 
+            title: "Gourmet Creations", 
+            description: "Elevated taco experiences with premium ingredients", 
+            id: "tacos-2",
+            path: "videos/categories/tacos/video-2.html"
+        },
+        { 
+            title: "Fusion Flavors", 
+            description: "Creative taco combinations from around the world", 
+            id: "tacos-3",
+            path: "videos/categories/tacos/video-3.html"
+        },
+        { 
+            title: "Homemade Classics", 
+            description: "Traditional family recipes passed down through generations", 
+            id: "tacos-4",
+            path: "videos/categories/tacos/video-4.html"
+        },
+        { 
+            title: "Taco Adventures", 
+            description: "Join the quest for the perfect taco experience", 
+            id: "tacos-5",
+            path: "videos/categories/tacos/video-5.html"
+        }
     ]
 };
+
+// Export for ES6 modules
+export { videoData };
