@@ -158,6 +158,20 @@ class GestureHandler {
         const videoHeight = window.innerHeight;
         const globalVideoIndex = Math.round(scrollTop / videoHeight);
         
+        // Check for edge case rubberband behavior
+        const maxGlobalIndex = this.gallery.getTotalGlobalSlides() - 1;
+        if (globalVideoIndex < 0) {
+            // Trying to scroll before first video
+            container.scrollTop = 0;
+            this.gallery.renderer.showRubberbandEffect(0, 'up');
+            return;
+        } else if (globalVideoIndex > maxGlobalIndex) {
+            // Trying to scroll past last video
+            container.scrollTop = maxGlobalIndex * videoHeight;
+            this.gallery.renderer.showRubberbandEffect(maxGlobalIndex, 'down');
+            return;
+        }
+        
         // Get current category from global index
         const categoryInfo = this.gallery.renderer.getCurrentCategoryFromGlobalIndex(globalVideoIndex);
         
@@ -166,7 +180,7 @@ class GestureHandler {
             
             // Update category if it changed
             if (category !== this.gallery.currentCategory) {
-                console.log(`Seamless category change: ${this.gallery.currentCategory} → ${category}`);
+                console.log(`🔄 Seamless category change: ${this.gallery.currentCategory} → ${category}`);
                 this.gallery.currentCategory = category;
                 this.gallery.updateCategoryUI();
             }
@@ -180,6 +194,8 @@ class GestureHandler {
                 this.gallery.updateLikeButton();
                 this.gallery.resetVideoProgress();
                 this.gallery.renderer.updateActiveVideo(globalVideoIndex);
+                
+                console.log(`📍 Updated to global index ${globalVideoIndex}, category ${category}, slide ${localIndex}`);
                 
                 if (this.gallery.isPlaying) {
                     this.gallery.startVideoProgress();
@@ -196,8 +212,28 @@ class GestureHandler {
         const deltaY = this.currentY - this.startY;
         const deltaX = this.currentX - this.startX;
         
-        // For seamless scrolling, we let natural scroll handle category changes
-        // No need for manual horizontal swipe category switching
+        // Handle horizontal swipes for category switching
+        if (this.dragDirection === 'horizontal') {
+            if (Math.abs(deltaX) > this.categorySwipeThreshold) {
+                if (deltaX > 0) {
+                    // Swipe right - go to previous category
+                    this.gallery.navigation.goToPreviousCategory();
+                } else {
+                    // Swipe left - go to next category
+                    this.gallery.navigation.goToNextCategory();
+                }
+            }
+        }
+        
+        // Handle special case: down swipe on first video of category
+        if (this.dragDirection === 'vertical' && deltaY > 0 && deltaY > this.threshold) {
+            if (this.gallery.currentSlide === 0 && this.gallery.currentCategory > 0) {
+                // User is on first video of a category (not first category) and swiping down
+                // Show rubberband but don't switch categories
+                this.gallery.renderer.showRubberbandEffect(this.gallery.globalVideoIndex, 'up');
+                console.log('🔄 Rubberband: Down swipe on first video of category blocked');
+            }
+        }
         
         // Clear tap timeout
         if (this.tapTimeout) {

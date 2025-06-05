@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>VidShare - Debug Mode</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/controls.css">
+    
+    <style>
+        /* Debug styles to help identify issues */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .progress-indicator {
+            border: 2px solid red !important; /* Debug border */
+        }
+        
+        .category-pill {
+            border: 1px solid yellow !important; /* Debug border */
+        }
+        
+        .video-slide {
+            border: 2px solid blue !important; /* Debug border */
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Info -->
+    <div class="debug-info" id="debugInfo">
+        <div>Debug Mode Active</div>
+        <div>Total Videos: <span id="debugTotalVideos">0</span></div>
+        <div>Current Index: <span id="debugCurrentIndex">0</span></div>
+        <div>Dots Created: <span id="debugDotsCount">0</span></div>
+        <div>Categories Loaded: <span id="debugCategoriesLoaded">0</span></div>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="category-navigation">
+        <div class="category-pills-container" id="categoryPillsContainer">
+            <div class="category-pills" id="categoryPills">
+                <div class="category-pill active" data-category="0">For You</div>
+                <div class="category-pill" data-category="1">Gaming</div>
+                <div class="category-pill" data-category="2">Music</div>
+                <div class="category-pill" data-category="3">Videos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Video Container -->
+    <div class="video-container" id="videoContainer">
+        <div class="video-wrapper" id="videoWrapper">
+            <!-- Video slides will be dynamically created here -->
+        </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator" id="progressIndicator">
+        <!-- Dots will be dynamically generated -->
+    </div>
+
+    <!-- Controls (simplified for debug) -->
+    <div class="controls-container" id="controlsContainer">
+        <button class="control-button" onclick="window.gallery?.navigation?.goToPrev()">↑</button>
+        <button class="control-button" onclick="window.gallery?.navigation?.goToNext()">↓</button>
+        <button class="control-button" onclick="window.gallery?.navigation?.goToPreviousCategory()">←</button>
+        <button class="control-button" onclick="window.gallery?.navigation?.goToNextCategory()">→</button>
+    </div>
+
+    <!-- Performance Stats (Always visible in debug) -->
+    <div class="performance-stats show" id="performanceStats">
+        <div>Rendered Videos: <span id="renderedCount">0</span></div>
+        <div>Total Videos: <span id="totalCount">0</span></div>
+        <div>Current Position: <span id="currentIndex">0</span></div>
+        <div>Memory Usage: <span id="memoryUsage">0</span>MB</div>
+        <div>Pool Status: <span id="poolStatus">0/0</span></div>
+        <div><small>Debug mode active</small></div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Enhanced debug logging
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const debugInfo = document.getElementById('debugInfo');
+            if (debugInfo && args.length > 0) {
+                const logDiv = document.createElement('div');
+                logDiv.textContent = args.join(' ');
+                logDiv.style.fontSize = '10px';
+                logDiv.style.opacity = '0.8';
+                logDiv.style.marginTop = '2px';
+                debugInfo.appendChild(logDiv);
+                
+                // Keep only last 5 debug logs
+                const logs = debugInfo.querySelectorAll('div');
+                if (logs.length > 10) {
+                    logs[5].remove();
+                }
+            }
+        };
+        
+        // Debug update function
+        function updateDebugInfo() {
+            if (window.gallery) {
+                document.getElementById('debugTotalVideos').textContent = window.gallery.getTotalGlobalSlides();
+                document.getElementById('debugCurrentIndex').textContent = window.gallery.globalVideoIndex;
+                
+                const progressIndicator = document.getElementById('progressIndicator');
+                const dotsCount = progressIndicator ? progressIndicator.children.length : 0;
+                document.getElementById('debugDotsCount').textContent = dotsCount;
+                
+                const videoWrapper = document.getElementById('videoWrapper');
+                const categoriesLoaded = videoWrapper ? videoWrapper.children.length : 0;
+                document.getElementById('debugCategoriesLoaded').textContent = categoriesLoaded;
+            }
+            
+            // Update every second
+            setTimeout(updateDebugInfo, 1000);
+        }
+        
+        updateDebugInfo();
+    </script>
+    <script type="module">
+        import VirtualVideoGallery from './js/VirtualVideoGallery.js';
+        
+        console.log('🐛 Debug mode: Initializing VirtualVideoGallery...');
+        
+        try {
+            window.gallery = new VirtualVideoGallery();
+            console.log('✅ Debug mode: Gallery initialized successfully');
+        } catch (error) {
+            console.error('❌ Debug mode: Error initializing gallery:', error);
+        }
+    </script>
+</body>
+</html> 

@@ -58,8 +58,8 @@
     50% { transform: translateY(-20px) rotate(180deg); }
 }
 
-/* Animation classes */
-.video-slide {
+/* Animation classes - only animate active videos */
+.video-slide.active {
     animation: gradientShift 8s ease infinite;
 }
 
@@ -71,25 +71,25 @@
     animation-play-state: paused;
 }
 
-/* Rubberband effects */
+/* Enhanced Rubberband effects */
 .video-slide.rubberband-up {
-    transform: translateY(-50px) !important;
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    transform: translateY(-80px) scale(0.98) !important;
+    transition: transform 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6) !important;
 }
 
 .video-slide.rubberband-down {
-    transform: translateY(50px) !important;
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    transform: translateY(80px) scale(0.98) !important;
+    transition: transform 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6) !important;
 }
 
 .video-slide.rubberband-left {
-    transform: translateX(-50px) !important;
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    transform: translateX(-100px) scale(0.95) !important;
+    transition: transform 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6) !important;
 }
 
 .video-slide.rubberband-right {
-    transform: translateX(50px) !important;
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    transform: translateX(100px) scale(0.95) !important;
+    transition: transform 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6) !important;
 }
 
 /* Category switching animations */
@@ -115,6 +115,24 @@
     opacity: 1;
     transform: translateX(0);
     z-index: 10;
+}
+
+/* Smooth scroll transition indicator */
+@keyframes scrollTransition {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.video-container.transitioning {
+    animation: scrollTransition 0.3s ease-out;
+}
+
+/* Enhanced scroll behavior */
+.video-container {
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
 
 /* Pause indicator animation */

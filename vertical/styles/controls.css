@@ -11,40 +11,79 @@
 /* Category Navigation */
 .category-navigation {
     position: fixed;
-    top: 0;
+    top: var(--sat, 0px);
     left: 0;
     right: 0;
-    z-index: 20;
-    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-    padding: calc(20px + var(--sat)) 20px 20px;
-    padding-left: calc(20px + var(--sal));
-    padding-right: calc(20px + var(--sar));
+    z-index: 200;
+    padding: 15px 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent);
     backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+}
+
+.back-arrow {
+    margin-left: calc(15px + var(--sal, 0px));
+    margin-right: 15px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.back-arrow:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.back-arrow svg {
+    width: 20px;
+    height: 20px;
 }
 
 .category-pills-container {
     position: relative;
     overflow: hidden;
+    padding: 0;
+    flex: 1;
+    margin-right: var(--sar, 15px);
 }
 
 .category-pills {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     overflow-x: auto;
-    /* Hide all scrollbars completely */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
-    padding: 0 30px; /* Add padding for fade areas */
-    margin: 0 -30px; /* Compensate for padding */
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 8px 20px 8px 15px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    /* Ensure pills never get cut off */
+    min-width: max-content;
 }
 
+/* Hide scrollbar for category pills */
 .category-pills::-webkit-scrollbar {
-    display: none; /* WebKit */
+    display: none;
     width: 0;
     height: 0;
 }
 
-/* Fade effects for overflow */
+.category-pills {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+
+/* Enhanced fade effects */
 .category-pills-container::before,
 .category-pills-container::after {
     content: '';
@@ -52,18 +91,17 @@
     top: 0;
     bottom: 0;
     width: 30px;
-    z-index: 2;
+    z-index: 10;
     pointer-events: none;
-    transition: opacity 0.4s ease-in-out;
+    transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .category-pills-container::before {
     left: 0;
     background: linear-gradient(to right, 
         rgba(0,0,0,0.9) 0%, 
-        rgba(0,0,0,0.7) 20%, 
-        rgba(0,0,0,0.4) 60%, 
-        rgba(0,0,0,0.1) 90%,
+        rgba(0,0,0,0.7) 40%, 
+        rgba(0,0,0,0.3) 70%, 
         transparent 100%);
     opacity: 0;
 }
@@ -72,33 +110,53 @@
     right: 0;
     background: linear-gradient(to left, 
         rgba(0,0,0,0.9) 0%, 
-        rgba(0,0,0,0.7) 20%, 
-        rgba(0,0,0,0.4) 60%, 
-        rgba(0,0,0,0.1) 90%,
+        rgba(0,0,0,0.7) 40%, 
+        rgba(0,0,0,0.3) 70%, 
         transparent 100%);
     opacity: 1;
 }
 
-/* Show left fade when scrolled */
 .category-pills-container.scrolled-left::before {
     opacity: 1;
 }
 
-/* Hide right fade when at end */
 .category-pills-container.scrolled-right::after {
     opacity: 0;
 }
 
-/* Enhanced smooth scrolling for category pills */
-.category-pills {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+.category-pills-container.scrolled-middle::before {
+    opacity: 1;
 }
 
-/* Category pill interaction improvements */
+.category-pills-container.scrolled-middle::after {
+    opacity: 1;
+}
+
 .category-pill {
-    position: relative;
-    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    white-space: nowrap;
+    backdrop-filter: blur(15px);
+    user-select: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    /* Fixed sizing - never shrink */
+    min-width: 80px;
+    max-width: none;
+    flex-shrink: 0;
+    text-align: center;
+    scroll-snap-align: start;
+    /* Ensure consistent height */
+    height: 40px;
+    line-height: 1;
 }
 
 .category-pill:active {
@@ -106,31 +164,29 @@
 }
 
 .category-pill {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    /* Remove backdrop-filter to eliminate white glow */
-}
-
-.category-pill.active {
-    background: white;
-    color: #000;
-    border-color: white;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .category-pill:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+}
+
+.category-pill.active {
+    background: rgba(255,255,255,0.9);
+    color: rgba(0,0,0,0.9);
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
 .category-pill.active:hover {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.95);
+    color: rgba(0,0,0,1);
 }
 
 /* Progress Indicator */
@@ -151,8 +207,8 @@
 }
 
 .progress-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: rgba(255,255,255,0.4);
     transition: all 0.3s ease;
@@ -161,8 +217,8 @@
 
 .progress-dot.active {
     background: white;
-    transform: scale(1.5);
-    box-shadow: 0 0 8px rgba(255,255,255,0.5);
+    transform: scale(1.8);
+    box-shadow: 0 0 12px rgba(255,255,255,0.6);
 }
 
 /* For many dots, make them smaller and closer together */
@@ -246,6 +302,25 @@
     width: 20px;
     height: 20px;
     fill: currentColor;
+}
+
+/* Version Control Button */
+.version-control {
+    background: rgba(0,0,0,0.6) !important;
+    border: 1px solid rgba(255,255,255,0.2);
+    pointer-events: none; /* Make it non-interactive */
+}
+
+.version-control:hover {
+    transform: none !important; /* Disable hover effects */
+    background: rgba(0,0,0,0.6) !important;
+}
+
+.version-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.5px;
 }
 
 /* Autoplay Settings Panel */

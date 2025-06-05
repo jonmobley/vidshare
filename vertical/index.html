@@ -49,12 +49,20 @@
 <body>
     <!-- Category Navigation -->
     <div class="category-navigation">
+        <button class="back-arrow" id="backArrow" title="Back">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </button>
         <div class="category-pills-container" id="categoryPillsContainer">
             <div class="category-pills" id="categoryPills">
                 <div class="category-pill active" data-category="0">For You</div>
                 <div class="category-pill" data-category="1">Gaming</div>
                 <div class="category-pill" data-category="2">Music</div>
                 <div class="category-pill" data-category="3">Videos</div>
+                <div class="category-pill" data-category="4">Magic</div>
+                <div class="category-pill" data-category="5">Puppets</div>
+                <div class="category-pill" data-category="6">Tacos</div>
             </div>
         </div>
     </div>
@@ -68,6 +76,9 @@
 
     <!-- Controls -->
     <div class="controls-container" id="controlsContainer">
+        <button class="control-button version-control" title="Build Version">
+            <span class="version-text">v1.2</span>
+        </button>
         <button class="control-button like-control" title="Like">
             <svg class="like-icon" viewBox="0 0 24 24">
                 <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
@@ -146,7 +157,7 @@
         // Register service worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/vertical/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(registration => {
                         console.log('✅ PWA Service Worker registered:', registration.scope);
                         

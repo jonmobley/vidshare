@@ -1,6 +1,6 @@
 // js/main.js - Application entry point
 
-import VirtualVideoGallery from '/vertical/js/VirtualVideoGallery.js';
+import VirtualVideoGallery from './VirtualVideoGallery.js';
 
 let gallery = null;
 

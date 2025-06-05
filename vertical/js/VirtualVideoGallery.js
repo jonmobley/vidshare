@@ -1,11 +1,11 @@
 // js/VirtualVideoGallery.js - Main gallery class that coordinates all components
 
-import VideoRenderer from '/vertical/js/core/VideoRenderer.js';
-import VideoPool from '/vertical/js/core/VideoPool.js';
-import NavigationController from '/vertical/js/core/NavigationController.js';
-import ControlsManager from '/vertical/js/core/ControlsManager.js';
-import GestureHandler from '/vertical/js/core/GestureHandler.js';
-import { videoData } from '/vertical/js/data/videoData.js';
+import VideoRenderer from './core/VideoRenderer.js';
+import VideoPool from './core/VideoPool.js';
+import NavigationController from './core/NavigationController.js';
+import ControlsManager from './core/ControlsManager.js';
+import GestureHandler from './core/GestureHandler.js';
+import { videoData } from './data/videoData.js';
 
 class VirtualVideoGallery {
     constructor() {
@@ -30,6 +30,16 @@ class VirtualVideoGallery {
         this.controlsManager = new ControlsManager(this);
         this.gestures = new GestureHandler(this);
         
+        // Rendering completion callback
+        this.onRenderingComplete = () => {
+            console.log('🎬 Rendering complete, updating UI...');
+            this.updateGlobalVideoIndex();
+            this.updateProgressDots();
+            this.updatePerformanceStats();
+            this.controlsManager.updateCategoryPills(this.currentCategory);
+            this.controlsManager.updateLikeButton();
+        };
+        
         // Initialize
         this.initialize();
     }
@@ -41,15 +51,21 @@ class VirtualVideoGallery {
         // Initialize seamless rendering
         this.renderer.renderAllCategories();
         
-        // Initialize global video index
-        this.updateGlobalVideoIndex();
-        
-        this.updateProgressDots();
-        this.updatePerformanceStats();
-        
-        // Update UI
-        this.controlsManager.updateCategoryPills(this.currentCategory);
-        this.controlsManager.updateLikeButton();
+        // Wait for rendering to complete before updating UI
+        setTimeout(() => {
+            // Initialize global video index
+            this.updateGlobalVideoIndex();
+            
+            // Force update progress dots after rendering
+            this.updateProgressDots();
+            this.updatePerformanceStats();
+            
+            // Update UI
+            this.controlsManager.updateCategoryPills(this.currentCategory);
+            this.controlsManager.updateLikeButton();
+            
+            console.log('✅ VirtualVideoGallery initialized with dots:', this.getTotalGlobalSlides());
+        }, 100);
         
         // Set up keyboard navigation
         this.setupKeyboardControls();
@@ -144,7 +160,13 @@ class VirtualVideoGallery {
     // UI Updates
     updateProgressDots() {
         const progressIndicator = document.getElementById('progressIndicator');
+        if (!progressIndicator) {
+            console.error('Progress indicator element not found');
+            return;
+        }
+        
         const totalGlobalSlides = this.getTotalGlobalSlides();
+        console.log(`🔄 Updating progress dots: ${totalGlobalSlides} total videos, current: ${this.globalVideoIndex}`);
         
         // Always show dots, but limit to reasonable number for UI
         // If more than 50 videos, show a condensed version
@@ -153,6 +175,7 @@ class VirtualVideoGallery {
             return;
         }
         
+        // Force display and clear existing content
         progressIndicator.style.display = 'flex';
         progressIndicator.innerHTML = '';
         
@@ -162,9 +185,12 @@ class VirtualVideoGallery {
             dot.className = 'progress-dot';
             if (i === this.globalVideoIndex) {
                 dot.classList.add('active');
+                console.log(`Active dot: ${i}`);
             }
             progressIndicator.appendChild(dot);
         }
+        
+        console.log(`✅ Created ${totalGlobalSlides} progress dots`);
     }
 
     updateCondensedProgressDots(progressIndicator, totalGlobalSlides) {
@@ -333,7 +359,7 @@ class VirtualVideoGallery {
             
             switch (event.key) {
                 case 'ArrowUp':
-                    this.navigation.goToPrevious();
+                    this.navigation.goToPrev();
                     break;
                 case 'ArrowDown':
                     this.navigation.goToNext();
@@ -347,11 +373,19 @@ class VirtualVideoGallery {
                 case ' ': // Spacebar
                     this.togglePlayPause();
                     break;
+                case 'p':
+                case 'P':
+                    // Toggle performance stats
+                    const stats = document.getElementById('performanceStats');
+                    if (stats) {
+                        stats.classList.toggle('show');
+                    }
+                    break;
             }
         };
         
         document.addEventListener('keydown', this.keydownHandler);
-        console.log('🎮 Keyboard controls enabled: ↑↓ for videos, ←→ for categories, spacebar for play/pause');
+        console.log('🎮 Keyboard controls enabled: ↑↓ for videos, ←→ for categories, spacebar for play/pause, P for stats');
     }
 
     // Cleanup

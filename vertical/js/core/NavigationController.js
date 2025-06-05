@@ -18,13 +18,24 @@ class NavigationController {
             await this.transitionToSlide(currentSlide + 1);
             return true;
         } else if (currentCategory < this.gallery.getTotalCategories() - 1) {
-            // Move to next category's first video with continuous scroll
-            const nextCategory = currentCategory + 1;
-            await this.switchToCategory(nextCategory, 0, 'next');
+            // Use seamless scrolling to next category
+            const container = document.getElementById('videoContainer');
+            const currentGlobalIndex = this.gallery.globalVideoIndex;
+            const nextGlobalIndex = currentGlobalIndex + 1;
+            
+            container.classList.add('transitioning');
+            container.scrollTo({
+                top: nextGlobalIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
+            
+            setTimeout(() => {
+                container.classList.remove('transitioning');
+            }, 300);
             return true;
         } else {
-            // At the end
-            this.gallery.renderer.showRubberbandEffect(currentSlide, 'down');
+            // At the end - show rubberband effect
+            this.gallery.renderer.showRubberbandEffect(this.gallery.globalVideoIndex, 'down');
             return false;
         }
     }
@@ -38,14 +49,24 @@ class NavigationController {
             await this.transitionToSlide(currentSlide - 1);
             return true;
         } else if (currentCategory > 0) {
-            // Move to previous category's last video with continuous scroll
-            const prevCategory = currentCategory - 1;
-            const prevCategoryLength = this.gallery.getCategoryLength(prevCategory);
-            await this.switchToCategory(prevCategory, prevCategoryLength - 1, 'prev');
+            // Use seamless scrolling to previous category
+            const container = document.getElementById('videoContainer');
+            const currentGlobalIndex = this.gallery.globalVideoIndex;
+            const prevGlobalIndex = currentGlobalIndex - 1;
+            
+            container.classList.add('transitioning');
+            container.scrollTo({
+                top: prevGlobalIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
+            
+            setTimeout(() => {
+                container.classList.remove('transitioning');
+            }, 300);
             return true;
         } else {
-            // At the beginning
-            this.gallery.renderer.showRubberbandEffect(currentSlide, 'up');
+            // At the beginning - show rubberband effect
+            this.gallery.renderer.showRubberbandEffect(this.gallery.globalVideoIndex, 'up');
             return false;
         }
     }
@@ -58,11 +79,36 @@ class NavigationController {
         if (currentCategory < this.gallery.getTotalCategories() - 1) {
             // Save current position before switching
             this.gallery.saveCategoryPosition();
-            // Switch to next category instantly
-            await this.switchToCategory(currentCategory + 1, null, 'right');
+            
+            // Calculate target global index for next category
+            const nextCategory = currentCategory + 1;
+            const savedPosition = this.gallery.categorySlidePositions[nextCategory] || 0;
+            let targetGlobalIndex = 0;
+            
+            // Calculate global index for the saved position in next category
+            for (let i = 0; i < nextCategory; i++) {
+                targetGlobalIndex += this.gallery.getCategoryLength(i);
+            }
+            targetGlobalIndex += savedPosition;
+            
+            // Scroll to the saved position in next category
+            const container = document.getElementById('videoContainer');
+            container.classList.add('transitioning');
+            
+            container.scrollTo({
+                top: targetGlobalIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
+            
+            // Remove transition class after animation
+            setTimeout(() => {
+                container.classList.remove('transitioning');
+            }, 300);
+            
+            console.log(`🔄 Switched to category ${nextCategory}, slide ${savedPosition} (global: ${targetGlobalIndex})`);
             return true;
         } else {
-            this.gallery.renderer.showRubberbandEffect(this.gallery.currentSlide, 'right');
+            this.gallery.renderer.showRubberbandEffect(this.gallery.globalVideoIndex, 'right');
             return false;
         }
     }
@@ -75,11 +121,36 @@ class NavigationController {
         if (currentCategory > 0) {
             // Save current position before switching
             this.gallery.saveCategoryPosition();
-            // Switch to previous category instantly
-            await this.switchToCategory(currentCategory - 1, null, 'left');
+            
+            // Calculate target global index for previous category
+            const prevCategory = currentCategory - 1;
+            const savedPosition = this.gallery.categorySlidePositions[prevCategory] || 0;
+            let targetGlobalIndex = 0;
+            
+            // Calculate global index for the saved position in previous category
+            for (let i = 0; i < prevCategory; i++) {
+                targetGlobalIndex += this.gallery.getCategoryLength(i);
+            }
+            targetGlobalIndex += savedPosition;
+            
+            // Scroll to the saved position in previous category
+            const container = document.getElementById('videoContainer');
+            container.classList.add('transitioning');
+            
+            container.scrollTo({
+                top: targetGlobalIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
+            
+            // Remove transition class after animation
+            setTimeout(() => {
+                container.classList.remove('transitioning');
+            }, 300);
+            
+            console.log(`🔄 Switched to category ${prevCategory}, slide ${savedPosition} (global: ${targetGlobalIndex})`);
             return true;
         } else {
-            this.gallery.renderer.showRubberbandEffect(this.gallery.currentSlide, 'left');
+            this.gallery.renderer.showRubberbandEffect(this.gallery.globalVideoIndex, 'left');
             return false;
         }
     }
@@ -91,8 +162,21 @@ class NavigationController {
             // Update slide index
             this.gallery.setCurrentSlide(newSlide);
             
-            // Scroll to the video
-            this.gallery.renderer.scrollToVideo(newSlide);
+            // Calculate global index and scroll to it
+            const container = document.getElementById('videoContainer');
+            let globalIndex = 0;
+            for (let i = 0; i < this.gallery.currentCategory; i++) {
+                globalIndex += this.gallery.getCategoryLength(i);
+            }
+            globalIndex += newSlide;
+            
+            // Add transition class
+            container.classList.add('transitioning');
+            
+            container.scrollTo({
+                top: globalIndex * window.innerHeight,
+                behavior: 'smooth'
+            });
             
             // Update UI
             this.gallery.updateProgressDots();
@@ -102,6 +186,7 @@ class NavigationController {
             // Wait for transition
             setTimeout(() => {
                 this.isTransitioning = false;
+                container.classList.remove('transitioning');
                 if (this.gallery.isPlaying) {
                     this.gallery.startVideoProgress();
                 }
