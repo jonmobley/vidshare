@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Token Usage</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .checklist {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .checklist h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .check-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verify Token Usage & API Calls</h1>
+        
+        <p><strong>Your API call format is CORRECT!</strong> Based on the code analysis, you're using the proper format:</p>
+        
+        <div class="result info">✅ CORRECT FORMAT FOUND:
+
+Authorization: `Bearer ${DROPBOX_TOKEN}`
+Content-Type: application/json
+
+This matches the official Dropbox API documentation perfectly.</div>
+
+        <div class="test-section">
+            <h3>🧪 Step 1: Test Current Token</h3>
+            <p>First, let's verify your current token is working:</p>
+            <button onclick="testCurrentToken()">Test Token from Supabase</button>
+            <div id="tokenResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Step 2: Verify Token Requirements</h3>
+            <div class="checklist">
+                <h4>Token Checklist - Verify these requirements:</h4>
+                
+                <div class="check-item">
+                    <input type="checkbox" id="check1">
+                    <label for="check1">Token starts with "sl." (not "sl.u." - that's old format)</label>
+                </div>
+                
+                <div class="check-item">
+                    <input type="checkbox" id="check2">
+                    <label for="check2">Token is very long (1000+ characters)</label>
+                </div>
+                
+                <div class="check-item">
+                    <input type="checkbox" id="check3">
+                    <label for="check3">App has required permissions: files.metadata.read, files.content.read, sharing.read</label>
+                </div>
+                
+                <div class="check-item">
+                    <input type="checkbox" id="check4">
+                    <label for="check4">Token was generated AFTER permissions were set</label>
+                </div>
+                
+                <div class="check-item">
+                    <input type="checkbox" id="check5">
+                    <label for="check5">No extra spaces or line breaks in the token</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Step 3: Test Specific API Endpoints</h3>
+            <p>Test the same API calls your app uses:</p>
+            <button onclick="testBasicAuth()">Test Basic Account Access</button>
+            <button onclick="testSharedLinkMetadata()">Test Shared Link Metadata</button>
+            <button onclick="testListFolder()">Test List Folder</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚨 Common Issues & Solutions</h3>
+            <div class="checklist">
+                <h4>If API calls are failing, check these:</h4>
+                
+                <p><strong>401 Unauthorized:</strong></p>
+                <ul>
+                    <li>Token has expired - generate a new one</li>
+                    <li>Token is malformed - copy it again carefully</li>
+                    <li>App permissions are insufficient</li>
+                </ul>
+                
+                <p><strong>403 Forbidden:</strong></p>
+                <ul>
+                    <li>App doesn't have required scopes/permissions</li>
+                    <li>Token was generated before permissions were set</li>
+                </ul>
+                
+                <p><strong>400 Bad Request:</strong></p>
+                <ul>
+                    <li>Request format is wrong (but yours looks correct!)</li>
+                    <li>Invalid parameter values</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Your Supabase configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        let currentToken = '';
+
+        async function testCurrentToken() {
+            showResult('tokenResult', '🔍 Getting token from Supabase...', 'info');
+            
+            try {
+                // Get token from Supabase (same way your app does)
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Supabase error: ${response.status} - ${await response.text()}`);
+                }
+
+                const token = await response.text();
+                currentToken = token.replace(/^"|"$/g, '');
+                
+                if (!currentToken || currentToken === 'null') {
+                    throw new Error('No token found in Supabase');
+                }
+
+                // Test token with Dropbox API (exactly like your app does)
+                const dropboxResponse = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                let result = `TOKEN TEST RESULTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Token retrieved from Supabase successfully
+📏 Token length: ${currentToken.length} characters
+🔑 Token format: ${currentToken.startsWith('sl.') ? '✅ Correct (sl.)' : '❌ Incorrect format'}
+
+DROPBOX API TEST:
+Status: ${dropboxResponse.status}
+Headers used: Authorization: Bearer ${currentToken.substring(0, 20)}...
+`;
+
+                if (dropboxResponse.ok) {
+                    const userData = await dropboxResponse.json();
+                    result += `
+✅ SUCCESS! Your token and API format are working perfectly!
+
+Account Info:
+• Name: ${userData.name?.display_name || 'N/A'}
+• Email: ${userData.email || 'N/A'}
+• Account Type: ${userData.account_type?.['.tag'] || 'N/A'}
+
+🎉 CONCLUSION: Your token usage is correct!
+If you're having issues, they're likely with:
+1. Specific API endpoints or parameters
+2. Folder URL formats
+3. Permission scopes`;
+                    
+                    showResult('tokenResult', result, 'success');
+                } else {
+                    const errorText = await dropboxResponse.text();
+                    result += `
+❌ FAILED: ${dropboxResponse.status}
+Error: ${errorText}
+
+This suggests the token itself has issues, not your API call format.`;
+                    
+                    showResult('tokenResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('tokenResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBasicAuth() {
+            if (!currentToken) {
+                showResult('apiResult', '❌ Please test your token first!', 'error');
+                return;
+            }
+
+            showResult('apiResult', '🔍 Testing basic API auth...', 'info');
+
+            try {
+                // Same exact call as your app uses
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                let result = `BASIC AUTH TEST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Endpoint: /users/get_current_account
+Method: POST
+Headers: Authorization: Bearer <token>
+         Content-Type: application/json
+Status: ${response.status}
+`;
+
+                if (response.ok) {
+                    result += `✅ SUCCESS! Basic authentication working.`;
+                    showResult('apiResult', result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED: ${errorText}`;
+                    showResult('apiResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('apiResult', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSharedLinkMetadata() {
+            if (!currentToken) {
+                showResult('apiResult', '❌ Please test your token first!', 'error');
+                return;
+            }
+
+            showResult('apiResult', '🔍 Testing shared link metadata API...', 'info');
+
+            const sampleUrl = 'https://www.dropbox.com/scl/fo/i5vksy6a60ps77inthgpu/AMwZOqmzW8yAKlWQKWFSteM?rlkey=bp4bjlit198p4wd81zou5bn0n&st=1hd7lqnx&dl=0';
+
+            try {
+                // Same exact call as your app uses
+                const response = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: sampleUrl
+                    })
+                });
+
+                let result = `SHARED LINK METADATA TEST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Endpoint: /sharing/get_shared_link_metadata
+Method: POST
+Headers: Authorization: Bearer <token>
+         Content-Type: application/json
+Body: {"url": "${sampleUrl}"}
+Status: ${response.status}
+`;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result += `✅ SUCCESS! Shared link metadata working.
+Folder: ${data.name || 'N/A'}
+Type: ${data['.tag'] || 'N/A'}`;
+                    showResult('apiResult', result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED: ${errorText}
+
+This could mean:
+1. The sample URL is invalid or expired
+2. Your token lacks sharing.read permission
+3. The folder is not accessible`;
+                    showResult('apiResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('apiResult', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testListFolder() {
+            if (!currentToken) {
+                showResult('apiResult', '❌ Please test your token first!', 'error');
+                return;
+            }
+
+            showResult('apiResult', '🔍 Testing list folder API...', 'info');
+
+            try {
+                // Same exact call as your app uses
+                const response = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        path: '',
+                        recursive: false,
+                        include_media_info: true,
+                        include_deleted: false
+                    })
+                });
+
+                let result = `LIST FOLDER TEST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Endpoint: /files/list_folder
+Method: POST
+Headers: Authorization: Bearer <token>
+         Content-Type: application/json
+Body: {"path": "", "recursive": false, "include_media_info": true}
+Status: ${response.status}
+`;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result += `✅ SUCCESS! List folder working.
+Files found: ${data.entries?.length || 0}`;
+                    showResult('apiResult', result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED: ${errorText}
+
+This could mean:
+1. Your token lacks files.metadata.read permission
+2. The folder path is invalid
+3. Account access issues`;
+                    showResult('apiResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('apiResult', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+    </script>
+</body>
+</html>
