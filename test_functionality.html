@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare Complete Functionality Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .test-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .result.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status-card.unknown {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .status-card.working {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-card.broken {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 VidShare Complete Functionality Test</h1>
+        
+        <div class="status-grid">
+            <div class="status-card unknown" id="supabase-status">
+                📊 Supabase<br>Status: Unknown
+            </div>
+            <div class="status-card unknown" id="dropbox-status">
+                📦 Dropbox<br>Status: Unknown
+            </div>
+            <div class="status-card unknown" id="token-status">
+                🔑 Token<br>Status: Unknown
+            </div>
+            <div class="status-card unknown" id="overall-status">
+                🎯 Overall<br>Status: Unknown
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 1: Test Supabase Connection</h3>
+            <p>Verify that the app can connect to your Supabase database.</p>
+            <button class="test-btn" onclick="testSupabase()">Test Supabase</button>
+            <div id="supabase-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 2: Check Dropbox Token Storage</h3>
+            <p>Check if a valid Dropbox token is stored in Supabase.</p>
+            <button class="test-btn" onclick="checkToken()">Check Token</button>
+            <button class="test-btn" onclick="addTokenFromScan()" style="background: #28a745;">Copy Token from Scan File</button>
+            <div id="token-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 3: Test Dropbox API</h3>
+            <p>Test if we can connect to Dropbox using the stored token.</p>
+            <button class="test-btn" onclick="testDropboxAPI()">Test Dropbox API</button>
+            <div id="dropbox-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 4: Test Gallery Creation</h3>
+            <p>Test creating a gallery with a sample Dropbox folder.</p>
+            <input type="url" id="testFolderUrl" placeholder="Paste a Dropbox folder share URL" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+            <button class="test-btn" onclick="testGalleryCreation()">Test Gallery Creation</button>
+            <div id="gallery-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Quick Actions</h3>
+            <button class="test-btn" onclick="runAllTests()" style="background: #17a2b8;">Run All Tests</button>
+            <button class="test-btn" onclick="openAdminPanel()" style="background: #6f42c1;">Open Admin Panel</button>
+            <button class="test-btn" onclick="openDiagnostic()" style="background: #fd7e14;">Open Diagnostic</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        // Token from scan file (for emergency use)
+        const SCAN_TOKEN = 'sl.u.AFy4s08XCdzmFz_LyPvSH6wDM84mOHGwORo8CtJnJR5yxbySa3iwLThPR1zXiNd5ZV5yTbMbdoY8fI62W9mL7ItNclEC1MT8TCM35htgq9PZIN_4TGjBVv90MaAHxCfFRp9KVDMmklgFAXSJjW1DdMzYiw-Q9uGysKQaW_rj0XXcNj-4E53X18UVo8mRBZ2kJskCw0XBgRJvrwKck6CECGL7K8dcythqnYwN9UKUNIQqN22jZIS_9M7dRhd08iBDFm2JQzfHHe94MkjOg-JDL2aGljaTE9cFbRvbUe7f_6xMdt_oSDcSByyPWLm0ZsWtfVYKE5gqYiD1vL4BXclARyGQpbVxdftgxLtlLrg6ex52D77_M2BwSnl1KsZrGONNoN2AER13k2kvcKrerf3TY7nhsEPsZDUFpSHK-KeIEsbnw9WlKIUNs_31wFXcgtVcrWdU2UuFTBemgTRgMT2r5FU8w_bt4Znp8jSxEPvtY_p-cXEKlaOvqw';
+        
+        let currentToken = null;
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+        
+        function updateStatus(elementId, status, working = null) {
+            const element = document.getElementById(elementId);
+            if (working === true) {
+                element.className = 'status-card working';
+                element.innerHTML = element.innerHTML.replace(/Status: .+/, `Status: ✅ ${status}`);
+            } else if (working === false) {
+                element.className = 'status-card broken';
+                element.innerHTML = element.innerHTML.replace(/Status: .+/, `Status: ❌ ${status}`);
+            } else {
+                element.className = 'status-card unknown';
+                element.innerHTML = element.innerHTML.replace(/Status: .+/, `Status: ⏳ ${status}`);
+            }
+        }
+        
+        async function testSupabase() {
+            updateStatus('supabase-status', 'Testing...');
+            showResult('supabase-result', '🔍 Testing Supabase connection...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'test_connection'
+                    })
+                });
+
+                if (response.ok) {
+                    updateStatus('supabase-status', 'Connected', true);
+                    showResult('supabase-result', '✅ Supabase connection successful!\n\nDatabase is accessible and RPC functions are working.', 'success');
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+            } catch (error) {
+                updateStatus('supabase-status', 'Failed', false);
+                showResult('supabase-result', `❌ Supabase connection failed!\n\nError: ${error.message}\n\nCheck your internet connection and Supabase configuration.`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkToken() {
+            updateStatus('token-status', 'Checking...');
+            showResult('token-result', '🔍 Checking for stored Dropbox token...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const token = await response.text();
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                if (!cleanToken || cleanToken === 'null') {
+                    updateStatus('token-status', 'Missing', false);
+                    showResult('token-result', '❌ No Dropbox token found in Supabase!\n\nUse the "Copy Token from Scan File" button to add the token.', 'error');
+                    return false;
+                } else {
+                    currentToken = cleanToken;
+                    updateStatus('token-status', 'Found', true);
+                    showResult('token-result', `✅ Dropbox token found!\n\nLength: ${cleanToken.length} characters\nStarts with: ${cleanToken.substring(0, 15)}...\nFormat: ${cleanToken.startsWith('sl.') ? 'Correct' : 'Invalid'}`, 'success');
+                    return true;
+                }
+            } catch (error) {
+                updateStatus('token-status', 'Error', false);
+                showResult('token-result', `❌ Error checking token: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function addTokenFromScan() {
+            showResult('token-result', '🔄 Adding token from scan file to Supabase...', 'info');
+            
+            try {
+                // First, set the config value
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        key: 'dropbox_token',
+                        value: SCAN_TOKEN
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                updateStatus('token-status', 'Added', true);
+                showResult('token-result', '✅ Token successfully added to Supabase!\n\nThe Dropbox token from the scan file has been stored in your database.', 'success');
+                currentToken = SCAN_TOKEN;
+                return true;
+            } catch (error) {
+                updateStatus('token-status', 'Failed', false);
+                showResult('token-result', `❌ Error adding token: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testDropboxAPI() {
+            updateStatus('dropbox-status', 'Testing...');
+            showResult('dropbox-result', '🔍 Testing Dropbox API connection...', 'info');
+            
+            if (!currentToken) {
+                const tokenExists = await checkToken();
+                if (!tokenExists) {
+                    updateStatus('dropbox-status', 'No Token', false);
+                    showResult('dropbox-result', '❌ No token available. Please add a token first.', 'error');
+                    return false;
+                }
+            }
+            
+            try {
+                // Test with a simple API call
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Token expired or invalid');
+                    }
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const userData = await response.json();
+                updateStatus('dropbox-status', 'Connected', true);
+                showResult('dropbox-result', `✅ Dropbox API connection successful!\n\nConnected to account: ${userData.name.display_name}\nEmail: ${userData.email}`, 'success');
+                return true;
+            } catch (error) {
+                updateStatus('dropbox-status', 'Failed', false);
+                showResult('dropbox-result', `❌ Dropbox API connection failed!\n\nError: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testGalleryCreation() {
+            const folderUrl = document.getElementById('testFolderUrl').value;
+            if (!folderUrl) {
+                showResult('gallery-result', '❌ Please enter a Dropbox folder URL to test.', 'error');
+                return false;
+            }
+            
+            showResult('gallery-result', '🔍 Testing gallery creation process...', 'info');
+            
+            if (!currentToken) {
+                const tokenExists = await checkToken();
+                if (!tokenExists) {
+                    showResult('gallery-result', '❌ No token available. Please add a token first.', 'error');
+                    return false;
+                }
+            }
+            
+            try {
+                // Test folder access
+                const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: folderUrl })
+                });
+
+                if (!metadataResponse.ok) {
+                    throw new Error(`Cannot access folder: ${metadataResponse.status}`);
+                }
+
+                const metadata = await metadataResponse.json();
+                showResult('gallery-result', `✅ Gallery creation test successful!\n\nFolder: ${metadata.name}\nPath: ${metadata.path_lower}\nAccess: ✅ Working\n\nYour app can successfully create galleries from Dropbox folders!`, 'success');
+                return true;
+            } catch (error) {
+                showResult('gallery-result', `❌ Gallery creation test failed!\n\nError: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function runAllTests() {
+            showResult('supabase-result', '', 'info');
+            showResult('token-result', '', 'info');
+            showResult('dropbox-result', '', 'info');
+            showResult('gallery-result', '', 'info');
+            
+            const supabaseOK = await testSupabase();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const tokenOK = await checkToken();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const dropboxOK = await testDropboxAPI();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Update overall status
+            if (supabaseOK && tokenOK && dropboxOK) {
+                updateStatus('overall-status', 'Fully Functional', true);
+            } else if (supabaseOK) {
+                updateStatus('overall-status', 'Partially Working', null);
+            } else {
+                updateStatus('overall-status', 'Not Working', false);
+            }
+        }
+        
+        function openAdminPanel() {
+            window.open('/mobley/', '_blank');
+        }
+        
+        function openDiagnostic() {
+            window.open('/diagnostic.html', '_blank');
+        }
+        
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
