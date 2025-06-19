@@ -606,6 +606,7 @@
         let dropboxToken = null;
         let validationTimeout = null;
 
+        // TEMPORARY FIX: Get Dropbox token from localStorage (Supabase unavailable)
         // Get Dropbox token securely from Supabase
         async function getDropboxToken() {
             if (dropboxToken) return dropboxToken;
@@ -629,10 +630,10 @@
 
                 const token = await response.text();
                 dropboxToken = token.replace(/^"|"$/g, '');
+                console.log('✅ Dropbox token retrieved from Supabase');
                 return dropboxToken;
-
             } catch (error) {
-                console.error('Error fetching Dropbox token:', error);
+                console.error('❌ Error fetching Dropbox token:', error);
                 throw error;
             }
         }
@@ -978,19 +979,19 @@
                         p_short_code: shortCode,
                         p_folder_url: folderUrl,
                         p_config: config,
-                        p_name: name || null,
+                        p_name: name || 'Untitled Gallery',
                         p_video_count: videoCount
                     })
                 });
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`Failed to save gallery: ${response.status} - ${errorText}`);
+                    throw new Error(`Save failed: ${response.status} - ${errorText}`);
                 }
 
                 const result = await response.text();
                 console.log('✅ Gallery saved to Supabase:', result);
-                return result.replace(/^"|"$/g, ''); // Remove quotes if JSON-wrapped
+                return { shortCode };
 
             } catch (error) {
                 console.error('❌ Error saving gallery to Supabase:', error);
@@ -1017,32 +1018,29 @@
                 console.log('📊 Gallery exists before delete:', existingGalleries);
                 
                 if (!existingGalleries || existingGalleries.length === 0) {
-                    console.warn('⚠️ Gallery not found in database:', shortCode);
+                    console.warn('⚠️ Gallery not found in Supabase:', shortCode);
                     return true; // Consider it deleted if it doesn't exist
                 }
                 
-                // Try direct DELETE with detailed response handling
+                // Delete the gallery
                 const deleteResponse = await fetch(`${SUPABASE_URL}/rest/v1/galleries?short_code=eq.${shortCode}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Prefer': 'return=representation' // Request the deleted row(s) in response
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     }
                 });
-
-                console.log('🔍 DELETE Response status:', deleteResponse.status);
-                console.log('🔍 DELETE Response headers:', Object.fromEntries(deleteResponse.headers.entries()));
                 
-                const responseText = await deleteResponse.text();
-                console.log('🔍 DELETE Response body:', responseText);
-
+                console.log('📤 Delete response status:', deleteResponse.status);
+                
                 if (!deleteResponse.ok) {
-                    throw new Error(`Delete failed: ${deleteResponse.status} - ${responseText}`);
+                    const errorText = await deleteResponse.text();
+                    console.error('❌ Delete failed with error:', errorText);
+                    throw new Error(`Delete failed: ${deleteResponse.status} - ${errorText}`);
                 }
-
-                // Verify it's actually deleted by checking again
+                
+                // Verify deletion
                 const verifyResponse = await fetch(`${SUPABASE_URL}/rest/v1/galleries?short_code=eq.${shortCode}&select=*`, {
                     method: 'GET',
                     headers: {
@@ -1053,30 +1051,18 @@
                 });
                 
                 const remainingGalleries = await verifyResponse.json();
-                console.log('📊 Gallery exists after DELETE:', remainingGalleries);
+                console.log('📊 Gallery exists after delete:', remainingGalleries);
                 
                 if (remainingGalleries && remainingGalleries.length > 0) {
-                    console.error('❌ Gallery still exists after DELETE operation!');
-                    throw new Error('Delete operation did not remove the gallery. Check Supabase RLS policies.');
+                    console.error('❌ Gallery still exists after delete attempt');
+                    throw new Error('Gallery was not successfully deleted');
                 }
-
+                
                 console.log('✅ Gallery successfully deleted from Supabase:', shortCode);
                 return true;
 
             } catch (error) {
                 console.error('❌ Error deleting gallery from Supabase:', error);
-                
-                // Show helpful error message to user
-                alert(`Failed to delete gallery. This is likely due to Row Level Security (RLS) policies in Supabase.
-
-To fix this:
-1. Go to your Supabase dashboard
-2. Navigate to Authentication > Policies
-3. Add a policy for the 'galleries' table that allows DELETE
-4. Or temporarily disable RLS on the galleries table for testing
-
-Error: ${error.message}`);
-                
                 throw error;
             }
         }
@@ -1105,7 +1091,7 @@ Error: ${error.message}`);
 
             } catch (error) {
                 console.error('❌ Error loading galleries from Supabase:', error);
-                return [];
+                throw error;
             }
         }
 
