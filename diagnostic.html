@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare Quick Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        button { padding: 12px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔍 VidShare Quick Diagnostic</h1>
+    
+    <button onclick="testSupabaseConnection()">1. Test Supabase Connection</button>
+    <button onclick="testDropboxToken()">2. Test Dropbox Token</button>
+    <button onclick="testSampleFolder()">3. Test Sample Folder</button>
+    
+    <div id="result" class="result info">Click a button to start testing...</div>
+
+    <script>
+        // Your Supabase configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+        }
+
+        async function testSupabaseConnection() {
+            showResult('🔍 Testing Supabase connection...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Supabase error: ${response.status} - ${await response.text()}`);
+                }
+
+                const token = await response.text();
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                if (!cleanToken || cleanToken === 'null') {
+                    showResult(`❌ SUPABASE CONNECTION: OK
+❌ DROPBOX TOKEN: NOT FOUND
+
+The connection to Supabase works, but no Dropbox token is stored.
+
+SOLUTION: Use add_dropbox_token.html to add your token.`, 'error');
+                } else {
+                    showResult(`✅ SUPABASE CONNECTION: OK
+✅ DROPBOX TOKEN: FOUND (${cleanToken.length} characters)
+
+Token starts with: ${cleanToken.substring(0, 15)}...
+
+Ready for Step 2!`, 'success');
+                }
+
+            } catch (error) {
+                showResult(`❌ SUPABASE CONNECTION: FAILED
+
+Error: ${error.message}
+
+SOLUTIONS:
+1. Check your internet connection
+2. Verify SUPABASE_URL and SUPABASE_ANON_KEY in the code
+3. Ensure get_config function exists in Supabase`, 'error');
+            }
+        }
+
+        async function testDropboxToken() {
+            showResult('🔍 Getting token from Supabase and testing with Dropbox...', 'info');
+            
+            try {
+                // Get token from Supabase
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get token from Supabase');
+                }
+
+                const token = await response.text();
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                if (!cleanToken || cleanToken === 'null') {
+                    throw new Error('No token found in Supabase');
+                }
+
+                // Test token with Dropbox
+                const dropboxResponse = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${cleanToken}`
+                    }
+                });
+
+                if (!dropboxResponse.ok) {
+                    const errorText = await dropboxResponse.text();
+                    throw new Error(`Dropbox API error: ${dropboxResponse.status} - ${errorText}`);
+                }
+
+                const userData = await dropboxResponse.json();
+                showResult(`✅ DROPBOX TOKEN: WORKING!
+
+Account Info:
+• Name: ${userData.name?.display_name || 'N/A'}
+• Email: ${userData.email || 'N/A'}
+• Account Type: ${userData.account_type?.['.tag'] || 'N/A'}
+
+Your token is valid and working! The issue is likely with the folder URL format or processing logic.`, 'success');
+
+            } catch (error) {
+                showResult(`❌ DROPBOX TOKEN: FAILED
+
+Error: ${error.message}
+
+SOLUTIONS:
+1. Get a fresh token from Dropbox App Console
+2. Use add_dropbox_token.html to update it
+3. Make sure token has proper permissions`, 'error');
+            }
+        }
+
+        async function testSampleFolder() {
+            showResult('🎵 Testing with a sample Dropbox folder...', 'info');
+            
+            const sampleUrl = 'https://www.dropbox.com/scl/fo/gb50nb8pi109aowl70ja6/AAX1ksJ5Z9kRw5gL5kyWIV8?rlkey=oy1lx4vp9aeigxxzfpd7reihp&st=8vio47mh&dl=0';
+            
+            try {
+                // Get token
+                const tokenResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                const token = await tokenResponse.text();
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                // Test with sample folder
+                const metadataResponse = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${cleanToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: sampleUrl
+                    })
+                });
+
+                if (!metadataResponse.ok) {
+                    const errorText = await metadataResponse.text();
+                    throw new Error(`Metadata fetch failed: ${metadataResponse.status} - ${errorText}`);
+                }
+
+                const metadata = await metadataResponse.json();
+                showResult(`✅ FOLDER ACCESS: WORKING!
+
+Sample folder details:
+• Name: ${metadata.name}
+• Path: ${metadata.path_display}
+
+The Dropbox integration is working fine!
+
+CONCLUSION: The issue is likely with YOUR specific folder URL format.
+
+TRY:
+1. Create a new share link for your folder
+2. Use the legacy share format if possible
+3. Make sure the folder isn't empty`, 'success');
+
+            } catch (error) {
+                showResult(`❌ FOLDER ACCESS: FAILED
+
+Error: ${error.message}
+
+This suggests there's an issue with the Dropbox API calls themselves.`, 'error');
+            }
+        }
+    </script>
+</body>
+</html> 
