@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare Gallery Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .gallery-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .gallery-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .gallery-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .gallery-item a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 VidShare Gallery Test</h1>
+        
+        <p>This page will check for existing galleries and test the gallery viewing functionality.</p>
+        
+        <button class="test-btn" onclick="loadGalleries()">Load Existing Galleries</button>
+        <button class="test-btn" onclick="testSampleGallery()">Test with Sample Data</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        function showResult(message, type = 'info') {
+            const element = document.getElementById('result');
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+        
+        async function loadGalleries() {
+            showResult('🔍 Loading existing galleries from Supabase...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/galleries?select=*&order=created_at.desc`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const galleries = await response.json();
+                
+                if (galleries.length === 0) {
+                    showResult('📭 No galleries found!\n\nYour database is empty. Create your first gallery using the admin panel.', 'info');
+                } else {
+                    let result = `✅ Found ${galleries.length} galleries!\n\n`;
+                    
+                    galleries.forEach((gallery, index) => {
+                        result += `${index + 1}. ${gallery.name || gallery.short_code}\n`;
+                        result += `   Short Code: ${gallery.short_code}\n`;
+                        result += `   URL: ${window.location.origin}/g/${gallery.short_code}\n`;
+                        result += `   Created: ${new Date(gallery.created_at).toLocaleDateString()}\n\n`;
+                    });
+                    
+                    showResult(result, 'success');
+                    
+                    // Add clickable links
+                    const resultDiv = document.getElementById('result');
+                    const galleriesHTML = galleries.map(gallery => `
+                        <div class="gallery-item">
+                            <h4>${gallery.name || gallery.short_code}</h4>
+                            <p><strong>Short Code:</strong> ${gallery.short_code}</p>
+                            <p><strong>Gallery URL:</strong> <a href="/g/${gallery.short_code}" target="_blank">/g/${gallery.short_code}</a></p>
+                            <p><strong>Created:</strong> ${new Date(gallery.created_at).toLocaleDateString()}</p>
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            ✅ Found ${galleries.length} galleries!
+                        </div>
+                        ${galleriesHTML}
+                    `;
+                }
+            } catch (error) {
+                showResult(`❌ Error loading galleries: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSampleGallery() {
+            showResult('🎬 Testing gallery creation with sample data...', 'info');
+            
+            try {
+                // Create a test gallery
+                const testGallery = {
+                    short_code: 'test-' + Date.now(),
+                    name: 'Test Gallery',
+                    folder_url: 'https://www.dropbox.com/sh/example123',
+                    config: {
+                        allowDownload: true,
+                        allowShare: true
+                    }
+                };
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_gallery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        p_short_code: testGallery.short_code,
+                        p_name: testGallery.name,
+                        p_folder_url: testGallery.folder_url,
+                        p_config: testGallery.config
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                showResult(`✅ Test gallery created successfully!\n\nShort Code: ${testGallery.short_code}\nGallery URL: /g/${testGallery.short_code}\n\nClick below to test the gallery viewer:`, 'success');
+                
+                // Add clickable link
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML += `
+                    <div style="margin-top: 15px;">
+                        <a href="/g/${testGallery.short_code}" target="_blank" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            🎬 Open Test Gallery
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                showResult(`❌ Error creating test gallery: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-load galleries on page load
+        window.addEventListener('load', () => {
+            setTimeout(loadGalleries, 500);
+        });
+    </script>
+</body>
+</html>

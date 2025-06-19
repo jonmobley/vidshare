@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dropbox Token Validator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 15px 0;
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.4;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .result.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .analysis-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Advanced Dropbox Token Validator</h1>
+        
+        <p><strong>Let's figure out what's wrong with your token.</strong> Paste it below and I'll run comprehensive tests:</p>
+        
+        <textarea id="tokenInput" class="token-input" placeholder="Paste your complete Dropbox token here...
+
+The token should start with: sl.u.
+And be very long (usually 1000+ characters)"></textarea>
+        
+        <div>
+            <button class="btn" onclick="analyzeToken()">🔍 Analyze Token</button>
+            <button class="btn btn-warning" onclick="cleanAndTest()">🧹 Clean & Test</button>
+            <button class="btn" onclick="testMultipleMethods()">🧪 Test All Methods</button>
+        </div>
+        
+        <div id="analysisResult"></div>
+        
+        <div class="test-section">
+            <h3>🎯 Alternative Test Methods</h3>
+            <p>If the standard test fails, try these alternative approaches:</p>
+            <button class="btn" onclick="testWithCurl()">📡 Test with Different Headers</button>
+            <button class="btn" onclick="testSimpleEndpoint()">🔗 Test Simple Endpoint</button>
+            <button class="btn btn-success" onclick="saveTokenAnyway()">💾 Save Token Anyway</button>
+        </div>
+        
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+        
+        function analyzeToken() {
+            const token = document.getElementById('tokenInput').value;
+            
+            if (!token.trim()) {
+                showResult('analysisResult', '❌ No token provided. Please paste your token.', 'error');
+                return;
+            }
+            
+            let analysis = '🔍 TOKEN ANALYSIS:\n\n';
+            
+            // Basic format checks
+            analysis += `Original Length: ${token.length} characters\n`;
+            analysis += `Trimmed Length: ${token.trim().length} characters\n`;
+            analysis += `Starts with "sl.": ${token.trim().startsWith('sl.') ? '✅ Yes' : '❌ No'}\n`;
+            analysis += `Contains spaces: ${token.includes(' ') ? '⚠️ Yes (problematic)' : '✅ No'}\n`;
+            analysis += `Contains newlines: ${token.includes('\\n') || token.includes('\\r') ? '⚠️ Yes (problematic)' : '✅ No'}\n`;
+            
+            // Check for common issues
+            const cleanToken = token.trim().replace(/\\s+/g, '');
+            analysis += `\\nCleaned Length: ${cleanToken.length} characters\n`;
+            
+            // Show first and last parts
+            if (cleanToken.length > 50) {
+                analysis += `\\nFirst 50 chars: ${cleanToken.substring(0, 50)}\n`;
+                analysis += `Last 50 chars: ${cleanToken.substring(cleanToken.length - 50)}\n`;
+            }
+            
+            // Check token parts
+            const parts = cleanToken.split('.');
+            analysis += `\\nToken parts (split by '.'): ${parts.length}\n`;
+            if (parts.length >= 3) {
+                analysis += `Part 1: ${parts[0]} (should be "sl")\n`;
+                analysis += `Part 2: ${parts[1]} (should be "u")\n`;
+                analysis += `Part 3 length: ${parts[2].length} chars\n`;
+            }
+            
+            // Validation status
+            let status = 'info';
+            if (cleanToken.startsWith('sl.u.') && cleanToken.length > 100 && !cleanToken.includes(' ')) {
+                analysis += `\\n✅ TOKEN FORMAT LOOKS VALID`;
+                status = 'success';
+            } else {
+                analysis += `\\n⚠️ TOKEN FORMAT HAS ISSUES`;
+                status = 'warning';
+            }
+            
+            showResult('analysisResult', analysis, status);
+        }
+        
+        async function cleanAndTest() {
+            const rawToken = document.getElementById('tokenInput').value;
+            
+            if (!rawToken.trim()) {
+                showResult('testResults', '❌ No token provided.', 'error');
+                return;
+            }
+            
+            // Clean the token thoroughly
+            let cleanToken = rawToken
+                .trim()                    // Remove leading/trailing whitespace
+                .replace(/\\s+/g, '')      // Remove all whitespace
+                .replace(/\\r\\n/g, '')    // Remove Windows line endings
+                .replace(/\\n/g, '')       // Remove Unix line endings
+                .replace(/\\r/g, '');      // Remove Mac line endings
+            
+            showResult('testResults', `🧹 Cleaning token and testing...
+            
+Original length: ${rawToken.length}
+Cleaned length: ${cleanToken.length}
+Removed: ${rawToken.length - cleanToken.length} characters
+
+Testing cleaned token...`, 'info');
+            
+            try {
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${cleanToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    showResult('testResults', `✅ SUCCESS! Cleaned token works!
+
+Connected to: ${userData.name.display_name}
+Email: ${userData.email}
+
+The issue was extra whitespace/newlines in your token.
+Click "Save Token Anyway" below to save the cleaned version.`, 'success');
+                    
+                    // Update the input with cleaned token
+                    document.getElementById('tokenInput').value = cleanToken;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+            } catch (error) {
+                showResult('testResults', `❌ Cleaned token still failed: ${error.message}
+
+Let's try other methods...`, 'error');
+            }
+        }
+        
+        async function testMultipleMethods() {
+            const token = document.getElementById('tokenInput').value.trim().replace(/\\s+/g, '');
+            
+            if (!token) {
+                showResult('testResults', '❌ No token provided.', 'error');
+                return;
+            }
+            
+            showResult('testResults', '🧪 Testing multiple API endpoints and methods...\\n', 'info');
+            
+            const tests = [
+                {
+                    name: 'Standard Account Check',
+                    url: 'https://api.dropboxapi.com/2/users/get_current_account',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                },
+                {
+                    name: 'Space Usage Check',
+                    url: 'https://api.dropboxapi.com/2/users/get_space_usage',
+                    method: 'POST', 
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                },
+                {
+                    name: 'List Folder Root',
+                    url: 'https://api.dropboxapi.com/2/files/list_folder',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ path: '' })
+                }
+            ];
+            
+            let results = '';
+            let anySuccess = false;
+            
+            for (const test of tests) {
+                try {
+                    results += `\\n🔍 ${test.name}...\\n`;
+                    
+                    const response = await fetch(test.url, {
+                        method: test.method,
+                        headers: test.headers,
+                        body: test.body
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        results += `✅ SUCCESS! Status: ${response.status}\\n`;
+                        anySuccess = true;
+                        
+                        if (data.name) {
+                            results += `   Account: ${data.name.display_name}\\n`;
+                        }
+                        if (data.used !== undefined) {
+                            results += `   Space used: ${Math.round(data.used / 1024 / 1024)} MB\\n`;
+                        }
+                    } else {
+                        results += `❌ Failed: ${response.status} - ${await response.text()}\\n`;
+                    }
+                    
+                } catch (error) {
+                    results += `❌ Error: ${error.message}\\n`;
+                }
+                
+                // Add delay between requests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            if (anySuccess) {
+                results += `\\n🎉 YOUR TOKEN WORKS!\\nAt least one API call succeeded. Your token is valid.`;
+                showResult('testResults', results, 'success');
+            } else {
+                results += `\\n⚠️ All tests failed. There might be a permission issue.`;
+                showResult('testResults', results, 'warning');
+            }
+        }
+        
+        async function testWithCurl() {
+            const token = document.getElementById('tokenInput').value.trim().replace(/\\s+/g, '');
+            
+            showResult('testResults', '📡 Testing with alternative headers...', 'info');
+            
+            try {
+                // Try with minimal headers
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    showResult('testResults', `✅ SUCCESS with minimal headers!
+                    
+Connected to: ${userData.name.display_name}
+Email: ${userData.email}
+
+Your token works! The issue might have been extra headers.`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+            } catch (error) {
+                showResult('testResults', `❌ Alternative method failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSimpleEndpoint() {
+            const token = document.getElementById('tokenInput').value.trim().replace(/\\s+/g, '');
+            
+            showResult('testResults', '🔗 Testing simplest possible endpoint...', 'info');
+            
+            try {
+                // Try the absolute simplest call
+                const response = await fetch('https://api.dropboxapi.com/2/check/user', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: 'foo' })
+                });
+
+                if (response.ok) {
+                    showResult('testResults', `✅ Simple endpoint works! Your token is valid.
+                    
+The token authentication is working. The issue might be with specific API calls or permissions.`, 'success');
+                } else {
+                    showResult('testResults', `❌ Simple endpoint failed too: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('testResults', `❌ Simple test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function saveTokenAnyway() {
+            const token = document.getElementById('tokenInput').value.trim().replace(/\\s+/g, '');
+            
+            if (!token) {
+                showResult('testResults', '❌ No token to save.', 'error');
+                return;
+            }
+            
+            showResult('testResults', '💾 Saving token to VidShare database...\\n\\nEven if API tests failed, the token might work for your specific use case.', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        key: 'dropbox_token',
+                        value: token
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Supabase error: ${response.status}`);
+                }
+
+                showResult('testResults', `✅ Token saved to VidShare!
+
+Your token has been stored in the database. 
+
+Next steps:
+1. Go to your admin panel (/mobley/)
+2. Try creating a gallery with a Dropbox folder
+3. The token might work for file operations even if account checks failed
+
+Sometimes tokens work for specific operations but not others.`, 'success');
+                
+                setTimeout(() => {
+                    if (confirm('Token saved! Open the admin panel to test gallery creation?')) {
+                        window.open('/mobley/', '_blank');
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                showResult('testResults', `❌ Error saving token: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-analyze when token is pasted
+        document.getElementById('tokenInput').addEventListener('input', function() {
+            if (this.value.length > 100) {
+                setTimeout(analyzeToken, 500);
+            }
+        });
+    </script>
+</body>
+</html>
