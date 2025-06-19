@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fresh Token Diagnostic</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .steps h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .steps li {
+            margin: 8px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 Fresh Token Diagnostic</h1>
+        
+        <div class="alert">
+            <strong>⚠️ Issue Detected:</strong> Your token was created minutes ago but is already expired. This suggests a configuration problem, not a time-based expiration.
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Step 1: Verify Token From Supabase</h3>
+            <p>Let's compare the token stored in Supabase with a fresh one you paste here:</p>
+            <button onclick="checkSupabaseToken()">Check Token in Supabase</button>
+            <div id="supabaseResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Step 2: Test Fresh Token Directly</h3>
+            <p>Go to your Dropbox App Console and generate a <strong>brand new token</strong>, then test it here:</p>
+            
+            <div class="steps">
+                <h4>🔑 Generate New Token:</h4>
+                <ol>
+                    <li>Go to <a href="https://www.dropbox.com/developers/apps" target="_blank">Dropbox App Console</a></li>
+                    <li>Click your VidShare app</li>
+                    <li>Go to <span class="highlight">Permissions</span> tab first</li>
+                    <li>Make sure these are checked: <code>files.metadata.read</code>, <code>files.content.read</code>, <code>sharing.read</code></li>
+                    <li>Click <span class="highlight">Submit</span></li>
+                    <li>Go to <span class="highlight">Settings</span> tab</li>
+                    <li>Scroll to "OAuth 2" section</li>
+                    <li>Click <span class="highlight">Generate</span> (this creates a NEW token)</li>
+                    <li>Copy the ENTIRE token and paste below</li>
+                </ol>
+            </div>
+            
+            <textarea id="freshToken" class="token-input" placeholder="Paste your fresh token here (starts with sl.)..."></textarea>
+            
+            <button onclick="testFreshToken()">Test Fresh Token</button>
+            <button class="btn-success" onclick="saveFreshToken()" id="saveBtn" disabled>💾 Save Working Token</button>
+            
+            <div id="freshResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Step 3: Common Issues & Solutions</h3>
+            
+            <div class="steps">
+                <h4>Most likely causes:</h4>
+                <ol>
+                    <li><strong>Permissions Set After Token:</strong> Token was generated before permissions were configured</li>
+                    <li><strong>Wrong App:</strong> Multiple Dropbox apps, using token from wrong one</li>
+                    <li><strong>Incomplete Token:</strong> Copy/paste error, missing characters</li>
+                    <li><strong>App Configuration:</strong> App not properly set up for production use</li>
+                </ol>
+                
+                <h4>Solutions to try:</h4>
+                <ol>
+                    <li>Set permissions FIRST, then generate token</li>
+                    <li>Use only one Dropbox app for VidShare</li>
+                    <li>Copy token carefully (select all, not just visible part)</li>
+                    <li>Make sure app has "Full Dropbox" access type</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Your Supabase configuration
+        const SUPABASE_URL = 'https://gnfxpqlfqjxtuthoplpx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduZnhwcWxmcWp4dHV0aG9wbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MzYxODgsImV4cCI6MjA2NDMxMjE4OH0.ymqy7Igd530LuJvj-u_SU_1iGJBTLZAig1vAYmDPX20';
+        
+        let workingToken = '';
+
+        async function checkSupabaseToken() {
+            showResult('supabaseResult', '🔍 Checking token stored in Supabase...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        config_key: 'dropbox_token'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Supabase error: ${response.status} - ${await response.text()}`);
+                }
+
+                const token = await response.text();
+                const cleanToken = token.replace(/^"|"$/g, '');
+                
+                let result = `SUPABASE TOKEN ANALYSIS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Token found in Supabase
+📏 Length: ${cleanToken.length} characters
+🔑 Format: ${cleanToken.startsWith('sl.') ? '✅ Correct (sl.)' : '❌ Incorrect'}
+🏷️  Starts with: ${cleanToken.substring(0, 20)}...
+🏷️  Ends with: ...${cleanToken.substring(cleanToken.length - 20)}
+
+Token appears to be: ${cleanToken.length > 1000 ? '✅ Full length token' : '⚠️ Possibly truncated'}
+`;
+
+                // Test this token
+                const testResponse = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${cleanToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                result += `
+DROPBOX API TEST:
+Status: ${testResponse.status}
+`;
+
+                if (testResponse.ok) {
+                    const userData = await testResponse.json();
+                    result += `✅ WORKING! Account: ${userData.name?.display_name}
+
+The token in Supabase is actually working now!
+This might have been a temporary Dropbox API issue.`;
+                    showResult('supabaseResult', result, 'success');
+                } else {
+                    const errorText = await testResponse.text();
+                    result += `❌ FAILED: ${errorText}
+
+The token in Supabase is definitely expired or invalid.
+Please generate a fresh one below.`;
+                    showResult('supabaseResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('supabaseResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFreshToken() {
+            const token = document.getElementById('freshToken').value.trim();
+            
+            if (!token) {
+                showResult('freshResult', '❌ Please paste your fresh token first!', 'error');
+                return;
+            }
+
+            if (!token.startsWith('sl.')) {
+                showResult('freshResult', '❌ Token should start with "sl." - please check you copied it correctly.', 'error');
+                return;
+            }
+
+            showResult('freshResult', '🧪 Testing your fresh token...', 'info');
+
+            try {
+                const response = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                let result = `FRESH TOKEN TEST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📏 Token length: ${token.length} characters
+🔑 Format: ${token.startsWith('sl.') ? '✅ Correct (sl.)' : '❌ Incorrect'}
+🌐 API Status: ${response.status}
+`;
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    result += `
+✅ SUCCESS! Your fresh token is working perfectly!
+
+Account Info:
+👤 Name: ${userData.name?.display_name || 'N/A'}
+📧 Email: ${userData.email || 'N/A'}
+🆔 Account: ${userData.account_type?.['.tag'] || 'N/A'}
+
+🎉 This token is valid and ready to use!
+You can now save it to replace the expired one.`;
+                    
+                    workingToken = token;
+                    document.getElementById('saveBtn').disabled = false;
+                    showResult('freshResult', result, 'success');
+                    
+                    // Test the sharing endpoint too
+                    setTimeout(testSharingEndpoint, 1000);
+                    
+                } else {
+                    const errorText = await response.text();
+                    result += `
+❌ FAILED: ${response.status}
+Error: ${errorText}
+
+Common issues:
+1. Permissions not set before generating token
+2. App doesn't have "Full Dropbox" access
+3. Token copied incorrectly
+4. Using wrong Dropbox app
+
+Try generating another token AFTER setting permissions.`;
+                    
+                    showResult('freshResult', result, 'error');
+                }
+
+            } catch (error) {
+                showResult('freshResult', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSharingEndpoint() {
+            if (!workingToken) return;
+
+            const currentResult = document.getElementById('freshResult').textContent;
+            showResult('freshResult', currentResult + '\n\n🔍 Testing sharing permissions...', 'info');
+
+            try {
+                // Test with a simple sharing call
+                const response = await fetch('https://api.dropboxapi.com/2/sharing/get_shared_link_metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${workingToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: 'https://www.dropbox.com/scl/fo/i5vksy6a60ps77inthgpu/AMwZOqmzW8yAKlWQKWFSteM?rlkey=bp4bjlit198p4wd81zou5bn0n&st=1hd7lqnx&dl=0'
+                    })
+                });
+
+                let additionalResult = '';
+                if (response.ok) {
+                    additionalResult = '\n✅ SHARING PERMISSIONS: Working!';
+                } else if (response.status === 403) {
+                    additionalResult = '\n⚠️ SHARING PERMISSIONS: Missing sharing.read permission';
+                } else {
+                    additionalResult = '\n⚠️ SHARING TEST: May need folder-specific permissions';
+                }
+
+                showResult('freshResult', currentResult + additionalResult + '\n\n🎯 Overall: Token is working for basic operations!', 'success');
+
+            } catch (error) {
+                // Don't fail the whole test for this
+                console.log('Sharing test failed but basic token works:', error);
+            }
+        }
+
+        async function saveFreshToken() {
+            if (!workingToken) {
+                showResult('freshResult', '❌ No working token to save. Test a token first!', 'error');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '💾 Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({
+                        key: 'dropbox_token',
+                        value: workingToken
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Supabase save failed: ${response.status} - ${await response.text()}`);
+                }
+
+                const currentResult = document.getElementById('freshResult').textContent;
+                showResult('freshResult', currentResult + `
+
+🎉 SUCCESS! Token saved to Supabase!
+
+Your VidShare app will now use this working token.
+The expired token has been replaced.
+
+✅ You can now test your gallery functionality!`, 'success');
+
+                saveBtn.textContent = '✅ Saved!';
+
+            } catch (error) {
+                showResult('freshResult', `❌ Error saving token: ${error.message}`, 'error');
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+    </script>
+</body>
+</html>
