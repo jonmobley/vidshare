@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare - Cloud Video File Gallery</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .platform-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 2px solid #dee2e6;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-5px);
+            border-color: #74b9ff;
+        }
+        
+        .platform-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .platform-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .platform-formats {
+            font-size: 0.8em;
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .input-section {
+            background: #e8f4fd;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: monospace;
+            margin: 15px 0;
+            box-sizing: border-box;
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(116, 185, 255, 0.3);
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .video-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .video-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #000;
+        }
+        
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .video-platform {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .platform-dropbox { background: #0061ff; color: white; }
+        .platform-googledrive { background: #4285f4; color: white; }
+        .platform-onedrive { background: #0078d4; color: white; }
+        .platform-icloud { background: #007aff; color: white; }
+        .platform-box { background: #0061d5; color: white; }
+        .platform-direct { background: #28a745; color: white; }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        
+        .advanced-options {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .option-group {
+            margin: 15px 0;
+        }
+        
+        .option-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        
+        .tips {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tips h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .tips ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .tips li {
+            margin: 8px 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☁️ VidShare - Cloud File Gallery</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Specialized tool for creating galleries from individual video files stored in cloud services
+        </p>
+        
+        <div class="platform-grid">
+            <div class="platform-card">
+                <div class="platform-icon">📦</div>
+                <div class="platform-name">Dropbox</div>
+                <div class="platform-formats">
+                    dropbox.com/s/...<br>
+                    dropboxusercontent.com<br>
+                    Auto-converts share links
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">🗂️</div>
+                <div class="platform-name">Google Drive</div>
+                <div class="platform-formats">
+                    drive.google.com/file/d/...<br>
+                    docs.google.com/file/d/...<br>
+                    Auto-extracts file IDs
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">☁️</div>
+                <div class="platform-name">OneDrive</div>
+                <div class="platform-formats">
+                    1drv.ms/v/...<br>
+                    onedrive.live.com<br>
+                    sharepoint.com
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">🍎</div>
+                <div class="platform-name">iCloud</div>
+                <div class="platform-formats">
+                    icloud.com/...<br>
+                    Limited support<br>
+                    May require downloads
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">📁</div>
+                <div class="platform-name">Box</div>
+                <div class="platform-formats">
+                    box.com/s/...<br>
+                    app.box.com<br>
+                    Share link conversion
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">🔗</div>
+                <div class="platform-name">Direct Files</div>
+                <div class="platform-formats">
+                    Any .mp4, .webm, .mov<br>
+                    CDNs and file servers<br>
+                    S3, CloudFront, etc.
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <h3>📋 Paste Individual Video File URLs</h3>
+            <p>Paste URLs to individual video files from cloud storage services. Each URL should be a direct link to a video file:</p>
+            
+            <textarea id="videoUrls" placeholder="Paste cloud video file URLs here, one per line:
+
+https://www.dropbox.com/s/abc123def456/myvideo.mp4?dl=0
+https://drive.google.com/file/d/1ABC2DEF3GHI4JKL5MNO6PQR7STU8VWX9/view
+https://1drv.ms/v/s!AqXj8Jh3xG7BhK1234567890abcdef
+https://example.com/path/to/video.mp4
+..."></textarea>
+            
+            <div style="text-align: center;">
+                <button onclick="processCloudVideos()" id="processBtn">🚀 Create Cloud Gallery</button>
+                <button onclick="clearAll()">🗑️ Clear All</button>
+                <button onclick="toggleAdvanced()" id="advBtn">⚙️ Advanced Options</button>
+            </div>
+        </div>
+        
+        <div id="advanced" class="advanced-options" style="display: none;">
+            <h4>⚙️ Advanced Processing Options</h4>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="autoConvert" checked>
+                    Auto-convert share links to direct download links
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="fallbackMethods" checked>
+                    Try multiple URL formats if first attempt fails
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="corsProxy">
+                    Use CORS proxy for cross-origin requests (experimental)
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="preloadMetadata" checked>
+                    Preload video metadata (may slow down loading)
+                </label>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h4>💡 Tips for Best Results</h4>
+            <ul>
+                <li><strong>Dropbox:</strong> Use share links ending in ?dl=0 - they'll be auto-converted to ?dl=1</li>
+                <li><strong>Google Drive:</strong> Make sure files are shared publicly or "anyone with link can view"</li>
+                <li><strong>OneDrive:</strong> Use the direct share links from the Share button</li>
+                <li><strong>File Formats:</strong> Best support for MP4, WebM, and MOV files</li>
+                <li><strong>Privacy:</strong> Only files you have permission to access will work</li>
+                <li><strong>Large Files:</strong> Very large videos may take time to load</li>
+            </ul>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="gallery" class="gallery"></div>
+    </div>
+
+    <script>
+        let processedCount = 0;
+        let successCount = 0;
+        let failCount = 0;
+
+        function toggleAdvanced() {
+            const advancedDiv = document.getElementById('advanced');
+            const advBtn = document.getElementById('advBtn');
+            
+            if (advancedDiv.style.display === 'none') {
+                advancedDiv.style.display = 'block';
+                advBtn.textContent = '⚙️ Hide Advanced';
+            } else {
+                advancedDiv.style.display = 'none';
+                advBtn.textContent = '⚙️ Advanced Options';
+            }
+        }
+
+        async function processCloudVideos() {
+            const urlsText = document.getElementById('videoUrls').value.trim();
+            const processBtn = document.getElementById('processBtn');
+            
+            if (!urlsText) {
+                showStatus('❌ Please paste some video URLs first!', 'error');
+                return;
+            }
+
+            // Reset counters
+            processedCount = 0;
+            successCount = 0;
+            failCount = 0;
+            
+            // Clear previous gallery
+            document.getElementById('gallery').innerHTML = '';
+            
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+
+            try {
+                showStatus('🔍 Analyzing cloud video URLs...', 'info');
+                
+                // Clean and validate URLs
+                const urls = urlsText
+                    .split('\n')
+                    .map(url => url.trim())
+                    .filter(url => url && (url.startsWith('http') || url.startsWith('www.')))
+                    .map(url => url.startsWith('www.') ? 'https://' + url : url);
+                
+                if (urls.length === 0) {
+                    throw new Error('No valid URLs found');
+                }
+
+                showStatus(`🎬 Processing ${urls.length} cloud video files...`, 'info');
+
+                // Process each URL
+                for (let i = 0; i < urls.length; i++) {
+                    const url = urls[i];
+                    try {
+                        await processCloudVideoUrl(url, i + 1, urls.length);
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+                    } catch (error) {
+                        console.error(`Error processing URL ${i + 1}:`, error);
+                        failCount++;
+                    }
+                    processedCount++;
+                    
+                    // Update status
+                    showStatus(`🎬 Processing ${processedCount}/${urls.length} files...
+✅ ${successCount} successful  ❌ ${failCount} failed`, 'info');
+                }
+
+                // Final status
+                showStatus(`🎉 Processing complete!
+✅ ${successCount} videos loaded successfully
+❌ ${failCount} failed to load
+📺 Total processed: ${processedCount}`, 'success');
+
+            } catch (error) {
+                console.error('Error processing videos:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = '🚀 Create Cloud Gallery';
+            }
+        }
+
+        async function processCloudVideoUrl(url, index, total) {
+            console.log(`Processing ${index}/${total}: ${url}`);
+            
+            let videoInfo = null;
+            
+            // Determine platform and process accordingly
+            if (url.includes('dropbox.com') || url.includes('dropboxusercontent.com')) {
+                videoInfo = await processDropboxVideo(url);
+            } else if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+                videoInfo = await processGoogleDriveVideo(url);
+            } else if (url.includes('1drv.ms') || url.includes('onedrive.live.com') || url.includes('sharepoint.com')) {
+                videoInfo = await processOneDriveVideo(url);
+            } else if (url.includes('icloud.com')) {
+                videoInfo = await processiCloudVideo(url);
+            } else if (url.includes('box.com')) {
+                videoInfo = await processBoxVideo(url);
+            } else if (isVideoFile(url)) {
+                videoInfo = await processDirectVideo(url);
+            } else {
+                console.warn(`Unknown platform for URL: ${url}`);
+                videoInfo = await processUnknownVideo(url);
+            }
+            
+            if (videoInfo) {
+                createVideoElement(videoInfo);
+                successCount++;
+                console.log(`✅ Successfully processed: ${videoInfo.title}`);
+            } else {
+                failCount++;
+                console.log(`❌ Failed to process: ${url}`);
+            }
+        }
+
+        async function processDropboxVideo(url) {
+            const autoConvert = document.getElementById('autoConvert').checked;
+            const fallback = document.getElementById('fallbackMethods').checked;
+            
+            let directUrl = url;
+            
+            if (autoConvert) {
+                // Convert various Dropbox URL formats to direct download
+                if (url.includes('dropbox.com/s/') && !url.includes('dl=1')) {
+                    directUrl = url.replace('?dl=0', '?dl=1');
+                    if (!directUrl.includes('dl=1')) {
+                        directUrl += (directUrl.includes('?') ? '&' : '?') + 'dl=1';
+                    }
+                } else if (url.includes('dropbox.com/scl/fi/')) {
+                    // New Dropbox sharing format
+                    directUrl = url.replace('?rlkey=', '?dl=1&rlkey=');
+                }
+                
+                console.log(`Dropbox URL converted: ${url} → ${directUrl}`);
+            }
+            
+            const filename = extractFilename(directUrl);
+            
+            // If fallback is enabled, prepare alternative URLs
+            const urlsToTry = [directUrl];
+            if (fallback && directUrl !== url) {
+                // Try the original URL as fallback
+                urlsToTry.push(url);
+                // Try dl.dropboxusercontent.com version
+                if (url.includes('www.dropbox.com')) {
+                    urlsToTry.push(url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', ''));
+                }
+            }
+            
+            return {
+                id: filename,
+                platform: 'dropbox',
+                title: filename || 'Dropbox Video',
+                directUrl: urlsToTry[0],
+                fallbackUrls: urlsToTry.slice(1),
+                originalUrl: url
+            };
+        }
+
+        async function processGoogleDriveVideo(url) {
+            // Extract file ID from Google Drive URL
+            let fileId = null;
+            
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9-_]+)/,
+                /id=([a-zA-Z0-9-_]+)/,
+                /\/open\?id=([a-zA-Z0-9-_]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    fileId = match[1];
+                    break;
+                }
+            }
+            
+            if (!fileId) {
+                console.error(`Could not extract Google Drive file ID from: ${url}`);
+                return null;
+            }
+            
+            console.log(`Google Drive file ID extracted: ${fileId}`);
+            
+            // Create multiple URL formats to try
+            const urlsToTry = [
+                `https://drive.google.com/uc?id=${fileId}&export=download`,
+                `https://drive.google.com/file/d/${fileId}/preview`,
+                `https://docs.google.com/file/d/${fileId}/preview`
+            ];
+            
+            return {
+                id: fileId,
+                platform: 'googledrive',
+                title: `Google Drive Video (${fileId.substring(0, 8)}...)`,
+                directUrl: urlsToTry[0],
+                fallbackUrls: urlsToTry.slice(1),
+                originalUrl: url
+            };
+        }
+
+        async function processOneDriveVideo(url) {
+            let directUrl = url;
+            
+            // Handle different OneDrive URL formats
+            if (url.includes('1drv.ms')) {
+                // Short URLs - keep as is for now
+                console.log(`OneDrive short URL detected: ${url}`);
+            } else if (url.includes('onedrive.live.com')) {
+                // Try to convert to embed format
+                if (url.includes('view.aspx')) {
+                    directUrl = url.replace('view.aspx', 'download.aspx');
+                }
+            } else if (url.includes('sharepoint.com')) {
+                // SharePoint URLs
+                console.log(`SharePoint URL detected: ${url}`);
+            }
+            
+            const filename = extractFilename(url) || 'OneDrive Video';
+            
+            return {
+                id: filename,
+                platform: 'onedrive',
+                title: filename,
+                directUrl: directUrl,
+                fallbackUrls: url !== directUrl ? [url] : [],
+                originalUrl: url
+            };
+        }
+
+        async function processiCloudVideo(url) {
+            // iCloud has limited support due to Apple's restrictions
+            const filename = extractFilename(url) || 'iCloud Video';
+            
+            console.warn(`iCloud URL detected - limited support: ${url}`);
+            
+            return {
+                id: filename,
+                platform: 'icloud',
+                title: filename,
+                directUrl: url, // May not work directly
+                fallbackUrls: [],
+                originalUrl: url
+            };
+        }
+
+        async function processBoxVideo(url) {
+            let directUrl = url;
+            
+            // Try to convert Box share URLs
+            if (url.includes('box.com/s/')) {
+                // Box shared link - try to get direct download
+                console.log(`Box share link detected: ${url}`);
+            }
+            
+            const filename = extractFilename(url) || 'Box Video';
+            
+            return {
+                id: filename,
+                platform: 'box',
+                title: filename,
+                directUrl: directUrl,
+                fallbackUrls: [],
+                originalUrl: url
+            };
+        }
+
+        async function processDirectVideo(url) {
+            const filename = extractFilename(url);
+            
+            return {
+                id: filename,
+                platform: 'direct',
+                title: filename || 'Direct Video',
+                directUrl: url,
+                fallbackUrls: [],
+                originalUrl: url
+            };
+        }
+
+        async function processUnknownVideo(url) {
+            const filename = extractFilename(url);
+            
+            return {
+                id: filename || 'unknown',
+                platform: 'unknown',
+                title: filename || 'Unknown Video',
+                directUrl: url,
+                fallbackUrls: [],
+                originalUrl: url
+            };
+        }
+
+        function isVideoFile(url) {
+            const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.m4v', '.3gp', '.flv', '.wmv'];
+            const lowerUrl = url.toLowerCase();
+            return videoExtensions.some(ext => lowerUrl.includes(ext));
+        }
+
+        function extractFilename(url) {
+            try {
+                const urlObj = new URL(url);
+                const pathname = urlObj.pathname;
+                const filename = pathname.split('/').pop();
+                return filename ? decodeURIComponent(filename).split('?')[0] : 'video';
+            } catch (error) {
+                const parts = url.split('/');
+                const lastPart = parts[parts.length - 1];
+                return lastPart ? lastPart.split('?')[0] : 'video';
+            }
+        }
+
+        function createVideoElement(videoInfo) {
+            const gallery = document.getElementById('gallery');
+            
+            const container = document.createElement('div');
+            container.className = 'video-item';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+            
+            const video = document.createElement('video');
+            video.controls = true;
+            video.preload = document.getElementById('preloadMetadata').checked ? 'metadata' : 'none';
+            video.crossOrigin = 'anonymous';
+            
+            // Set primary source
+            video.src = videoInfo.directUrl;
+            
+            // Add fallback sources if available
+            if (videoInfo.fallbackUrls && videoInfo.fallbackUrls.length > 0) {
+                videoInfo.fallbackUrls.forEach(fallbackUrl => {
+                    const source = document.createElement('source');
+                    source.src = fallbackUrl;
+                    video.appendChild(source);
+                });
+            }
+            
+            // Error handling with fallback attempts
+            let currentFallbackIndex = 0;
+            video.onerror = function() {
+                console.error(`Video failed to load: ${video.src}`);
+                
+                if (videoInfo.fallbackUrls && currentFallbackIndex < videoInfo.fallbackUrls.length) {
+                    console.log(`Trying fallback URL ${currentFallbackIndex + 1}/${videoInfo.fallbackUrls.length}`);
+                    video.src = videoInfo.fallbackUrls[currentFallbackIndex];
+                    currentFallbackIndex++;
+                } else {
+                    // All attempts failed
+                    wrapper.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #6c757d; text-align: center; padding: 20px;">
+                            <div>
+                                <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                                <div style="font-size: 16px; margin-bottom: 10px;">Failed to load video</div>
+                                <div style="font-size: 12px; color: #999; margin-bottom: 15px;">${videoInfo.title}</div>
+                                <a href="${videoInfo.originalUrl}" target="_blank" style="color: #74b9ff; text-decoration: none;">Open original link →</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+            
+            video.onloadedmetadata = function() {
+                console.log(`✅ Video loaded successfully: ${videoInfo.title} (${video.videoWidth}x${video.videoHeight})`);
+            };
+            
+            wrapper.appendChild(video);
+            
+            const info = document.createElement('div');
+            info.className = 'video-info';
+            
+            const title = document.createElement('div');
+            title.className = 'video-title';
+            title.textContent = videoInfo.title;
+            title.title = videoInfo.title;
+            
+            const platform = document.createElement('span');
+            platform.className = `video-platform platform-${videoInfo.platform}`;
+            platform.textContent = videoInfo.platform.toUpperCase();
+            
+            const url = document.createElement('div');
+            url.style.fontSize = '11px';
+            url.style.color = '#999';
+            url.style.marginTop = '8px';
+            url.style.wordBreak = 'break-all';
+            url.textContent = videoInfo.originalUrl;
+            
+            info.appendChild(title);
+            info.appendChild(platform);
+            info.appendChild(url);
+            
+            container.appendChild(wrapper);
+            container.appendChild(info);
+            gallery.appendChild(container);
+        }
+
+        function clearAll() {
+            document.getElementById('videoUrls').value = '';
+            document.getElementById('gallery').innerHTML = '';
+            document.getElementById('status').style.display = 'none';
+            processedCount = 0;
+            successCount = 0;
+            failCount = 0;
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        // Add some example URLs when page loads
+        window.onload = function() {
+            showStatus('💡 Tip: This tool works best with individual video file URLs from cloud storage services. Paste URLs above to get started!', 'info');
+        };
+    </script>
+</body>
+</html>
