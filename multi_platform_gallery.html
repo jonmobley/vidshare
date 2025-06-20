@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare - Multi-Platform Gallery</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .input-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+            margin: 10px 0;
+            box-sizing: border-box;
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .examples {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .examples h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .examples code {
+            display: block;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .video-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+        }
+        
+        .video-wrapper iframe,
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .video-platform {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .platform-youtube {
+            background: #ff0000;
+            color: white;
+        }
+        
+        .platform-vimeo {
+            background: #1ab7ea;
+            color: white;
+        }
+        
+        .platform-dropbox {
+            background: #0061ff;
+            color: white;
+        }
+        
+        .platform-direct {
+            background: #28a745;
+            color: white;
+        }
+        
+        .platform-unknown {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .debug-info h4 {
+            margin-top: 0;
+            font-family: inherit;
+        }
+        
+        .quick-examples {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .quick-examples button {
+            font-size: 12px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        .quick-examples button:hover {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 VidShare - Multi-Platform Gallery</h1>
+        
+        <div class="input-section">
+            <h3>📋 Paste Your Video URLs</h3>
+            <p>Copy and paste video URLs from anywhere - YouTube, Vimeo, Dropbox, or direct links. One URL per line:</p>
+            
+            <textarea id="videoUrls" placeholder="Paste your video URLs here, one per line:
+
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://vimeo.com/123456789
+https://www.dropbox.com/s/abc123/video.mp4
+https://example.com/video.mp4
+..."></textarea>
+            
+            <div class="quick-examples">
+                <button onclick="addExample('youtube')">+ YouTube Example</button>
+                <button onclick="addExample('vimeo')">+ Vimeo Example</button>
+                <button onclick="addExample('dropbox')">+ Dropbox Example</button>
+                <button onclick="addExample('direct')">+ Direct MP4</button>
+                <button onclick="clearUrls()">Clear All</button>
+            </div>
+            
+            <button onclick="createGallery()" id="createBtn">🚀 Create Gallery</button>
+            <button onclick="clearGallery()" class="btn-secondary">🗑️ Clear Gallery</button>
+        </div>
+
+        <div class="examples">
+            <h4>📖 Supported Platforms:</h4>
+            <p><strong>YouTube:</strong> Any youtube.com or youtu.be URL</p>
+            <code>https://www.youtube.com/watch?v=VIDEO_ID</code>
+            <code>https://youtu.be/VIDEO_ID</code>
+            
+            <p><strong>Vimeo:</strong> Any vimeo.com URL</p>
+            <code>https://vimeo.com/VIDEO_ID</code>
+            <code>https://player.vimeo.com/video/VIDEO_ID</code>
+            
+            <p><strong>Dropbox:</strong> Direct file links (ending in .mp4, .mov, etc.)</p>
+            <code>https://www.dropbox.com/s/.../video.mp4</code>
+            <code>https://dl.dropboxusercontent.com/.../video.mp4</code>
+            
+            <p><strong>Direct Links:</strong> Any direct video file URL</p>
+            <code>https://example.com/path/to/video.mp4</code>
+        </div>
+
+        <div id="status" class="status info" style="display: none;"></div>
+        
+        <div id="debug" class="debug-info" style="display: none;">
+            <h4>🔍 Debug Information:</h4>
+            <div id="debugContent"></div>
+        </div>
+        
+        <div id="gallery" class="gallery"></div>
+    </div>
+
+    <script>
+        let debugMode = true;
+
+        function addExample(platform) {
+            const textarea = document.getElementById('videoUrls');
+            const currentContent = textarea.value;
+            
+            const examples = {
+                youtube: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                vimeo: 'https://vimeo.com/147365861',
+                dropbox: 'https://www.dropbox.com/s/example123/sample.mp4?dl=0',
+                direct: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+            };
+            
+            const newUrl = examples[platform];
+            if (newUrl) {
+                textarea.value = currentContent + (currentContent ? '\n' : '') + newUrl;
+            }
+        }
+
+        function clearUrls() {
+            document.getElementById('videoUrls').value = '';
+        }
+
+        async function createGallery() {
+            const urlsText = document.getElementById('videoUrls').value.trim();
+            const createBtn = document.getElementById('createBtn');
+            const statusDiv = document.getElementById('status');
+            const debugDiv = document.getElementById('debug');
+            const debugContent = document.getElementById('debugContent');
+            
+            if (!urlsText) {
+                showStatus('❌ Please paste some video URLs first!', 'error');
+                return;
+            }
+
+            // Reset UI
+            clearGallery();
+            createBtn.disabled = true;
+            createBtn.textContent = '🔄 Creating Gallery...';
+            
+            if (debugMode) {
+                debugDiv.style.display = 'block';
+                debugContent.innerHTML = '';
+            }
+
+            try {
+                showStatus('🔍 Processing video URLs...', 'info');
+                
+                // Split URLs and clean them
+                const urls = urlsText
+                    .split('\n')
+                    .map(url => url.trim())
+                    .filter(url => url && url.startsWith('http'));
+                
+                debug(`📋 Found ${urls.length} URLs to process`);
+                
+                if (urls.length === 0) {
+                    throw new Error('No valid URLs found. Make sure URLs start with http:// or https://');
+                }
+
+                showStatus(`🎬 Processing ${urls.length} videos...`, 'info');
+                
+                let processed = 0;
+                let successful = 0;
+                let failed = 0;
+
+                for (const url of urls) {
+                    try {
+                        debug(`\n🔍 Processing: ${url}`);
+                        const videoInfo = await processVideoUrl(url);
+                        
+                        if (videoInfo) {
+                            createVideoElement(videoInfo);
+                            successful++;
+                            debug(`✅ Success: ${videoInfo.title || 'Unknown title'} (${videoInfo.platform})`);
+                        } else {
+                            failed++;
+                            debug(`❌ Failed to process: ${url}`);
+                        }
+                        
+                        processed++;
+                        showStatus(`🎬 Processing ${processed}/${urls.length} videos... (${successful} successful, ${failed} failed)`, 'info');
+                        
+                        // Small delay to prevent overwhelming the browser
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (error) {
+                        failed++;
+                        debug(`❌ Error processing ${url}: ${error.message}`);
+                    }
+                }
+
+                showStatus(`🎉 Gallery created successfully!
+✅ ${successful} videos loaded
+❌ ${failed} failed
+📺 Total: ${processed} processed`, 'success');
+
+                debug(`\n📊 Final stats: ${successful} successful, ${failed} failed out of ${processed} total`);
+
+            } catch (error) {
+                console.error('Error creating gallery:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                debug(`💥 Error: ${error.message}`);
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = '🚀 Create Gallery';
+            }
+        }
+
+        async function processVideoUrl(url) {
+            debug(`🔍 Analyzing URL: ${url}`);
+            
+            // Detect platform and extract video info
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return processYouTubeUrl(url);
+            } else if (url.includes('vimeo.com')) {
+                return processVimeoUrl(url);
+            } else if (url.includes('dropbox.com')) {
+                return processDropboxUrl(url);
+            } else if (isDirectVideoUrl(url)) {
+                return processDirectUrl(url);
+            } else {
+                debug(`⚠️ Unknown platform for: ${url}`);
+                return processUnknownUrl(url);
+            }
+        }
+
+        function processYouTubeUrl(url) {
+            debug(`🔴 Processing YouTube URL`);
+            
+            let videoId = null;
+            
+            // Extract video ID from various YouTube URL formats
+            if (url.includes('youtube.com/watch')) {
+                const match = url.match(/[?&]v=([^&]+)/);
+                videoId = match ? match[1] : null;
+            } else if (url.includes('youtu.be/')) {
+                const match = url.match(/youtu\.be\/([^?]+)/);
+                videoId = match ? match[1] : null;
+            } else if (url.includes('youtube.com/embed/')) {
+                const match = url.match(/embed\/([^?]+)/);
+                videoId = match ? match[1] : null;
+            }
+            
+            if (!videoId) {
+                debug(`❌ Could not extract YouTube video ID from: ${url}`);
+                return null;
+            }
+            
+            debug(`✅ YouTube video ID: ${videoId}`);
+            
+            return {
+                id: videoId,
+                platform: 'youtube',
+                title: `YouTube Video (${videoId})`,
+                embedUrl: `https://www.youtube.com/embed/${videoId}`,
+                originalUrl: url,
+                type: 'embed'
+            };
+        }
+
+        function processVimeoUrl(url) {
+            debug(`🔵 Processing Vimeo URL`);
+            
+            let videoId = null;
+            
+            // Extract video ID from various Vimeo URL formats
+            const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+            videoId = match ? match[1] : null;
+            
+            if (!videoId) {
+                debug(`❌ Could not extract Vimeo video ID from: ${url}`);
+                return null;
+            }
+            
+            debug(`✅ Vimeo video ID: ${videoId}`);
+            
+            return {
+                id: videoId,
+                platform: 'vimeo',
+                title: `Vimeo Video (${videoId})`,
+                embedUrl: `https://player.vimeo.com/video/${videoId}`,
+                originalUrl: url,
+                type: 'embed'
+            };
+        }
+
+        function processDropboxUrl(url) {
+            debug(`📦 Processing Dropbox URL`);
+            
+            // Convert Dropbox share URLs to direct download URLs
+            let directUrl = url;
+            
+            if (url.includes('dropbox.com/s/') && !url.includes('dl=1')) {
+                directUrl = url.replace('?dl=0', '?dl=1').replace('dropbox.com', 'dl.dropboxusercontent.com');
+                debug(`🔗 Converted to direct URL: ${directUrl}`);
+            } else if (url.includes('dropbox.com') && !url.includes('dl.dropboxusercontent.com')) {
+                directUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+                debug(`🔗 Converted to direct URL: ${directUrl}`);
+            }
+            
+            const filename = extractFilename(directUrl);
+            
+            return {
+                id: filename,
+                platform: 'dropbox',
+                title: filename || 'Dropbox Video',
+                directUrl: directUrl,
+                originalUrl: url,
+                type: 'direct'
+            };
+        }
+
+        function processDirectUrl(url) {
+            debug(`🔗 Processing direct video URL`);
+            
+            const filename = extractFilename(url);
+            
+            return {
+                id: filename,
+                platform: 'direct',
+                title: filename || 'Direct Video',
+                directUrl: url,
+                originalUrl: url,
+                type: 'direct'
+            };
+        }
+
+        function processUnknownUrl(url) {
+            debug(`❓ Processing unknown URL as direct video`);
+            
+            const filename = extractFilename(url);
+            
+            return {
+                id: filename || 'unknown',
+                platform: 'unknown',
+                title: filename || 'Unknown Video',
+                directUrl: url,
+                originalUrl: url,
+                type: 'direct'
+            };
+        }
+
+        function isDirectVideoUrl(url) {
+            const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.m4v', '.3gp'];
+            return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+        }
+
+        function extractFilename(url) {
+            try {
+                const pathname = new URL(url).pathname;
+                const filename = pathname.split('/').pop();
+                return filename || 'video';
+            } catch (error) {
+                const parts = url.split('/');
+                return parts[parts.length - 1] || 'video';
+            }
+        }
+
+        function createVideoElement(videoInfo) {
+            const galleryDiv = document.getElementById('gallery');
+            
+            const container = document.createElement('div');
+            container.className = 'video-item';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+            
+            let mediaElement;
+            
+            if (videoInfo.type === 'embed') {
+                // Create iframe for YouTube/Vimeo
+                mediaElement = document.createElement('iframe');
+                mediaElement.src = videoInfo.embedUrl;
+                mediaElement.allowFullscreen = true;
+                mediaElement.frameBorder = '0';
+                
+                if (videoInfo.platform === 'youtube') {
+                    mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                }
+                
+                debug(`🎬 Created embed for ${videoInfo.platform}: ${videoInfo.embedUrl}`);
+                
+            } else {
+                // Create video element for direct URLs
+                mediaElement = document.createElement('video');
+                mediaElement.src = videoInfo.directUrl;
+                mediaElement.controls = true;
+                mediaElement.preload = 'metadata';
+                
+                // Add error handling
+                mediaElement.onerror = function() {
+                    debug(`❌ Video failed to load: ${videoInfo.title}`);
+                    wrapper.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #6c757d; text-align: center; padding: 20px;">
+                        <div>
+                            <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                            <div>Video failed to load</div>
+                            <div style="font-size: 12px; margin-top: 10px;">
+                                <a href="${videoInfo.originalUrl}" target="_blank" style="color: #007bff;">Open original link</a>
+                            </div>
+                        </div>
+                    </div>`;
+                };
+                
+                mediaElement.onloadedmetadata = function() {
+                    debug(`✅ Video loaded: ${videoInfo.title} (${mediaElement.videoWidth}x${mediaElement.videoHeight})`);
+                };
+                
+                debug(`🎬 Created video element for: ${videoInfo.directUrl}`);
+            }
+            
+            wrapper.appendChild(mediaElement);
+            
+            const info = document.createElement('div');
+            info.className = 'video-info';
+            
+            const title = document.createElement('div');
+            title.className = 'video-title';
+            title.textContent = videoInfo.title;
+            
+            const platform = document.createElement('span');
+            platform.className = `video-platform platform-${videoInfo.platform}`;
+            platform.textContent = videoInfo.platform;
+            
+            info.appendChild(title);
+            info.appendChild(platform);
+            
+            container.appendChild(wrapper);
+            container.appendChild(info);
+            galleryDiv.appendChild(container);
+        }
+
+        function clearGallery() {
+            document.getElementById('gallery').innerHTML = '';
+            document.getElementById('status').style.display = 'none';
+            if (debugMode) {
+                document.getElementById('debugContent').innerHTML = '';
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function debug(message) {
+            if (!debugMode) return;
+            
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(`[VidShare Debug] ${message}`);
+        }
+    </script>
+</body>
+</html>

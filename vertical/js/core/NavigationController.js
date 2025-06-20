@@ -12,25 +12,24 @@ class NavigationController {
     async goToNext() {
         if (this.isTransitioning) return false;
         
-        const { currentSlide, totalSlides, currentCategory } = this.gallery.getState();
+        const container = document.getElementById('videoContainer');
+        const currentGlobalIndex = this.gallery.globalVideoIndex;
+        const totalGlobalSlides = this.gallery.getTotalGlobalSlides();
         
-        if (currentSlide < totalSlides - 1) {
-            await this.transitionToSlide(currentSlide + 1);
-            return true;
-        } else if (currentCategory < this.gallery.getTotalCategories() - 1) {
-            // Use seamless scrolling to next category
-            const container = document.getElementById('videoContainer');
-            const currentGlobalIndex = this.gallery.globalVideoIndex;
+        if (currentGlobalIndex < totalGlobalSlides - 1) {
+            // Use seamless scrolling to next video
+            this.gallery.isScrolling = true;
             const nextGlobalIndex = currentGlobalIndex + 1;
             
-            container.classList.add('transitioning');
             container.scrollTo({
                 top: nextGlobalIndex * window.innerHeight,
                 behavior: 'smooth'
             });
             
+            // Update state after scroll
             setTimeout(() => {
-                container.classList.remove('transitioning');
+                this.gallery.isScrolling = false;
+                this.gallery.syncScrollPosition();
             }, 300);
             return true;
         } else {
@@ -43,25 +42,23 @@ class NavigationController {
     async goToPrevious() {
         if (this.isTransitioning) return false;
         
-        const { currentSlide, currentCategory } = this.gallery.getState();
+        const container = document.getElementById('videoContainer');
+        const currentGlobalIndex = this.gallery.globalVideoIndex;
         
-        if (currentSlide > 0) {
-            await this.transitionToSlide(currentSlide - 1);
-            return true;
-        } else if (currentCategory > 0) {
-            // Use seamless scrolling to previous category
-            const container = document.getElementById('videoContainer');
-            const currentGlobalIndex = this.gallery.globalVideoIndex;
+        if (currentGlobalIndex > 0) {
+            // Use seamless scrolling to previous video
+            this.gallery.isScrolling = true;
             const prevGlobalIndex = currentGlobalIndex - 1;
             
-            container.classList.add('transitioning');
             container.scrollTo({
                 top: prevGlobalIndex * window.innerHeight,
                 behavior: 'smooth'
             });
             
+            // Update state after scroll
             setTimeout(() => {
-                container.classList.remove('transitioning');
+                this.gallery.isScrolling = false;
+                this.gallery.syncScrollPosition();
             }, 300);
             return true;
         } else {

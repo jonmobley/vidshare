@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>VidShare - Simplified Vertical Gallery</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme colors -->
+    <meta name="theme-color" content="#000000">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-navbutton-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="VidShare">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="VidShare">
+    
+    <!-- Prevent zooming -->
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-128x128.png">
+    
+    <!-- Standard Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    
+    <!-- SEO and Social -->
+    <meta name="description" content="Simplified TikTok-style vertical video gallery experience">
+    <meta name="keywords" content="video, gallery, vertical, mobile, app, entertainment">
+    
+    <!-- Simplified Styles -->
+    <link rel="stylesheet" href="styles/simplified.css">
+</head>
+<body>
+    <!-- Category Navigation -->
+    <div class="category-navigation">
+        <button class="back-arrow" id="backArrow" title="Back">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </button>
+        <div class="category-pills-container" id="categoryPillsContainer">
+            <div class="category-pills" id="categoryPills">
+                <div class="category-pill active" data-category="0">For You</div>
+                <div class="category-pill" data-category="1">Gaming</div>
+                <div class="category-pill" data-category="2">Music</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Video Container -->
+    <div class="video-container" id="videoContainer">
+        <div class="video-wrapper" id="videoWrapper">
+            <!-- Video slides will be dynamically created here -->
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-container" id="controlsContainer">
+        <button class="control-button version-control" title="Build Version">
+            <span class="version-text">v2.0</span>
+        </button>
+        <button class="control-button like-control" title="Like">
+            <svg class="like-icon" viewBox="0 0 24 24">
+                <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+            </svg>
+        </button>
+        <button class="control-button share-control" title="Share">
+            <svg class="share-icon" viewBox="0 0 24 24">
+                <path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.6 20.92,19A2.84,2.84 0 0,0 18,16.08Z"/>
+            </svg>
+        </button>
+        <button class="control-button download-control" title="Download">
+            <svg class="download-icon" viewBox="0 0 24 24">
+                <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+            </svg>
+        </button>
+        <button class="control-button autoplay-control" title="Autoplay Settings">
+            <svg class="autoplay-icon" viewBox="0 0 24 24">
+                <path d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z"/>
+            </svg>
+        </button>
+        <button class="control-button volume-control" title="Toggle sound">
+            <svg class="volume-icon" viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Autoplay Settings Panel -->
+    <div class="autoplay-settings-panel" id="autoplaySettingsPanel">
+        <div class="autoplay-option active" data-mode="loop">
+            <svg class="autoplay-option-icon" viewBox="0 0 24 24">
+                <path d="M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12H4A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"/>
+            </svg>
+            <span class="autoplay-option-text">Loop</span>
+        </div>
+        <div class="autoplay-option" data-mode="pause">
+            <svg class="autoplay-option-icon" viewBox="0 0 24 24">
+                <path d="M14,19H18V5H14M6,19H10V5H6V19Z"/>
+            </svg>
+            <span class="autoplay-option-text">Pause at end</span>
+        </div>
+        <div class="autoplay-option" data-mode="next">
+            <svg class="autoplay-option-icon" viewBox="0 0 24 24">
+                <path d="M4,18L12.5,12L4,6V18M13,6V18H16V6H13Z"/>
+            </svg>
+            <span class="autoplay-option-text">Auto next</span>
+        </div>
+    </div>
+
+    <!-- Video Progress Bar -->
+    <div class="video-progress-container">
+        <div class="video-progress-bar" id="videoProgress"></div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator" id="progressIndicator">
+        <!-- Dots will be dynamically generated -->
+    </div>
+
+    <!-- Performance Stats (Debug) -->
+    <div class="performance-stats" id="performanceStats">
+        <div>Rendered Videos: <span id="renderedCount">0</span></div>
+        <div>Total Videos: <span id="totalCount">0</span></div>
+        <div>Current Position: <span id="currentIndex">0</span></div>
+        <div>Memory Usage: <span id="memoryUsage">0</span>MB</div>
+        <div>Pool Status: <span id="poolStatus">N/A</span></div>
+        <div><small>Simplified implementation</small></div>
+        <div><small>Press 'P' to toggle</small></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main-simplified.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('✅ PWA Service Worker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('❌ PWA Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Lock orientation to portrait when possible
+        function lockOrientation() {
+            if (screen && screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait-primary').catch((err) => {
+                    console.log('🔒 Screen orientation lock not supported:', err.message);
+                });
+            }
+        }
+
+        // Lock orientation when app becomes fullscreen/standalone
+        if (window.matchMedia('(display-mode: fullscreen)').matches || 
+            window.matchMedia('(display-mode: standalone)').matches) {
+            lockOrientation();
+        }
+
+        // Also try to lock when page loads
+        window.addEventListener('load', () => {
+            setTimeout(lockOrientation, 100);
+        });
+    </script>
+</body>
+</html>

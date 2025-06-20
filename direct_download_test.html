@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare - Direct Download Method</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .input-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .media-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .media-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .media-item video,
+        .media-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .media-item video {
+            height: auto;
+        }
+        
+        .media-info {
+            padding: 15px;
+        }
+        
+        .media-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .media-type {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .debug-info h4 {
+            margin-top: 0;
+            font-family: inherit;
+        }
+        
+        .approach-section {
+            background: #f1f8e9;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .approach-section h4 {
+            margin-top: 0;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 VidShare - Better Dropbox Method</h1>
+        
+        <div class="warning">
+            <h4>🚨 Issue Discovered:</h4>
+            <p>Modern Dropbox uses JavaScript to load file lists dynamically. The HTML we fetch doesn't contain the actual file links.</p>
+            <p><strong>New approach needed:</strong> Use Dropbox's direct download mechanism or find their internal API endpoints.</p>
+        </div>
+
+        <div class="approach-section">
+            <h4>🎯 New Strategy: Direct Download URLs</h4>
+            <p>Instead of parsing HTML, let's build direct download URLs from the folder structure:</p>
+            <ol>
+                <li>Extract folder ID from the share URL</li>
+                <li>Use known Dropbox direct download patterns</li>
+                <li>Test multiple URL formats until we find working ones</li>
+            </ol>
+        </div>
+        
+        <div class="input-section">
+            <h3>📁 Test Direct Download Approach</h3>
+            <p>Enter a Dropbox folder URL and we'll try to build direct download links:</p>
+            
+            <input type="url" 
+                   id="folderUrl" 
+                   placeholder="https://www.dropbox.com/scl/fo/..."
+                   value="https://www.dropbox.com/scl/fo/wmh41pehmok05mo3gs56n/AEwgfwwxnl2ovJ1G2HZfB4I?rlkey=yldcdjag730rf81xg6j0cur1f&st=okof2fdc&dl=0">
+            
+            <button onclick="tryDirectDownloads()" id="loadBtn">🔧 Try Direct Downloads</button>
+            <button onclick="clearGallery()" style="background: #6c757d;">🗑️ Clear</button>
+        </div>
+
+        <div id="status" class="status info" style="display: none;"></div>
+        
+        <div id="debug" class="debug-info" style="display: none;">
+            <h4>🔍 Debug Information:</h4>
+            <div id="debugContent"></div>
+        </div>
+        
+        <div id="gallery" class="gallery"></div>
+    </div>
+
+    <script>
+        let debugMode = true;
+
+        async function tryDirectDownloads() {
+            const folderUrl = document.getElementById('folderUrl').value.trim();
+            const loadBtn = document.getElementById('loadBtn');
+            const statusDiv = document.getElementById('status');
+            const debugDiv = document.getElementById('debug');
+            const debugContent = document.getElementById('debugContent');
+            
+            if (!folderUrl) {
+                showStatus('❌ Please enter a Dropbox folder URL', 'error');
+                return;
+            }
+
+            // Reset UI
+            clearGallery();
+            loadBtn.disabled = true;
+            loadBtn.textContent = '🔄 Testing...';
+            
+            if (debugMode) {
+                debugDiv.style.display = 'block';
+                debugContent.innerHTML = '';
+            }
+
+            try {
+                showStatus('🔍 Analyzing Dropbox URL...', 'info');
+                debug(`🌐 Input URL: ${folderUrl}`);
+
+                // Extract folder info from URL
+                const urlInfo = parseDropboxUrl(folderUrl);
+                debug(`📋 Parsed URL info: ${JSON.stringify(urlInfo, null, 2)}`);
+
+                if (!urlInfo.folderId) {
+                    throw new Error('Could not extract folder ID from URL');
+                }
+
+                showStatus('🎯 Trying direct download patterns...', 'info');
+                
+                // Try different direct download approaches
+                const approaches = [
+                    tryDownloadZip,
+                    tryListFolder,
+                    tryDirectFileAccess
+                ];
+
+                for (let i = 0; i < approaches.length; i++) {
+                    debug(`\n🧪 Approach ${i + 1}: ${approaches[i].name}`);
+                    try {
+                        const result = await approaches[i](urlInfo);
+                        if (result && result.success) {
+                            showStatus(`✅ Success with approach ${i + 1}!`, 'success');
+                            return;
+                        }
+                    } catch (error) {
+                        debug(`❌ Approach ${i + 1} failed: ${error.message}`);
+                    }
+                }
+
+                throw new Error('All direct download approaches failed. We may need a different strategy.');
+
+            } catch (error) {
+                console.error('Error with direct downloads:', error);
+                showStatus(`❌ Error: ${error.message}
+
+💡 Next steps:
+1. This confirms Dropbox has changed their public access
+2. We may need to use the Dropbox API after all
+3. Or find a different approach like browser automation`, 'error');
+                debug(`💥 Final error: ${error.message}`);
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.textContent = '🔧 Try Direct Downloads';
+            }
+        }
+
+        function parseDropboxUrl(url) {
+            debug(`🔍 Parsing URL: ${url}`);
+            
+            // Extract various parts of the Dropbox URL
+            const info = {
+                originalUrl: url,
+                folderId: null,
+                rlkey: null,
+                st: null,
+                isNewFormat: false
+            };
+
+            // New SCL format: /scl/fo/FOLDER_ID/HASH?rlkey=KEY&st=VALUE
+            const sclMatch = url.match(/\/scl\/fo\/([^\/]+)\/([^?]+)/);
+            if (sclMatch) {
+                info.folderId = sclMatch[1];
+                info.hash = sclMatch[2];
+                info.isNewFormat = true;
+                debug(`✅ New SCL format detected`);
+            }
+
+            // Extract rlkey parameter
+            const rlkeyMatch = url.match(/rlkey=([^&]+)/);
+            if (rlkeyMatch) {
+                info.rlkey = rlkeyMatch[1];
+            }
+
+            // Extract st parameter
+            const stMatch = url.match(/st=([^&]+)/);
+            if (stMatch) {
+                info.st = stMatch[1];
+            }
+
+            return info;
+        }
+
+        async function tryDownloadZip(urlInfo) {
+            debug(`📦 Trying ZIP download approach...`);
+            
+            // Try to download the folder as ZIP and see what happens
+            const zipUrl = urlInfo.originalUrl.replace('?dl=0', '?dl=1');
+            debug(`🔗 ZIP URL: ${zipUrl}`);
+
+            try {
+                const response = await fetch(`http://localhost:3000/proxy?url=${encodeURIComponent(zipUrl)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    debug(`📊 ZIP response: ${data.contents.length} characters`);
+                    
+                    // Check if it's actually a ZIP or HTML
+                    const content = data.contents;
+                    if (content.startsWith('<!DOCTYPE') || content.includes('<html')) {
+                        debug(`❌ Got HTML instead of ZIP - this approach won't work`);
+                        return { success: false };
+                    }
+                    
+                    debug(`✅ Got binary data - might be a ZIP!`);
+                    return { success: false }; // Even if it's a ZIP, we can't easily extract files from it in browser
+                }
+            } catch (error) {
+                debug(`❌ ZIP download failed: ${error.message}`);
+            }
+
+            return { success: false };
+        }
+
+        async function tryListFolder(urlInfo) {
+            debug(`📂 Trying folder listing approach...`);
+            
+            // Try various folder listing URLs that might work
+            const listUrls = [
+                `https://www.dropbox.com/scl/fo/${urlInfo.folderId}?rlkey=${urlInfo.rlkey}&dl=1`,
+                `https://dl.dropboxusercontent.com/scl/fo/${urlInfo.folderId}/${urlInfo.hash}?rlkey=${urlInfo.rlkey}`,
+                `https://www.dropbox.com/sh/${urlInfo.folderId}?dl=1`,
+            ];
+
+            for (const listUrl of listUrls) {
+                debug(`🔗 Trying: ${listUrl}`);
+                
+                try {
+                    const response = await fetch(`http://localhost:3000/proxy?url=${encodeURIComponent(listUrl)}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const html = data.contents;
+                        
+                        debug(`📄 Response length: ${html.length} characters`);
+                        
+                        // Look for file listings in the response
+                        if (html.includes('.mp4') || html.includes('.mov') || html.includes('.avi')) {
+                            debug(`🎯 Found video file references!`);
+                            
+                            // Try to extract file info
+                            const videoMatches = html.match(/[^"]*\.(mp4|mov|avi|webm)[^"]*/gi);
+                            if (videoMatches) {
+                                debug(`📹 Found video files: ${videoMatches.join(', ')}`);
+                                return { success: true, files: videoMatches };
+                            }
+                        }
+                    }
+                } catch (error) {
+                    debug(`❌ List URL failed: ${error.message}`);
+                }
+            }
+
+            return { success: false };
+        }
+
+        async function tryDirectFileAccess(urlInfo) {
+            debug(`🎯 Trying direct file access approach...`);
+            
+            // This approach assumes we know some common filenames
+            const commonVideoNames = [
+                'video1.mp4', 'video2.mp4', 'video3.mp4',
+                'movie.mp4', 'clip.mp4', 'sample.mp4',
+                '1.mp4', '2.mp4', '3.mp4',
+                'test.mp4', 'demo.mp4'
+            ];
+
+            const baseUrl = `https://dl.dropboxusercontent.com/scl/fi/${urlInfo.folderId}`;
+            
+            let foundFiles = [];
+            
+            for (const filename of commonVideoNames) {
+                const fileUrl = `${baseUrl}/${filename}?rlkey=${urlInfo.rlkey}`;
+                debug(`🔍 Testing: ${filename}`);
+                
+                try {
+                    // Try HEAD request to see if file exists
+                    const response = await fetch(fileUrl, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        debug(`✅ Found file: ${filename}`);
+                        foundFiles.push({ url: fileUrl, name: filename });
+                        
+                        // Create video element
+                        createVideoElement(fileUrl, filename, foundFiles.length - 1);
+                    }
+                } catch (error) {
+                    // Ignore errors for this brute force approach
+                }
+            }
+
+            if (foundFiles.length > 0) {
+                showStatus(`🎉 Found ${foundFiles.length} files using direct access!`, 'success');
+                return { success: true, files: foundFiles };
+            }
+
+            return { success: false };
+        }
+
+        function createVideoElement(src, filename, index) {
+            const galleryDiv = document.getElementById('gallery');
+            
+            const container = document.createElement('div');
+            container.className = 'media-item';
+            
+            const video = document.createElement('video');
+            video.src = src;
+            video.controls = true;
+            video.preload = 'metadata';
+            
+            // Add error handling
+            video.onerror = function() {
+                debug(`❌ Video failed to load: ${filename}`);
+                container.style.opacity = '0.5';
+                const errorMsg = document.createElement('div');
+                errorMsg.textContent = 'Failed to load video';
+                errorMsg.style.color = 'red';
+                errorMsg.style.padding = '10px';
+                container.appendChild(errorMsg);
+            };
+            
+            video.onloadedmetadata = function() {
+                debug(`✅ Video loaded: ${filename} (${video.videoWidth}x${video.videoHeight})`);
+            };
+            
+            const info = document.createElement('div');
+            info.className = 'media-info';
+            
+            const title = document.createElement('div');
+            title.className = 'media-title';
+            title.textContent = filename;
+            
+            const type = document.createElement('div');
+            type.className = 'media-type';
+            type.textContent = 'Video';
+            
+            info.appendChild(title);
+            info.appendChild(type);
+            
+            container.appendChild(video);
+            container.appendChild(info);
+            galleryDiv.appendChild(container);
+        }
+
+        function clearGallery() {
+            document.getElementById('gallery').innerHTML = '';
+            document.getElementById('status').style.display = 'none';
+            if (debugMode) {
+                document.getElementById('debugContent').innerHTML = '';
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function debug(message) {
+            if (!debugMode) return;
+            
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(`[VidShare Debug] ${message}`);
+        }
+    </script>
+</body>
+</html>

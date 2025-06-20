@@ -15,6 +15,7 @@ class VirtualVideoGallery {
         this.globalVideoIndex = 0; // Track global position across all categories
         this.categorySlidePositions = new Array(4).fill(0); // Initialize for all categories including Videos
         this.isPlaying = true;
+        this.isScrolling = false; // Add scroll state tracking
         
         // Settings
         this.settings = {
@@ -38,6 +39,7 @@ class VirtualVideoGallery {
             this.updatePerformanceStats();
             this.controlsManager.updateCategoryPills(this.currentCategory);
             this.controlsManager.updateLikeButton();
+            this.setupScrollSync(); // Add scroll synchronization
         };
         
         // Initialize
@@ -281,6 +283,70 @@ class VirtualVideoGallery {
         const estimatedMemoryPerVideo = 0.1; // MB
         const memoryUsage = (this.renderer.getRenderedCount() * estimatedMemoryPerVideo).toFixed(1);
         document.getElementById('memoryUsage').textContent = memoryUsage;
+    }
+
+    // Add scroll synchronization method
+    setupScrollSync() {
+        const container = document.getElementById('videoContainer');
+        if (!container) return;
+
+        let scrollTimeout;
+        let isUserScrolling = false;
+
+        // Handle scroll events to sync with internal state
+        container.addEventListener('scroll', () => {
+            if (this.isScrolling) return; // Ignore programmatic scrolls
+
+            isUserScrolling = true;
+            
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+
+            scrollTimeout = setTimeout(() => {
+                if (isUserScrolling) {
+                    this.syncScrollPosition();
+                    isUserScrolling = false;
+                }
+            }, 100);
+        }, { passive: true });
+
+        // Enable proper scroll snap
+        container.style.scrollSnapType = 'y mandatory';
+        container.style.scrollBehavior = 'smooth';
+    }
+
+    syncScrollPosition() {
+        const container = document.getElementById('videoContainer');
+        if (!container) return;
+
+        const scrollTop = container.scrollTop;
+        const videoHeight = window.innerHeight;
+        const newGlobalIndex = Math.round(scrollTop / videoHeight);
+        
+        if (newGlobalIndex !== this.globalVideoIndex && 
+            newGlobalIndex >= 0 && 
+            newGlobalIndex < this.getTotalGlobalSlides()) {
+            
+            // Update state based on scroll position
+            this.globalVideoIndex = newGlobalIndex;
+            
+            // Calculate category and local slide from global index
+            const result = this.renderer.getCurrentCategoryFromGlobalIndex(newGlobalIndex);
+            if (result) {
+                this.currentCategory = result.category;
+                this.currentSlide = result.localIndex;
+                this.categorySlidePositions[this.currentCategory] = this.currentSlide;
+                
+                // Update UI
+                this.updateProgressDots();
+                this.updatePerformanceStats();
+                this.controlsManager.updateCategoryPills(this.currentCategory);
+                this.controlsManager.updateLikeButton();
+                
+                console.log(`📱 Scroll sync: Global ${newGlobalIndex}, Cat ${this.currentCategory}, Slide ${this.currentSlide}`);
+            }
+        }
     }
 
     // Playback controls

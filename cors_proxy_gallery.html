@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare - CORS Proxy Method</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            background: #e8f4fd;
+            border: 2px solid #b3d7ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .input-section h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .media-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .media-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .media-item video,
+        .media-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .media-item video {
+            height: auto;
+        }
+        
+        .media-info {
+            padding: 15px;
+        }
+        
+        .media-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .media-type {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .debug-info h4 {
+            margin-top: 0;
+            font-family: inherit;
+        }
+        
+        .example-urls {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .example-urls h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .example-urls code {
+            display: block;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 VidShare - CORS Proxy Method</h1>
+        
+        <div class="input-section">
+            <h3>📁 Load Dropbox Folder (No API Required!)</h3>
+            <p>Paste any public Dropbox folder URL - we'll extract the videos using HTML parsing:</p>
+            
+            <input type="url" 
+                   id="folderUrl" 
+                   placeholder="https://www.dropbox.com/scl/fo/..."
+                   value="https://www.dropbox.com/scl/fo/i5vksy6a60ps77inthgpu/AMwZOqmzW8yAKlWQKWFSteM?rlkey=bp4bjlit198p4wd81zou5bn0n&st=1hd7lqnx&dl=0">
+            
+            <button onclick="loadDropboxFolder()" id="loadBtn">🚀 Load Gallery</button>
+            <button onclick="clearGallery()" style="background: #6c757d;">🗑️ Clear</button>
+        </div>
+
+        <div class="example-urls">
+            <h4>📋 How It Works:</h4>
+            <p>1. We fetch the Dropbox folder HTML via CORS proxy</p>
+            <p>2. Parse the HTML to find file links</p>
+            <p>3. Convert to direct download URLs</p>
+            <p>4. Display videos/images directly!</p>
+        </div>
+
+        <div id="status" class="status info" style="display: none;"></div>
+        
+        <div id="debug" class="debug-info" style="display: none;">
+            <h4>🔍 Debug Information:</h4>
+            <div id="debugContent"></div>
+        </div>
+        
+        <div id="gallery" class="gallery"></div>
+    </div>
+
+    <script>
+        let debugMode = true; // Set to false to hide debug info
+
+        async function loadDropboxFolder() {
+            const folderUrl = document.getElementById('folderUrl').value.trim();
+            const loadBtn = document.getElementById('loadBtn');
+            const statusDiv = document.getElementById('status');
+            const debugDiv = document.getElementById('debug');
+            const debugContent = document.getElementById('debugContent');
+            
+            if (!folderUrl) {
+                showStatus('❌ Please enter a Dropbox folder URL', 'error');
+                return;
+            }
+
+            // Reset UI
+            clearGallery();
+            loadBtn.disabled = true;
+            loadBtn.textContent = '🔄 Loading...';
+            
+            if (debugMode) {
+                debugDiv.style.display = 'block';
+                debugContent.innerHTML = '';
+            }
+
+            try {
+                // Try different URL formats to get the actual file list
+                const urlVariations = [
+                    folderUrl.replace('?dl=0', '?dl=1'), // Force download/list view
+                    folderUrl.replace(/&dl=0/, '&dl=1'),
+                    folderUrl + (folderUrl.includes('?') ? '&dl=1' : '?dl=1'),
+                    folderUrl.replace('dropbox.com', 'dropbox.com') + '/1', // Direct approach
+                ];
+
+                debug(`🔧 Trying different URL formats to get file list...`);
+
+                for (let i = 0; i < urlVariations.length; i++) {
+                    const testUrl = urlVariations[i];
+                    debug(`🌐 Attempt ${i + 1}: ${testUrl}`);
+
+                    try {
+                        showStatus(`🔍 Step ${i + 1}: Trying URL variation...`, 'info');
+                        
+                        const success = await tryLoadFolder(testUrl);
+                        if (success) {
+                            showStatus(`🎉 Success with URL variation ${i + 1}!`, 'success');
+                            return;
+                        }
+                    } catch (error) {
+                        debug(`❌ Attempt ${i + 1} failed: ${error.message}`);
+                    }
+                }
+
+                throw new Error('All URL variations failed. Dropbox may have changed their structure.');
+
+            } catch (error) {
+                console.error('Error loading folder:', error);
+                showStatus(`❌ Error: ${error.message}
+
+💡 Possible solutions:
+1. Try a different Dropbox folder
+2. Make sure the folder is truly public
+3. Dropbox may have changed their HTML structure`, 'error');
+                debug(`💥 Final error: ${error.message}`);
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.textContent = '🚀 Load Gallery';
+            }
+        }
+
+        async function tryLoadFolder(folderUrl) {
+                showStatus('🔍 Step 1: Fetching folder HTML via CORS proxy...', 'info');
+                debug(`🌐 Fetching: ${folderUrl}`);
+
+                // Step 1: Try multiple CORS proxies (your own first!)
+                const proxies = [
+                    `http://localhost:3000/proxy?url=${encodeURIComponent(folderUrl)}`,
+                    `https://api.allorigins.win/get?url=${encodeURIComponent(folderUrl)}`,
+                    `https://corsproxy.io/?${encodeURIComponent(folderUrl)}`,
+                    `https://cors-anywhere.herokuapp.com/${folderUrl}`,
+                    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(folderUrl)}`
+                ];
+                
+                let response = null;
+                let lastError = null;
+                
+                for (let i = 0; i < proxies.length; i++) {
+                    const proxyUrl = proxies[i];
+                    debug(`📡 Trying proxy ${i + 1}: ${proxyUrl.split('?')[0]}...`);
+                    
+                    try {
+                        response = await fetch(proxyUrl);
+                        if (response.ok) {
+                            debug(`✅ Proxy ${i + 1} worked!`);
+                            break;
+                        } else {
+                            debug(`❌ Proxy ${i + 1} failed: ${response.status}`);
+                        }
+                    } catch (error) {
+                        debug(`❌ Proxy ${i + 1} error: ${error.message}`);
+                        lastError = error;
+                    }
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Proxy request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const html = data.contents;
+                
+                debug(`✅ HTML fetched successfully (${html.length} characters)`);
+                
+                // Save HTML to inspect in browser
+                window.fetchedHTML = html; // For debugging in console
+                debug(`💾 HTML saved to window.fetchedHTML for inspection`);
+                
+                showStatus('✅ Step 2: Parsing HTML for file links...', 'info');
+
+                // Step 2: Parse HTML
+                const temp = document.createElement("div");
+                temp.innerHTML = html;
+
+                // Debug: Let's see what we got
+                debug(`🔍 HTML sample (first 500 chars):`);
+                debug(html.substring(0, 500));
+                
+                // Try multiple link patterns that Dropbox might use
+                const linkPatterns = [
+                    'a[href*="/s/"]',           // Original pattern
+                    'a[href*="/scl/fi/"]',      // New file format
+                    'a[href*="dropbox.com/s"]', // Full URL pattern
+                    'a[href*="dl.dropboxusercontent.com"]', // Direct links
+                    'a[data-testid]',           // React component links
+                    '[data-testid*="file"]',    // File elements
+                    'button[data-testid*="file"]' // File buttons
+                ];
+                
+                let allLinks = [];
+                linkPatterns.forEach(pattern => {
+                    const links = [...temp.querySelectorAll(pattern)];
+                    debug(`🔍 Pattern "${pattern}": found ${links.length} elements`);
+                    allLinks.push(...links);
+                });
+                
+                debug(`🔍 Total elements found: ${allLinks.length}`);
+                
+                // Also check for any file-like data attributes or text content
+                const possibleFileElements = [...temp.querySelectorAll('*')]
+                    .filter(el => {
+                        const text = el.textContent || '';
+                        const attrs = [...el.attributes].map(a => `${a.name}="${a.value}"`).join(' ');
+                        return text.includes('.mp4') || text.includes('.mov') || 
+                               text.includes('.avi') || text.includes('.jpg') ||
+                               attrs.includes('.mp4') || attrs.includes('.mov');
+                    });
+                
+                debug(`🔍 Elements with file extensions: ${possibleFileElements.length}`);
+                possibleFileElements.slice(0, 5).forEach((el, i) => {
+                    debug(`  ${i + 1}. ${el.tagName}: ${el.textContent?.substring(0, 100) || 'no text'}`);
+                });
+
+                // Extract URLs from href attributes
+                const rawLinks = allLinks
+                    .map(a => a.href || a.getAttribute('href') || a.dataset.href)
+                    .filter(Boolean)
+                    .filter((url, index, array) => array.indexOf(url) === index); // Remove duplicates
+
+                debug(`📋 Unique URLs found: ${rawLinks.length}`);
+                rawLinks.forEach((url, i) => debug(`  ${i + 1}. ${url}`));
+
+                if (rawLinks.length === 0) {
+                    throw new Error('No file links found in the folder. Make sure the folder is public and contains files.');
+                }
+
+                showStatus('🔧 Step 3: Converting to direct download URLs...', 'info');
+
+                // Step 3: Convert to direct download URLs
+                const directLinks = rawLinks.map(url => {
+                    // Convert www.dropbox.com to dl.dropboxusercontent.com
+                    // Remove ?dl=0 parameter
+                    return url
+                        .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+                        .replace('?dl=0', '');
+                });
+
+                debug(`🔗 Converted to direct URLs:`);
+                directLinks.forEach((url, i) => debug(`  ${i + 1}. ${url}`));
+
+                showStatus('🎬 Step 4: Creating gallery...', 'info');
+
+                // Step 4: Create gallery
+                let videoCount = 0;
+                let imageCount = 0;
+                let otherCount = 0;
+
+                directLinks.forEach((link, index) => {
+                    const filename = link.split('/').pop().split('?')[0];
+                    const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(filename);
+                    const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(filename);
+
+                    if (isVideo) {
+                        createVideoElement(link, filename, index);
+                        videoCount++;
+                    } else if (isImage) {
+                        createImageElement(link, filename, index);
+                        imageCount++;
+                    } else {
+                        debug(`⚠️  Skipping non-media file: ${filename}`);
+                        otherCount++;
+                    }
+                });
+
+                showStatus(`🎉 Gallery loaded successfully!
+Videos: ${videoCount}
+Images: ${imageCount}
+Other files: ${otherCount}`, 'success');
+
+                debug(`📊 Final stats: ${videoCount} videos, ${imageCount} images, ${otherCount} other files`);
+
+            } catch (error) {
+                console.error('Error loading folder:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                debug(`💥 Error: ${error.message}`);
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.textContent = '🚀 Load Gallery';
+            }
+        }
+
+        function createVideoElement(src, filename, index) {
+            const galleryDiv = document.getElementById('gallery');
+            
+            const container = document.createElement('div');
+            container.className = 'media-item';
+            
+            const video = document.createElement('video');
+            video.src = src;
+            video.controls = true;
+            video.preload = 'metadata';
+            
+            // Add error handling
+            video.onerror = function() {
+                debug(`❌ Video failed to load: ${filename}`);
+                container.style.opacity = '0.5';
+                const errorMsg = document.createElement('div');
+                errorMsg.textContent = 'Failed to load video';
+                errorMsg.style.color = 'red';
+                errorMsg.style.padding = '10px';
+                container.appendChild(errorMsg);
+            };
+            
+            video.onloadedmetadata = function() {
+                debug(`✅ Video loaded: ${filename} (${video.videoWidth}x${video.videoHeight})`);
+            };
+            
+            const info = document.createElement('div');
+            info.className = 'media-info';
+            
+            const title = document.createElement('div');
+            title.className = 'media-title';
+            title.textContent = filename;
+            
+            const type = document.createElement('div');
+            type.className = 'media-type';
+            type.textContent = 'Video';
+            
+            info.appendChild(title);
+            info.appendChild(type);
+            
+            container.appendChild(video);
+            container.appendChild(info);
+            galleryDiv.appendChild(container);
+        }
+
+        function createImageElement(src, filename, index) {
+            const galleryDiv = document.getElementById('gallery');
+            
+            const container = document.createElement('div');
+            container.className = 'media-item';
+            
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = filename;
+            
+            // Add error handling
+            img.onerror = function() {
+                debug(`❌ Image failed to load: ${filename}`);
+                container.style.opacity = '0.5';
+                const errorMsg = document.createElement('div');
+                errorMsg.textContent = 'Failed to load image';
+                errorMsg.style.color = 'red';
+                errorMsg.style.padding = '10px';
+                container.appendChild(errorMsg);
+            };
+            
+            img.onload = function() {
+                debug(`✅ Image loaded: ${filename} (${img.naturalWidth}x${img.naturalHeight})`);
+            };
+            
+            const info = document.createElement('div');
+            info.className = 'media-info';
+            
+            const title = document.createElement('div');
+            title.className = 'media-title';
+            title.textContent = filename;
+            
+            const type = document.createElement('div');
+            type.className = 'media-type';
+            type.textContent = 'Image';
+            
+            info.appendChild(title);
+            info.appendChild(type);
+            
+            container.appendChild(img);
+            container.appendChild(info);
+            galleryDiv.appendChild(container);
+        }
+
+        function clearGallery() {
+            document.getElementById('gallery').innerHTML = '';
+            document.getElementById('status').style.display = 'none';
+            if (debugMode) {
+                document.getElementById('debugContent').innerHTML = '';
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function debug(message) {
+            if (!debugMode) return;
+            
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(`[VidShare Debug] ${message}`);
+        }
+
+        // Auto-load on page load if URL is already filled
+        window.addEventListener('load', function() {
+            const folderUrl = document.getElementById('folderUrl').value;
+            if (folderUrl && folderUrl.includes('dropbox.com')) {
+                // Uncomment to auto-load:
+                // loadDropboxFolder();
+            }
+        });
+    </script>
+</body>
+</html>
